@@ -21,6 +21,7 @@ void hamming(int windowLength, float *buffer) {
 }
 
 vector<double> cutoff(vector<double> sound, int frequency, int tightness){
+	frequency /= 2;
 	int length = sound.size();
 	vector<double> output(length);
 	double in [tightness];
@@ -31,13 +32,13 @@ vector<double> cutoff(vector<double> sound, int frequency, int tightness){
 		printf("moremem");
 		exit(1);
 	}
-	fftw_plan toFreck = fftw_plan_dft_r2c_1d(tightness,in,mid,FFTW_ESTIMATE);
-	fftw_plan toTime  = fftw_plan_dft_c2r_1d(tightness,mid,out,FFTW_ESTIMATE);
+	fftw_plan toFreck = fftw_plan_dft_r2c_1d(tightness,in,mid,FFTW_MEASURE);
+	fftw_plan toTime  = fftw_plan_dft_c2r_1d(tightness,mid,out,FFTW_MEASURE);
 	cout << "working..."<<endl;
 	cout <<length<<endl;
-	int hop = tightness;
+	int hop = tightness/100;
 	for(int pos=0; pos+hop<length; pos+=hop){
-		if(pos%(length/100)==0){cout<<100*pos/(length)<<endl;}
+		if(pos%(length/100)==0){cout<<100*pos/(length)<<"%"<<endl;}
 		copy(sound.begin()+pos, sound.begin()+pos+tightness, in);
 		fftw_execute(toFreck);
 
@@ -64,7 +65,7 @@ vector<double> cutoff(vector<double> sound, int frequency, int tightness){
 
 int main(int args, char** argv){
 	vector<double> copiee = fileio::read(argv[1]);
-	vector<double> transposee = cutoff(copiee,3,20480);
+	vector<double> transposee = cutoff(copiee,100,2048);
 	transposee.insert(transposee.end(),copiee.begin(),copiee.end());
 	if(fileio::save(transposee ,argv[2])){
 		printf("Copied\n");
