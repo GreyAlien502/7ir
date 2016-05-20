@@ -24,8 +24,8 @@ sound::Sound::Sound(vector<double> pcm){
 	vector<double> window = hamming(windowLength);
 	int length = pcm.size();
 
-	hop = windowLength/2;
-	int hops = length/hop;
+	hop = windowLength/8;
+	hops = length/hop;
 	frequencies = vector< vector<double> >(length/hop, vector<double>(windowLength));
 	phases = vector< vector<double> >(length/hop, vector<double>(windowLength));
 

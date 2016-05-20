@@ -3,6 +3,7 @@ namespace sound{
 	class Sound{
 		public:
 			int hop;
+			int hops;
 			std::vector< std::vector<double> > frequencies;
 			std::vector< std::vector<double> > phases;
 
