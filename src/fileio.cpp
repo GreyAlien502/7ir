@@ -34,7 +34,7 @@ vector<double> fileio::read(const char* filename){
 		for(unsigned int i=0; i<temp.size(); i++){ output[i]=temp[i]/32767.; }
 		return output;
 	}else{
-		printf("ERROR\n");
-		return vector<double>();
+		cerr << "ERROR: error reading file.\n";
+		exit(1);
 	}
 }
