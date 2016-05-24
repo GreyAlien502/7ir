@@ -18,9 +18,6 @@ vector<double> hamming(int windowLength) {
 	return output;
 }
 
-double magnitude(double* array){
-	return sqrt(pow(array[0],2) + pow(array[1],2));
-}
 
 
 
@@ -37,15 +34,10 @@ sound::Sound::Sound(vector<double> pcm, int overlapFactor, int sizeOfWindow){
 
 	hop = windowLength/overlap;
 	hops = length/hop;
-	soundData = vector< vector<complex<double> > >(length/hop, vector<complex<double> >(windowLength));
+	soundData = vector< vector<complex<double> > >(hops, vector<complex<double> >(windowLength/2+1));
 
-	for(int i=0;i<hop;i++){
-		double pSum =0;
-		for(int j=i;j<windowLength;j+=hop){
-			pSum += window[j]*window[j];
-		}
-		printf("%d\t%f\n", i, pSum);
-	}
+
+
 
 	double in [windowLength];
 	complex<double>* out = (complex<double>*) fftw_malloc(sizeof(fftw_complex)*(windowLength/2+1));
@@ -55,8 +47,9 @@ sound::Sound::Sound(vector<double> pcm, int overlapFactor, int sizeOfWindow){
 		reinterpret_cast<fftw_complex*>(out),
 		FFTW_MEASURE);
 
+	int pos = 0;
 	for(int hopnum=0; hopnum<hops; hopnum++){
-		int pos = hopnum * hop;
+		pos += hop;
 		//if(pos%(length/100)==0){cout<<100*pos/(length)<<"%"<<endl;}
 
 		copy(pcm.begin()+pos, pcm.begin()+pos+windowLength, in);
@@ -66,10 +59,7 @@ sound::Sound::Sound(vector<double> pcm, int overlapFactor, int sizeOfWindow){
 
 		fftw_execute(toFreck);
 
-		//copy(out, out+windowLength+2, frequency.begin()+pos);
-		for(int i=0; i<windowLength; i++){
-			soundData[hopnum][i] = (complex<double>)(out[i]);//magnitude(out[i]);
-		}
+		copy(&out[0],&out[windowLength/2+1],soundData[hopnum].begin());
 	}
 
 	fftw_destroy_plan(toFreck);
@@ -83,6 +73,22 @@ vector<double> sound::Sound::synthesize(){
 	}
 	vector<double> window = hamming(windowLength);
 
+	//WINDOW ANALYSIS
+	double pTot =0;
+	double pMax =0;
+	double pMin =windowLength*100;
+	double pSum;
+	for(int i=0;i<hop;i++){
+		pSum=0;
+		for(int j=i;j<windowLength;j+=hop){
+			pSum += window[j]*window[j];
+		}
+		pTot +=pSum;
+		if(pSum>pMax){ pMax=pSum; }
+		if(pSum<pMin){ pMin=pSum; }
+	}
+	cerr << "pSpread:"<<(pMax-pMin)/pSum*windowLength*100<<"%"<<endl;
+
 	double out [windowLength];
 	complex<double>* in = (complex<double>*) fftw_malloc(sizeof(fftw_complex)*(windowLength/2+1));
 	fftw_plan toTime = fftw_plan_dft_c2r_1d(
@@ -91,18 +97,41 @@ vector<double> sound::Sound::synthesize(){
 		out,
 		FFTW_MEASURE);
 
+	int pos = 0;
 	for(int hopnum=0; hopnum<hops; hopnum++){
-		int pos = hopnum * hop;
+		pos += hop;
 
-		for(int i=0; i<windowLength/2+1; i++){
-			in[i] = soundData[hopnum][i];//*cos(phases[hopnum][i]);
-		}
+		copy(soundData[hopnum].begin(),soundData[hopnum].end(),in);
 
 		fftw_execute(toTime);
 
 		for(int i=0; i<windowLength; i++){
-			output[pos+i] = out[i]/windowLength*window[i]*100. /.0327939/.07;
+			output[pos+i] += out[i]/windowLength*window[i]/pMax;
 		}
 	}
 	return output;
+}
+
+
+void sound::Sound::transpose(int amount){
+	for(int i=0;i<hops;i++){
+		for(int j=0;j<windowLength/2+1-amount;j++){
+			soundData[i][j] = soundData[i][j+amount];
+		}
+	}
+}
+
+void sound::Sound::lowpass(int amount){
+	for(int i=0;i<hops;i++){
+		for(int j=amount;j<windowLength/2+1;j++){
+			soundData[i][j] = 0;
+		}
+	}
+}
+void sound::Sound::highpass(int amount){
+	for(int i=0;i<hops;i++){
+		for(int j=amount;j>0;j--){
+			soundData[i][j] = 0;
+		}
+	}
 }

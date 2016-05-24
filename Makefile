@@ -10,7 +10,8 @@
 
 OUT = test
 DATA = data
-SOUND = sounds/pure.wav
+SOUND = sounds/Zaundt
+NUVOSOUND = output.wav
 GRAPH = graph.png
 PLOT = plot.gpi
 
@@ -30,12 +31,12 @@ $(ODIR)/%.o: $(SDIR)/%.cpp
 $(OUT): $(OBJECTS)
 	$(CC) $(FLAGS) -o $(OUT) $(OBJECTS)
 
-$(DATA): $(OUT) $(SOUND)
-	./$(OUT) $(SOUND) > $(DATA)
+$(DATA) $(NUVOSOUND): $(OUT) $(SOUND)
+	./$(OUT) $(SOUND) $(NUVOSOUND) > $(DATA)
 
 $(GRAPH): $(DATA) $(PLOT)
 	gnuplot -e 'dada="'$(DATA)'";graf="'$(GRAPH)'"' $(PLOT)
 
 .PHONY: clean
 clean:
-	rm -f $(ODIR)/* $(OUT) $(DATA) $(GRAPH)
+	rm -f $(ODIR)/* $(OUT) $(DATA) $(GRAPH) $(NUVOSOUND)

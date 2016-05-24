@@ -9,40 +9,47 @@
 using namespace std;
 int samplerate = 44100;//Hz
 
-void normalize(vector<double> vect){
-	double top = 0;
-	for(unsigned int i=0;i<vect.size();i++){
-		if(abs(vect[i])>top){top=abs(vect[i]);}
+vector<double> normalize(vector<double> input){
+	double top =0;
+	for(unsigned int i=0;i<input.size();i++){
+		if(abs(input[i])>top){
+			top=abs(input[i]);
+		}
 	}
-	cerr<<'t'<<top<<endl;
-	for(unsigned int i=0;i<vect.size();i++){
-		vect[i] /= top;
+	for(unsigned int i=0;i<input.size();i++){
+		input[i] /= top;
 	}
-	top = 0;
-	for(unsigned int i=0;i<vect.size();i++){
-		if(abs(vect[i])>top){top=abs(vect[i]);}
-	}
-	cerr<<"T"<<top<<endl;
 }
 
 
 int main(int args, char** argv){
 	int windowSize = 2048;
-	int overlap = 32;
+	int overlap = 4;// windowSize/8;
 	vector<double> input = fileio::read(argv[1]);
 
+	cerr << "analyzing...";
 	sound::Sound song = sound::Sound(input, overlap, windowSize);
-	int show = song.hops/10000+1;
-	/*for(int i=0; i<song.hops; i+=show){
-		for(int j=0; j<2048; j+=1){
-			printf("%d\t%d\t%f\n", i,j,song.frequencies[i][j]);
+	cerr << "done\n";
+
+	 int show = song.hops/10000+1;
+	for(int i=0; i<song.hops; i+=show){
+		for(int j=0; j<song.windowLength/2+1; j+=1){
+			printf("%d\t%d\t%f\n", i,j,abs(song.soundData[i][j]));
 		}
-	}*/
-	cerr << song.length()<<endl;
+	}
+
+	cerr << "transposing...";
+	song.transpose(15);
+	cerr << "done\n";
+	cerr<<song.soundData.size()<<endl;
+	cerr<<song.soundData[10].size()<<endl;
+
+	cerr << "synthesizing...";
 	vector<double> output = song.synthesize();
-	normalize(output);
-	cerr << output.size()<<endl;
-	if( fileio::save(output,"output")){
+	cerr << "done\n";
+
+	cerr << song.soundData[0].size()<<endl;
+	if( fileio::save(output,argv[2])){
 		cerr<<"Saved\n";
 	}else{
 		cerr<<"Error: failed to save\n";
