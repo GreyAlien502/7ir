@@ -1,4 +1,5 @@
 #include <vector>
+#include <complex>
 namespace sound{
 	class Sound{
 		public:
@@ -6,8 +7,7 @@ namespace sound{
 			int hop;
 			int hops;
 			int overlap;
-			std::vector< std::vector<double> > frequencies;
-			std::vector< std::vector<double> > phases;
+			std::vector< std::vector<std::complex<double> > > soundData;
 
 			Sound(std::vector<double> pcm, int, int);
 			std::vector<double> synthesize();

@@ -10,7 +10,7 @@
 
 OUT = test
 DATA = data
-SOUND = sounds/Zaundt
+SOUND = sounds/pure.wav
 GRAPH = graph.png
 PLOT = plot.gpi
 
@@ -34,7 +34,7 @@ $(DATA): $(OUT) $(SOUND)
 	./$(OUT) $(SOUND) > $(DATA)
 
 $(GRAPH): $(DATA) $(PLOT)
-	gnuplot -e 'data="'$(DATA)'";graph="'$(GRAPH)'"' $(PLOT)
+	gnuplot -e 'dada="'$(DATA)'";graf="'$(GRAPH)'"' $(PLOT)
 
 .PHONY: clean
 clean:
