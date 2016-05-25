@@ -114,10 +114,19 @@ vector<double> sound::Sound::synthesize(){
 
 
 void sound::Sound::transpose(int amount){
-	for(int i=0;i<hops;i++){
-		for(int j=0;j<windowLength/2+1-amount;j++){
-			soundData[i][j] = soundData[i][j+amount];
+	if(amount<0){
+		amount *=-1;
+		for(int i=0; i<hops/amount; i++){
+			soundData[i]=soundData[amount*i];
 		}
+		soundData.erase(soundData.begin()+hops/amount,soundData.end());
+		hops = soundData.size();
+	}else{
+		soundData.resize(hops*amount);
+		for(int i=0; i<hops; i++){
+			fill(soundData.begin()+amount*(hops-1-i), soundData.begin()+amount*(hops-i), soundData[hops-i]);
+		}
+		hops *= amount;
 	}
 }
 
