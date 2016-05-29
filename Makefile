@@ -10,7 +10,7 @@
 
 OUT = test
 DATA = data
-SOUND = sounds/Zaundt
+SOUND = sounds/kaka.wav
 NUVOSOUND = output.wav
 GRAPH = graph.png
 PLOT = plot.gpi

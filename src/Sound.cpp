@@ -11,9 +11,20 @@ using namespace std;
 
 vector<double> hamming(int windowLength) {
 	double PI = 3.14159265358979323;
+	cerr<<'e'<<endl;
 	vector<double> output(windowLength);
-	for(int i = 0; i < windowLength; i++) {
+	cerr<<'e'<<endl;
+	for(int i = 0; i < windowLength/2; i++) {
 		output[i] = 0.54 - 0.46 * cos( 2 * PI * (i / (double) (windowLength - 1) ));
+		/*if(i<windowLength/4){
+			output[windowLength/2+i] = sqrt(0.5 - 0.5 * cos( 2 * PI * (i / (double) (windowLength - 1) )));
+			output[windowLength/2-i]=output[windowLength/2+i];
+		}else if(i==windowLength/4){
+			output[i] = sqrt(.5);
+		}else{
+			output[windowLength/2+i]=output[windowLength/2+i] = sqrt(1 - pow(output[windowLength-i],2) );
+			output[windowLength/2-i]=output[windowLength/2+i];
+		}*/
 	}
 	return output;
 }
@@ -26,19 +37,23 @@ int sound::Sound::length(){
 	return windowLength + hops*windowLength/overlap;
 }
 
+//make sound based off of input pcm data
 sound::Sound::Sound(vector<double> pcm, int overlapFactor, int sizeOfWindow){
+	double PI = 3.1415926535897926323;
+	int length = pcm.size();
+	vector<double> window = hamming(sizeOfWindow);
+
+	//initialize object variables
 	windowLength = sizeOfWindow;
 	overlap = overlapFactor;
-	vector<double> window = hamming(windowLength);
-	int length = pcm.size();
-
 	hop = windowLength/overlap;
 	hops = length/hop;
-	soundData = vector< vector<complex<double> > >(hops, vector<complex<double> >(windowLength/2+1));
+	magnitudes = 
+	frequencies = 
+		vector<vector<double> > (hops, vector<double>(windowLength/2+1));
 
 
-
-
+	//variables to use for fft
 	double in [windowLength];
 	complex<double>* out = (complex<double>*) fftw_malloc(sizeof(fftw_complex)*(windowLength/2+1));
 	fftw_plan toFreck = fftw_plan_dft_r2c_1d(
@@ -47,25 +62,38 @@ sound::Sound::Sound(vector<double> pcm, int overlapFactor, int sizeOfWindow){
 		reinterpret_cast<fftw_complex*>(out),
 		FFTW_MEASURE);
 
+
+	vector<double> oldPhases = vector<double>(windowLength/2+1,0);//to calculate phase change
 	int pos = 0;
 	for(int hopnum=0; hopnum<hops; hopnum++){
 		pos += hop;
-		//if(pos%(length/100)==0){cout<<100*pos/(length)<<"%"<<endl;}
 
+		//copy sample in to be analyzed
 		copy(pcm.begin()+pos, pcm.begin()+pos+windowLength, in);
 		for(int i=0; i<windowLength; i++){
 			in[i] *= window[i];
 		}
 
 		fftw_execute(toFreck);
+		
+		//calculate resulting frequencies and magnitudes
+		for(int i=0; i<windowLength/2+1; i++){
+			magnitudes[hopnum][i] = abs(out[i]);
 
-		copy(&out[0],&out[windowLength/2+1],soundData[hopnum].begin());
+			double phase = arg(out[i]);
+			double phaseDeviation = phase - oldPhases[i] - (double)(i)*2.*PI*hop/windowLength;
+			oldPhases[i] = phase;
+
+			phaseDeviation = phaseDeviation - 2*PI*floor(phaseDeviation/2/PI);
+			frequencies[hopnum][i] = 44100./windowLength*(i + phaseDeviation*overlap/(2.*PI) );
+		}
 	}
 
+	//deallocate fft variables
 	fftw_destroy_plan(toFreck);
 	fftw_free(out);
 }
-
+/*
 vector<double> sound::Sound::synthesize(){
 	vector<double> output = vector<double>(length());
 	for(unsigned int i=0;i>output.size();i++){
@@ -112,8 +140,24 @@ vector<double> sound::Sound::synthesize(){
 	return output;
 }
 
+*/
+void sound::Sound::transpose(double factor){
+	for(int i=0; i<hops; i++){
+		vector<double> nuvofrequencies(windowLength/2+1);
+		vector<double> nuvomagnitudes(windowLength/2+1,0.);
+		for(int j=0; j<windowLength/2+1; j++){
+			int index = int(j*factor);
+			if(index < windowLength/2+1){
+				nuvofrequencies[index] = frequencies[i][j]*factor;
+				nuvomagnitudes[index] += magnitudes[i][j];
+			}
+		}
+		magnitudes[i] = nuvomagnitudes;
+		frequencies[i] = nuvofrequencies;
+	}
+}
 
-void sound::Sound::transpose(int amount){
+/*
 	if(amount<0){
 		amount *=-1;
 		for(int i=0; i<hops/amount; i++){
@@ -143,4 +187,4 @@ void sound::Sound::highpass(int amount){
 			soundData[i][j] = 0;
 		}
 	}
-}
+}*/

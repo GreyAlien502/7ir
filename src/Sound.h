@@ -7,15 +7,15 @@ namespace sound{
 			int overlap;
 			int hop;
 			int hops;
-			std::vector< std::vector<std::complex<double> > > soundData;
+			std::vector< std::vector<double> > magnitudes;
+			std::vector< std::vector<double> > frequencies;
 
 			Sound(std::vector<double>, int, int);
 			std::vector<double> synthesize();
 
 			int length();
 
-			void normalize();
-			void transpose(int);
+			void transpose(double);
 			void lowpass(int);
 			void highpass(int);
 	};
