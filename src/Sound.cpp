@@ -11,9 +11,7 @@ using namespace std;
 
 vector<double> hamming(int windowLength) {
 	double PI = 3.14159265358979323;
-	cerr<<'e'<<endl;
 	vector<double> output(windowLength);
-	cerr<<'e'<<endl;
 	for(int i = 0; i < windowLength/2; i++) {
 		output[i] = 0.54 - 0.46 * cos( 2 * PI * (i / (double) (windowLength - 1) ));
 		/*if(i<windowLength/4){
@@ -93,8 +91,8 @@ sound::Sound::Sound(vector<double> pcm, int overlapFactor, int sizeOfWindow){
 	fftw_destroy_plan(toFreck);
 	fftw_free(out);
 }
-/*
 vector<double> sound::Sound::synthesize(){
+	double const PI = 3.1415926535897926323;
 	vector<double> output = vector<double>(length());
 	for(unsigned int i=0;i>output.size();i++){
 		output[i] = 0;
@@ -102,7 +100,7 @@ vector<double> sound::Sound::synthesize(){
 	vector<double> window = hamming(windowLength);
 
 	//WINDOW ANALYSIS
-	double pTot =0;
+	/*double pTot =0;
 	double pMax =0;
 	double pMin =windowLength*100;
 	double pSum;
@@ -115,7 +113,7 @@ vector<double> sound::Sound::synthesize(){
 		if(pSum>pMax){ pMax=pSum; }
 		if(pSum<pMin){ pMin=pSum; }
 	}
-	cerr << "pSpread:"<<(pMax-pMin)/pSum*windowLength*100<<"%"<<endl;
+	cerr << "pSpread:"<<(pMax-pMin)/pSum*windowLength*100<<"%"<<endl;*/
 
 	double out [windowLength];
 	complex<double>* in = (complex<double>*) fftw_malloc(sizeof(fftw_complex)*(windowLength/2+1));
@@ -129,21 +127,25 @@ vector<double> sound::Sound::synthesize(){
 	for(int hopnum=0; hopnum<hops; hopnum++){
 		pos += hop;
 
-		copy(soundData[hopnum].begin(),soundData[hopnum].end(),in);
+		vector<double> oldPhase(windowLength/2+1,0.);
+		for(int i=0; i<windowLength/2+1; i++){
+			double phase = oldPhase[i] + (double)hop*2*PI*(frequencies[hopnum][i]*windowLength/44100-i);
+			in[i] = polar(magnitudes[hopnum][i],phase);
+			//cerr<<phase;
+		}
 
 		fftw_execute(toTime);
 
 		for(int i=0; i<windowLength; i++){
-			output[pos+i] += out[i]/windowLength*window[i]/pMax;
+			output[pos+i] += out[i]/windowLength*window[i];
 		}
 	}
 	return output;
 }
 
-*/
 void sound::Sound::transpose(double factor){
 	for(int i=0; i<hops; i++){
-		vector<double> nuvofrequencies(windowLength/2+1);
+		vector<double> nuvofrequencies(windowLength/2+1,0);
 		vector<double> nuvomagnitudes(windowLength/2+1,0.);
 		for(int j=0; j<windowLength/2+1; j++){
 			int index = int(j*factor);
@@ -172,19 +174,14 @@ void sound::Sound::transpose(double factor){
 		}
 		hops *= amount;
 	}
-}
-
-void sound::Sound::lowpass(int amount){
-	for(int i=0;i<hops;i++){
-		for(int j=amount;j<windowLength/2+1;j++){
-			soundData[i][j] = 0;
-		}
-	}
-}
-void sound::Sound::highpass(int amount){
-	for(int i=0;i<hops;i++){
-		for(int j=amount;j>0;j--){
-			soundData[i][j] = 0;
-		}
-	}
 }*/
+
+void sound::Sound::lowpass(double frequency){
+	for(int hopnum=0;hopnum<hops;hopnum++){
+		for(int i=0;i<windowLength/2+1;i++){
+			if(frequencies[hopnum][i]>frequency){
+				magnitudes[hopnum][i] =0;
+			}
+		}
+	}
+}

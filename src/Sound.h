@@ -16,7 +16,7 @@ namespace sound{
 			int length();
 
 			void transpose(double);
-			void lowpass(int);
-			void highpass(int);
+			void lowpass(double);
+			void highpass(double);
 	};
 }

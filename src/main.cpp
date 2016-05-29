@@ -25,21 +25,27 @@ vector<double> normalize(vector<double> input){
 
 int main(int args, char** argv){
 	int windowSize = 2048;
-	int overlap = 4;//windowSize/2;
+	int overlap = windowSize/16;
 	vector<double> input = fileio::read(argv[1]);
 	input.erase(input.begin()+input.size(),input.end());
 
 	cerr << "analyzing...";
 	sound::Sound song = sound::Sound(input, overlap, windowSize);
-	cerr << "done\n";
+	cerr << "done.\n";
 
 	cerr << "transposing...";
-	song.transpose(1);
-	cerr << "done\n";
+	song.transpose(1.4);
+	cerr << "done.\n";
 
-	//vector<double> output = song.synthesize();
-	//output.erase(output.begin(),output.begin()+windowSize/4);
-//	sound::Sound song2 = sound::Sound(output,overlap, windowSize);
+	cerr << "filtering...";
+	song.lowpass(20000);
+	cerr << "done.\n";
+
+
+
+	cerr << "synthesizing...";
+	vector<double> output = song.synthesize();
+	cerr << "done.\n";
 
 
 	int show = song.hops/100+1;
@@ -49,27 +55,14 @@ int main(int args, char** argv){
 				i,
 				song.frequencies[i][j],
 				song.magnitudes[i][j]
-					/*(
-						pow(abs(
-						(one-two - two-tri)
-						),2)
-						+
-						pow(abs(
-						((two-tri) - (tri-fou))
-						),2)
-					)/pow(abs(
-						two-tri
-					)*two,2)*/
-
 				);
 		}
 	}
 
-
-	/*if( fileio::save(song2.synthesize(),argv[2])){
+	if(fileio::save(output,argv[2])){
 		cerr<<"Saved\n";
-/	}else{
+	}else{
 		cerr<<"Error: failed to save\n";
 		exit(1);
-	}*/
+	}
 }
