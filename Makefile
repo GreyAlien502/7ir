@@ -23,12 +23,12 @@ SOURCES = $(wildcard $(SDIR)/*.cpp)
 OBJECTS = $(SOURCES:$(SDIR)/%.cpp=$(ODIR)/%.o)
 
 .PHONY: all
-all: $(GRAPH) 
+all: clean $(GRAPH) 
 
 $(ODIR)/%.o: $(SDIR)/%.cpp
 	$(CC) $(FLAGS) -c $< -o $@
 
-$(OUT): $(OBJECTS)
+$(OUT): $(OBJECTS) smbPitchShift.cpp
 	$(CC) $(FLAGS) -o $(OUT) $(OBJECTS)
 
 $(DATA) $(NUVOSOUND): $(OUT) $(SOUND)
