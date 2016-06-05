@@ -175,6 +175,7 @@ void sound::Sound::transpose(vector<double> factors){
 	}
 }
 
+//Appends a sound object to another, probably not very fast or useful 
 void sound::Sound::append(Sound sound2){
 	if( sound2.windowLength != windowLength ||
 		sound2.overlap != overlap){
