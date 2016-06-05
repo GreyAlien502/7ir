@@ -11,7 +11,7 @@
 #include "fileio.h"
 
 using namespace std;
-bool fileio::save(vector<double>sound,char* filename){
+bool fileio::save(vector<double>sound,string filename){
 	std::ofstream file(filename, ios::out|ios::binary|ios::trunc );
 	if(file.is_open()){
 		vector<int16_t> temp(sound.size());
@@ -23,7 +23,7 @@ bool fileio::save(vector<double>sound,char* filename){
 	}
 }
 
-vector<double> fileio::read(const char* filename){
+vector<double> fileio::read(string filename){
 	ifstream file(filename, ios::in|ios::binary|ios::ate );
 	if(file.is_open()){
 		ifstream::pos_type length = file.tellg();
@@ -34,7 +34,7 @@ vector<double> fileio::read(const char* filename){
 		for(unsigned int i=0; i<temp.size(); i++){ output[i]=temp[i]/32767.; }
 		return output;
 	}else{
-		cerr << "ERROR: error reading file.\n";
+		cerr << "ERROR: error reading file '"+filename+"'\n";
 		exit(1);
 	}
 }
