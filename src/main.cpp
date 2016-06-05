@@ -3,14 +3,12 @@
 #include <iostream>
 #include <cmath>
 
-#include "../smbPitchShift.cpp"
-
 #include "Sound.h"
 #include "fileio.h"
 
 using namespace std;
 int samplerate = 44100;//Hz
-double factor = .8;
+double factor = .5;
 
 vector<double> normalize(vector<double> input){
 	double top =0;
@@ -28,7 +26,7 @@ vector<double> normalize(vector<double> input){
 
 int main(int args, char** argv){
 	int windowSize = 2048;
-	int overlap = 64;
+	int overlap = 4;
 	vector<double> input = fileio::read(argv[1]);
 	input.erase(input.begin()+input.size(),input.end());
 
@@ -36,12 +34,22 @@ int main(int args, char** argv){
 	sound::Sound song = sound::Sound(input, overlap, windowSize);
 	cerr << "done.\n";
 
+	vector<double> factors = vector<double>(song.hops);
+	for(int i=0; i<song.hops; i++){
+		double hopfreq = double(song.hop)/samplerate;
+		if(i<song.hops/2){
+			factors[i] = 1+.03*pow(2,cos(i*hopfreq*43))-.03;
+		}else{
+			factors[i] = 1+.03*cos(i*hopfreq*43);
+		}
+	}
+
 	cerr << "transposing...";
-	song.transpose(factor);
+	song.transpose(factors);
 	cerr << "done.\n";
 
 	cerr << "filtering...";
-	song.lowpass(20000);
+	//song.lowpass(2000);
 	cerr << "done.\n";
 
 

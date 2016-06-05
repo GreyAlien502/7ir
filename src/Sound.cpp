@@ -37,18 +37,17 @@ sound::Sound::Sound(vector<double> pcm, int overlapFactor, int sizeOfWindow){
 	overlap = overlapFactor;
 	hop = windowLength/overlap;
 	hops = length/hop;
-	magnitudes = vector<vector<double> > (hops, vector<double>(windowLength/2+1,0.));
-	frequencies = vector<vector<double> > (hops, vector<double>(windowLength/2+1));
+	magnitudes = vector<vector<double> > (hops, vector<double>(windowLength,0.));
+	frequencies = vector<vector<double> > (hops, vector<double>(windowLength));
 
 
 	//variables to use for fft
-	fftw_complex* in = (fftw_complex*) fftw_malloc(sizeof(fftw_complex)*(windowLength));
-	complex<double>* out = (complex<double>*) fftw_malloc(sizeof(fftw_complex)*(windowLength));
-	fftw_plan toFreck = fftw_plan_dft_1d(
+	double* in = (double*) fftw_malloc(sizeof(double)*(windowLength));
+	complex<double>* out = (complex<double>*) fftw_alloc_complex(sizeof(fftw_complex)*(windowLength/2+1));
+	fftw_plan toFreck = fftw_plan_dft_r2c_1d(
 		windowLength,
 		in,
 		reinterpret_cast<fftw_complex*>(out),
-		FFTW_FORWARD,
 		FFTW_MEASURE);
 
 
@@ -59,21 +58,13 @@ sound::Sound::Sound(vector<double> pcm, int overlapFactor, int sizeOfWindow){
 
 		//copy sample in to be analyzed
 		for(int i=0; i<windowLength; i++){
-			in[i][0] = pcm[pos+i]*window[i];
-			in[i][1] = 0;
-		}
-		if(hopnum==0){
-			cerr<<in [22]<<endl;
+			in[i] = pcm[pos+i]*window[i];
 		}
 
 		fftw_execute(toFreck);
 
-		if(hopnum==0){
-			cerr<<out[22].imag()<<endl;
-		}
-
 		//calculate resulting frequencies and magnitudes for(int i=0; i<windowLength/2+1; i++){
-		for(int i=0; i<windowLength/2+1; i++){
+		for(int i=0; i<windowLength; i++){
 			magnitudes[hopnum][i] = abs(out[i]);
 
 			double phase = arg(out[i]);
@@ -118,13 +109,12 @@ vector<double> sound::Sound::synthesize(){
 	}
 	cerr << "pSpread:"<<(pMax-pMin)/pSum*windowLength*100<<"%"<<endl;*/
 
-	complex<double>* in = (complex<double>*) fftw_malloc(sizeof(fftw_complex)*(windowLength));
-	fftw_complex* out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex)*(windowLength));
-	fftw_plan toTime = fftw_plan_dft_1d(
+	complex<double>* in = (complex<double>*) fftw_alloc_complex(sizeof(fftw_complex)*(windowLength/2+1));
+	double* out = (double*) fftw_malloc(sizeof(double)*(windowLength));
+	fftw_plan toTime = fftw_plan_dft_c2r_1d(
 		windowLength,
 		reinterpret_cast<fftw_complex*>(in),
 		out,
-		FFTW_BACKWARD,
 		FFTW_MEASURE);
 
 	int pos = 0;
@@ -140,7 +130,7 @@ vector<double> sound::Sound::synthesize(){
 		fftw_execute(toTime);
 
 		for(int i=0; i<windowLength; i++){
-			output[pos+i] += out[i][0]/windowLength*window[i];
+			output[pos+i] += out[i]/windowLength*window[i];
 		}
 	}
 	fftw_free(in);
@@ -151,6 +141,25 @@ vector<double> sound::Sound::synthesize(){
 
 void sound::Sound::transpose(double factor){
 	for(int hopnum=0; hopnum<hops; hopnum++){
+		vector<double> nuvofrequencies(windowLength,0);
+		vector<double> nuvomagnitudes(windowLength,0.);
+		for(int i=0; i<windowLength; i++){
+			int j = int(i*factor);
+			if(j < windowLength/2+1){
+				nuvofrequencies[j] = frequencies[hopnum][i]*factor;
+				nuvomagnitudes[j] += magnitudes[hopnum][i];
+			}
+		}
+		magnitudes[hopnum] = nuvomagnitudes;
+		frequencies[hopnum] = nuvofrequencies;
+	}
+}
+void sound::Sound::transpose(vector<double> factors){
+	if(factors.size() != hops){
+		throw(invalid_argument("Number of transposition factors does not match sound length."));
+	}
+	for(int hopnum=0; hopnum<hops; hopnum++){
+		double factor = factors[hopnum];
 		vector<double> nuvofrequencies(windowLength,0);
 		vector<double> nuvomagnitudes(windowLength,0.);
 		for(int i=0; i<windowLength; i++){
