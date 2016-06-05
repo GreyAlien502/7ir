@@ -10,7 +10,7 @@
 
 OUT = test
 DATA = data
-SOUND = voicelibrary/_にゃ.wav
+#SOUND = voicelibrary/_にゃ.wav
 NUVOSOUND = output.wav
 GRAPH = graph.png
 PLOT = plot.gpi
@@ -31,8 +31,8 @@ $(ODIR)/%.o: $(SDIR)/%.cpp
 $(OUT): $(OBJECTS) 
 	$(CC) $(FLAGS) -o $(OUT) $(OBJECTS)
 
-$(DATA) $(NUVOSOUND): $(OUT) $(SOUND)
-	./$(OUT) $(SOUND) $(NUVOSOUND) > $(DATA)
+$(DATA) $(NUVOSOUND): $(OUT)# $(SOUND)
+	./$(OUT) > $(DATA)
 
 $(GRAPH): $(DATA) $(PLOT)
 	gnuplot -e 'dada="'$(DATA)'";graf="'$(GRAPH)'"' $(PLOT)

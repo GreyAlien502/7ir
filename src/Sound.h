@@ -10,7 +10,7 @@ namespace sound{
 			std::vector< std::vector<double> > magnitudes;
 			std::vector< std::vector<double> > frequencies;
 
-			Sound(std::vector<double>, int, int);
+			Sound(std::vector<double>, int overlap=16, int windowSize=2048);
 			std::vector<double> synthesize();
 
 			int length();

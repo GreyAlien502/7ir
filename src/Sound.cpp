@@ -36,7 +36,7 @@ sound::Sound::Sound(vector<double> pcm, int overlapFactor, int sizeOfWindow){
 	windowLength = sizeOfWindow;
 	overlap = overlapFactor;
 	hop = windowLength/overlap;
-	hops = length/hop;
+	hops = (length-windowLength)/hop;
 	magnitudes = vector<vector<double> > (hops, vector<double>(windowLength,0.));
 	frequencies = vector<vector<double> > (hops, vector<double>(windowLength));
 
@@ -54,17 +54,19 @@ sound::Sound::Sound(vector<double> pcm, int overlapFactor, int sizeOfWindow){
 	vector<double> oldPhases = vector<double>(windowLength,0);//to calculate phase change
 	int pos = 0;
 	for(int hopnum=0; hopnum<hops; hopnum++){
-		pos += hop;
+		pos = hopnum*hop;
 
-		//copy sample in to be analyzed
+cerr <<'b';
+		//copy sample in to be analyzed 
 		for(int i=0; i<windowLength; i++){
-			in[i] = pcm[pos+i]*window[i];
+			in[i] = pcm[pos+i]*window[i];//multiply by window
 		}
 
 		fftw_execute(toFreck);
+cerr <<"\b ";
 
 		//calculate resulting frequencies and magnitudes for(int i=0; i<windowLength/2+1; i++){
-		for(int i=0; i<windowLength; i++){
+		for(int i=0; i<windowLength/2+1; i++){
 			magnitudes[hopnum][i] = abs(out[i]);
 
 			double phase = arg(out[i]);
@@ -178,13 +180,18 @@ void sound::Sound::transpose(vector<double> factors){
 //Appends a sound object to another, probably not very fast or useful 
 void sound::Sound::append(Sound sound2){
 	if( sound2.windowLength != windowLength ||
-		sound2.overlap != overlap){
-			throw(invalid_argument{"Incompatible Sound objects");
+			sound2.overlap != overlap){
+		throw(invalid_argument("Incompatible Sound objects"));
 	}
+	hops += sound2.hops;
 	magnitudes.insert(
 		magnitudes.end(),
 		sound2.magnitudes.begin(),
-		sound2.magnitudes.begin());
+		sound2.magnitudes.end());
+	frequencies.insert(
+		frequencies.end(),
+		sound2.frequencies.begin(),
+		sound2.frequencies.end());
 }
 
 /*
