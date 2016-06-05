@@ -43,15 +43,24 @@ int main(int args, char** argv){
 			factors[i] = 1+.03*cos(i*hopfreq*43);
 		}
 	}
+	int show = song.hops/100+1;
+	for(int i=0; i<song.hops-4; i+=show){
+		for(int j=0; j<windowSize; j+=3){
+			printf("%f\t%d\t%f\n",
+				song.frequencies[i][j],
+				i,
+				song.magnitudes[i][j]
+				);
+		}
+	}
 
 	cerr << "transposing...";
-	song.transpose(factors);
+	song.transpose(factor);
 	cerr << "done.\n";
 
-	cerr << "filtering...";
-	//song.lowpass(2000);
-	cerr << "done.\n";
-
+	/*cerr << "filtering...";
+	song.lowpass(2000);
+	cerr << "done.\n";*/
 
 
 	cerr << "synthesizing...";
@@ -59,16 +68,6 @@ int main(int args, char** argv){
 	cerr << "done.\n";
 
 
-	int show = song.hops/100+1;
-	for(int i=0; i<song.hops-4; i+=show){
-		for(int j=0; j<song.windowLength/2+1; j+=1){
-			printf("%d\t%f\t%f\n",
-				i,
-				song.frequencies[i][j],
-				song.magnitudes[i][j]
-				);
-		}
-	}
 	output = normalize(output);
 
 	if(fileio::save(output,argv[2])){

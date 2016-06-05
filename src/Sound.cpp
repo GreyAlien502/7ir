@@ -164,6 +164,7 @@ void sound::Sound::transpose(vector<double> factors){
 		vector<double> nuvomagnitudes(windowLength,0.);
 		for(int i=0; i<windowLength; i++){
 			int j = int(i*factor);
+			if(magnitudes[hopnum][i] < .6){j=1;}
 			if(j < windowLength/2+1){
 				nuvofrequencies[j] = frequencies[hopnum][i]*factor;
 				nuvomagnitudes[j] += magnitudes[hopnum][i];
@@ -172,6 +173,17 @@ void sound::Sound::transpose(vector<double> factors){
 		magnitudes[hopnum] = nuvomagnitudes;
 		frequencies[hopnum] = nuvofrequencies;
 	}
+}
+
+void sound::Sound::append(Sound sound2){
+	if( sound2.windowLength != windowLength ||
+		sound2.overlap != overlap){
+			throw(invalid_argument{"Incompatible Sound objects");
+	}
+	magnitudes.insert(
+		magnitudes.end(),
+		sound2.magnitudes.begin(),
+		sound2.magnitudes.begin());
 }
 
 /*

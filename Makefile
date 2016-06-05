@@ -10,7 +10,7 @@
 
 OUT = test
 DATA = data
-SOUND = sounds/kaka.wav
+SOUND = voicelibrary/_にゃ.wav
 NUVOSOUND = output.wav
 GRAPH = graph.png
 PLOT = plot.gpi
@@ -28,7 +28,7 @@ all: clean $(GRAPH)
 $(ODIR)/%.o: $(SDIR)/%.cpp
 	$(CC) $(FLAGS) -c $< -o $@
 
-$(OUT): $(OBJECTS) smbPitchShift.cpp
+$(OUT): $(OBJECTS) 
 	$(CC) $(FLAGS) -o $(OUT) $(OBJECTS)
 
 $(DATA) $(NUVOSOUND): $(OUT) $(SOUND)

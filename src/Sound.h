@@ -19,5 +19,6 @@ namespace sound{
 			void transpose(std::vector<double>);
 			void lowpass(double);
 			void highpass(double);
+			void append(Sound);
 	};
 }
