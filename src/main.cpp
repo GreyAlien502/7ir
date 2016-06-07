@@ -8,7 +8,7 @@
 
 using namespace std;
 int samplerate = 44100;//Hz
-double factor = .5;
+double factor = 1.1;
 
 vector<double> normalize(vector<double> input){
 	double top =0;
@@ -23,15 +23,33 @@ vector<double> normalize(vector<double> input){
 	return input;
 }
 
+sound::Sound notify(string phoneme, int offset, int consonant, int cutoff, int length, int notenum){
+	offset = offset*samplerate/1000;
+	consonant = consonant*samplerate/1000;
+	cutoff = cutoff*samplerate/1000;
+	vector<double> pcm = fileio::read("voicelibrary/"+phoneme+".wav");
+	sound::Sound consPart = sound::Sound( vector<double>(pcm.begin()+offset, pcm.begin()+consonant) );
+	sound::Sound vowlPart = sound::Sound( vector<double>(pcm.begin()+consonant, pcm.end()-cutoff));
+	
+	length = length*samplerate/1000/consPart.hop;
+	vowlPart.setHops(length);
+	consPart.append(vowlPart);
+
+	double freq = 440.0 * pow(2.0, (notenum - 69)/12);
+	consPart.transpose(freq/349.228);
+
+	return sound::Sound(consPart);
+}
+
 
 int main(int args, char** argv){
 	int windowSize = 2048;
 	int overlap = 4;
-	vector<double> input = fileio::read(argv[1]);
-	input.erase(input.begin()+input.size(),input.end());
 
 	cerr << "analyzing...";
-	sound::Sound song = sound::Sound(input, overlap, windowSize);
+	sound::Sound song = notify("わ",35,115,205,800,70);
+	sound::Sound song2 = notify("し",25,117,99,800,70);
+	song.append(song2);
 	cerr << "done.\n";
 
 	vector<double> factors = vector<double>(song.hops);
@@ -70,7 +88,7 @@ int main(int args, char** argv){
 
 	output = normalize(output);
 
-	if(fileio::save(output,argv[2])){
+	if(fileio::save(output,"output.wav")){
 		cerr<<"Saved\n";
 	}else{
 		cerr<<"Error: failed to save\n";

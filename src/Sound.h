@@ -20,5 +20,6 @@ namespace sound{
 			void lowpass(double);
 			void highpass(double);
 			void append(Sound);
+			void setHops(unsigned int);
 	};
 }
