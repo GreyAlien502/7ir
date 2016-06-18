@@ -2,13 +2,40 @@
 #include <stdio.h>
 #include <iostream>
 #include <cmath>
+#include <algorithm> 
 
 #include "Sound.h"
 #include "fileio.h"
 
 using namespace std;
 int samplerate = 44100;//Hz
-double factor = 1.1;
+
+double detectFrequency(vector<double> pcm){
+	/*
+		unsigned int crosses = 0;
+		for(int i;i<length-1;i++){
+			if(pcm[i]<0 && pcm[i+1]>0){
+				crosses ++;
+			}
+		}
+		return double(crosses)/length*samplerate;
+		*/
+	unsigned int length = pcm.size();
+	int minPeriod = floor(samplerate/1046.5);
+	int maxPeriod = floor(samplerate/82.407);
+	vector<double> errors(maxPeriod-minPeriod,0);//deviations from periodicity for each period
+	for(int period=minPeriod; period<maxPeriod; period++){
+		int periods = length/period;//number of periods that fit in the sample
+		for(int periodsIn=0; periodsIn<periods-1; periodsIn++){
+			for(int t=0;t<period;t++){
+				errors[period-minPeriod] += pow( pcm[period*(periodsIn) + t] * pcm[period*(periodsIn+1) + t],2);
+			}
+		}
+		errors[period-minPeriod] /= (periods-1)*period;
+		cout << double(samplerate)/period <<'\t'<< errors[period-minPeriod]<<endl;
+	}
+	return double(samplerate)/(minPeriod+distance( errors.begin(), max_element(errors.begin(),errors.end()) ));
+}
 
 vector<double> normalize(vector<double> input){
 	double top =0;
@@ -30,13 +57,26 @@ sound::Sound notify(string phoneme, int offset, int consonant, int cutoff, int l
 	vector<double> pcm = fileio::read("voicelibrary/"+phoneme+".wav");
 	sound::Sound consPart = sound::Sound( vector<double>(pcm.begin()+offset, pcm.begin()+consonant) );
 	sound::Sound vowlPart = sound::Sound( vector<double>(pcm.begin()+consonant, pcm.end()-cutoff));
+	/*
+		for(int hop=0; hop<vowlPart.hops; hop++){
+			vector<double> hopdat = vowlPart.magnitudes[hop];
+			for(int i=0;i<2;i++){
+				int maxi = distance(hopdat.begin(), max_element(hopdat.begin(),hopdat.end()));
+				//cout<<hop<<'\t'<< vowlPart.frequencies[hop][maxi]<<endl;
+				hopdat[maxi] = -1;
+			}
+		}
+		*/
+	double frequency = detectFrequency(vector<double>(pcm.begin()+consonant, pcm.end()-cutoff));
 	
 	length = length*samplerate/1000/consPart.hop;
 	vowlPart.setHops(length);
 	consPart.append(vowlPart);
 
-	double freq = 440.0 * pow(2.0, (notenum - 69)/12);
-	consPart.transpose(freq/349.228);
+
+	double freq = 440.0 * pow(2.0, (notenum - 69.)/12);
+	cerr<<"freq"<<frequency<<endl;
+	consPart.transpose(freq/frequency);
 
 	return sound::Sound(consPart);
 }
@@ -47,8 +87,18 @@ int main(int args, char** argv){
 	int overlap = 4;
 
 	cerr << "analyzing...";
-	sound::Sound song = notify("わ",35,115,205,800,70);
-	sound::Sound song2 = notify("し",25,117,99,800,70);
+	sound::Sound song = notify("わ",35,115,205,400,60);
+	sound::Sound song2 = notify("し",25,117,99,400,60);
+	song.append(song2);
+	song2 = notify("し",25,117,99,400,61);
+	song.append(song2);
+	song2 = notify("わ",35,115,205,400,63);
+	song.append(song2);
+	song2 = notify("わ",35,115,205,400,63);
+	song.append(song2);
+	song2 = notify("し",25,117,99,400,61);
+	song.append(song2);
+	song2 = notify("わ",35,115,205,400,60);
 	song.append(song2);
 	cerr << "done.\n";
 
@@ -63,20 +113,19 @@ int main(int args, char** argv){
 	}
 	int show = song.hops/100+1;
 	for(int i=0; i<song.hops-4; i+=show){
-		for(int j=0; j<windowSize; j+=3){
-			printf("%f\t%d\t%f\n",
-				song.frequencies[i][j],
-				i,
-				song.magnitudes[i][j]
-				);
+		for(int j=0; j<windowSize; j+=4){
+			/*cout <<
+				i << '\t'<<
+				song.frequencies[i][j] << '\t' <<
+				song.magnitudes[i][j] << endl;*/
 		}
 	}
 
-	cerr << "transposing...";
+	/*cerr << "transposing...";
 	song.transpose(factor);
 	cerr << "done.\n";
 
-	/*cerr << "filtering...";
+	cerr << "filtering...";
 	song.lowpass(2000);
 	cerr << "done.\n";*/
 
@@ -94,7 +143,6 @@ int main(int args, char** argv){
 		cerr<<"Error: failed to save\n";
 		exit(1);
 	}
-	
 
 
 

@@ -23,7 +23,7 @@ SOURCES = $(wildcard $(SDIR)/*.cpp)
 OBJECTS = $(SOURCES:$(SDIR)/%.cpp=$(ODIR)/%.o)
 
 .PHONY: all
-all: clean $(GRAPH) 
+all: $(GRAPH) 
 
 $(ODIR)/%.o: $(SDIR)/%.cpp
 	$(CC) $(FLAGS) -c $< -o $@
