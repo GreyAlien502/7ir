@@ -27,12 +27,13 @@ int sound::Sound::length(){
 }
 
 //make sound based off of input pcm data
-sound::Sound::Sound(vector<double> pcm, int overlapFactor, int sizeOfWindow){
+sound::Sound::Sound(vector<double> pcm, int overlapFactor, int sizeOfWindow, int rate){
 	double PI = 3.14159265358979323846;
 	int length = pcm.size();
 	vector<double> window = hamming(sizeOfWindow);
 
 	//initialize object variables
+	sampleRate = rate;
 	windowLength = sizeOfWindow;
 	overlap = overlapFactor;
 	hop = windowLength/overlap;
@@ -72,7 +73,7 @@ sound::Sound::Sound(vector<double> pcm, int overlapFactor, int sizeOfWindow){
 			oldPhases[i] = phase;
 
 			phaseDeviation = atan2(sin(phaseDeviation),cos(phaseDeviation)); //phaseDeviation - PI*floor(phaseDeviation/PI);
-			frequencies[hopnum][i] = 44100./windowLength*(
+			frequencies[hopnum][i] = double(sampleRate)/windowLength*(
 				i
 				+
 				phaseDeviation*overlap/(2.*PI)
@@ -123,7 +124,7 @@ vector<double> sound::Sound::synthesize(){
 		pos += hop;
 
 		for(int i=0; i<windowLength/2+1; i++){
-			tempPhases[i] += 2.*PI/overlap*frequencies[hopnum][i]*windowLength/44100.;
+			tempPhases[i] += 2.*PI/overlap*frequencies[hopnum][i]*windowLength/double(sampleRate);
 			in[i] = polar(magnitudes[hopnum][i],tempPhases[i]);
 		}
 

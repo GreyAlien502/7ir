@@ -4,7 +4,7 @@
 #include <cmath>
 #include <algorithm> 
 
-#include "Sound.h"
+#include "VoiceLibrary.h"
 #include "fileio.h"
 
 using namespace std;
@@ -70,13 +70,13 @@ sound::Sound notify(string phoneme, int offset, int consonant, int cutoff, int l
 	double frequency = detectFrequency(vector<double>(pcm.begin()+consonant, pcm.end()-cutoff));
 	
 	length = length*samplerate/1000/consPart.hop;
-	vowlPart.setHops(length);
-	consPart.append(vowlPart);
 
 
 	double freq = 440.0 * pow(2.0, (notenum - 69.)/12);
 	cerr<<"freq"<<frequency<<endl;
-	consPart.transpose(freq/frequency);
+	vowlPart.transpose(freq/frequency);
+	vowlPart.setHops(length);
+	consPart.append(vowlPart);
 
 	return sound::Sound(consPart);
 }
@@ -87,20 +87,9 @@ int main(int args, char** argv){
 	int overlap = 4;
 
 	cerr << "analyzing...";
-	sound::Sound song = notify("わ",35,115,205,400,60);
-	sound::Sound song2 = notify("し",25,117,99,400,60);
-	song.append(song2);
-	song2 = notify("し",25,117,99,400,61);
-	song.append(song2);
-	song2 = notify("わ",35,115,205,400,63);
-	song.append(song2);
-	song2 = notify("わ",35,115,205,400,63);
-	song.append(song2);
-	song2 = notify("し",25,117,99,400,61);
-	song.append(song2);
-	song2 = notify("わ",35,115,205,400,60);
-	song.append(song2);
+	voiceLibrary::VoiceLibrary teto = voiceLibrary::VoiceLibrary("teto");
 	cerr << "done.\n";
+	sound::Sound song = teto.getPhone("わ").sample;
 
 	vector<double> factors = vector<double>(song.hops);
 	for(int i=0; i<song.hops; i++){
