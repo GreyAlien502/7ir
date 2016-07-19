@@ -108,7 +108,7 @@ vector<double> sound::Sound::synthesize(){
 		if(pSum>pMax){ pMax=pSum; }
 		if(pSum<pMin){ pMin=pSum; }
 	}
-	cerr << "pSpread:"<<(pMax-pMin)/pSum*windowLength*100<<"%"<<endl;*/
+	*/
 
 	complex<double>* in = (complex<double>*) fftw_alloc_complex(sizeof(fftw_complex)*(windowLength/2+1));
 	double* out = (double*) fftw_malloc(sizeof(double)*(windowLength));
@@ -192,6 +192,34 @@ void sound::Sound::append(Sound sound2){
 		sound2.frequencies.begin(),
 		sound2.frequencies.end());
 }
+
+vector<vector<double> > sound::Sound::lengthenVector(vector<vector<double> > input, int start, int end, int nuvolength){
+	int length = end-start;
+	if(nuvolength<length){
+		input.erase(input.begin()+start+nuvolength, input.begin()+end);
+	}else{
+		input.insert(input.begin()+start, nuvolength - length, vector<double>(windowLength/2+1));
+		for(int i=0; i<nuvolength; i++){
+			int passnum = i/length;
+			int phase = i - passnum;
+			if(passnum%2 !=0){
+				input[start+i] = input[start+phase];
+			}else{
+				input[start+i] = input[start+length-phase];
+			}
+		}
+	}
+	return input;
+}
+void sound::Sound::setLength(int start, int end, int nuvohops){
+	magnitudes = lengthenVector(magnitudes, start, end, nuvohops);
+	frequencies = lengthenVector(frequencies, start, end, nuvohops);
+	
+	hops += nuvohops-(end-start);
+}
+
+	
+
 
 void sound::Sound::setHops(unsigned int nuvohops){
 	vector< vector<double> > nuvomagnitudes = vector<vector<double> > (nuvohops, vector<double>(windowLength/2+1,0.));

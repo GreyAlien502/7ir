@@ -40,3 +40,5 @@ $(GRAPH): $(DATA) $(PLOT)
 .PHONY: clean
 clean:
 	rm -f $(ODIR)/* $(OUT) $(DATA) $(GRAPH) $(NUVOSOUND)
+.PHONY: pls
+pls: clean  all

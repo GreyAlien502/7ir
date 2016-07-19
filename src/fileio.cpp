@@ -8,10 +8,22 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
+#include <stdexcept>
 
 #include "fileio.h"
 
 using namespace std;
+fileio::fileReadError::fileReadError(string name):
+	runtime_error("Could not read file "+name+"."){
+		string filename = name;
+}
+const char* fileio::fileReadError::what() const noexcept{
+	return ("Could not open file "+filename+".").c_str();
+}
+
+
+
+
 bool fileio::save(vector<double>sound,string filename){
 	std::ofstream file(filename, ios::out|ios::binary|ios::trunc );
 	if(file.is_open()){
@@ -35,7 +47,7 @@ vector<double> fileio::read(string filename){
 		for(unsigned int i=0; i<temp.size(); i++){ output[i]=temp[i]/32767.; }
 		return output;
 	}else{
-		cerr << "ERROR: error reading file '"+filename+"'\n";
-		exit(1);
+		fileio::fileReadError errorz = fileio::fileReadError(filename);
+		throw(errorz);
 	}
 }

@@ -4,8 +4,8 @@
 #include <cmath>
 #include <algorithm> 
 
-#include "VoiceLibrary.h"
 #include "fileio.h"
+#include "Song.h"
 
 using namespace std;
 int samplerate = 44100;//Hz
@@ -86,46 +86,20 @@ int main(int args, char** argv){
 	int windowSize = 2048;
 	int overlap = 4;
 
-	cerr << "analyzing...";
-	voiceLibrary::VoiceLibrary teto = voiceLibrary::VoiceLibrary("teto");
+	cerr << "loading voice library...";
+	voiceLibrary::VoiceLibrary teto = voiceLibrary::VoiceLibrary("teto");//"tetoreal/重音テト音声ライブラリー/重音テト単独音");
+	cerr << "...done.\n";
+
+	cerr << "loading song...";
+	song::Song sang = song::Song("kekko.ust");
 	cerr << "done.\n";
-	sound::Sound song = teto.getPhone("わ").sample;
-
-	vector<double> factors = vector<double>(song.hops);
-	for(int i=0; i<song.hops; i++){
-		double hopfreq = double(song.hop)/samplerate;
-		if(i<song.hops/2){
-			factors[i] = 1+.03*pow(2,cos(i*hopfreq*43))-.03;
-		}else{
-			factors[i] = 1+.03*cos(i*hopfreq*43);
-		}
-	}
-	int show = song.hops/100+1;
-	for(int i=0; i<song.hops-4; i+=show){
-		for(int j=0; j<windowSize; j+=4){
-			/*cout <<
-				i << '\t'<<
-				song.frequencies[i][j] << '\t' <<
-				song.magnitudes[i][j] << endl;*/
-		}
-	}
-
-	/*cerr << "transposing...";
-	song.transpose(factor);
-	cerr << "done.\n";
-
-	cerr << "filtering...";
-	song.lowpass(2000);
-	cerr << "done.\n";*/
-
 
 	cerr << "synthesizing...";
-	vector<double> output = song.synthesize();
+	vector<double> output = sang.synthesize(teto);
 	cerr << "done.\n";
 
-
 	output = normalize(output);
-
+	cerr << "writing...";
 	if(fileio::save(output,"output.wav")){
 		cerr<<"Saved\n";
 	}else{
