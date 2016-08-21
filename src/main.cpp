@@ -4,111 +4,27 @@
 #include <cmath>
 #include <algorithm> 
 
-#include "fileio.h"
 #include "Song.h"
+#include "fileio.h"
 
 using namespace std;
-int samplerate = 44100;//Hz
-
-double detectFrequency(vector<double> pcm){
-	/*
-		unsigned int crosses = 0;
-		for(int i;i<length-1;i++){
-			if(pcm[i]<0 && pcm[i+1]>0){
-				crosses ++;
-			}
-		}
-		return double(crosses)/length*samplerate;
-		*/
-	unsigned int length = pcm.size();
-	int minPeriod = floor(samplerate/1046.5);
-	int maxPeriod = floor(samplerate/82.407);
-	vector<double> errors(maxPeriod-minPeriod,0);//deviations from periodicity for each period
-	for(int period=minPeriod; period<maxPeriod; period++){
-		int periods = length/period;//number of periods that fit in the sample
-		for(int periodsIn=0; periodsIn<periods-1; periodsIn++){
-			for(int t=0;t<period;t++){
-				errors[period-minPeriod] += pow( pcm[period*(periodsIn) + t] * pcm[period*(periodsIn+1) + t],2);
-			}
-		}
-		errors[period-minPeriod] /= (periods-1)*period;
-		cout << double(samplerate)/period <<'\t'<< errors[period-minPeriod]<<endl;
-	}
-	return double(samplerate)/(minPeriod+distance( errors.begin(), max_element(errors.begin(),errors.end()) ));
-}
-
-vector<double> normalize(vector<double> input){
-	double top =0;
-	for(unsigned int i=0;i<input.size();i++){
-		if(abs(input[i])>top){
-			top=abs(input[i]);
-		}
-	}
-	for(unsigned int i=0;i<input.size();i++){
-		input[i] /= top;
-	}
-	return input;
-}
-
-sound::Sound notify(string phoneme, int offset, int consonant, int cutoff, int length, int notenum){
-	offset = offset*samplerate/1000;
-	consonant = consonant*samplerate/1000;
-	cutoff = cutoff*samplerate/1000;
-	vector<double> pcm = fileio::read("voicelibrary/"+phoneme+".wav");
-	sound::Sound consPart = sound::Sound( vector<double>(pcm.begin()+offset, pcm.begin()+consonant) );
-	sound::Sound vowlPart = sound::Sound( vector<double>(pcm.begin()+consonant, pcm.end()-cutoff));
-	/*
-		for(int hop=0; hop<vowlPart.hops; hop++){
-			vector<double> hopdat = vowlPart.magnitudes[hop];
-			for(int i=0;i<2;i++){
-				int maxi = distance(hopdat.begin(), max_element(hopdat.begin(),hopdat.end()));
-				//cout<<hop<<'\t'<< vowlPart.frequencies[hop][maxi]<<endl;
-				hopdat[maxi] = -1;
-			}
-		}
-		*/
-	double frequency = detectFrequency(vector<double>(pcm.begin()+consonant, pcm.end()-cutoff));
-	
-	length = length*samplerate/1000/consPart.hop;
-
-
-	double freq = 440.0 * pow(2.0, (notenum - 69.)/12);
-	cerr<<"freq"<<frequency<<endl;
-	vowlPart.transpose(freq/frequency);
-	vowlPart.setHops(length);
-	consPart.append(vowlPart);
-
-	return sound::Sound(consPart);
-}
-
 
 int main(int args, char** argv){
-	int windowSize = 2048;
-	int overlap = 4;
-
 	cerr << "loading voice library...";
-	voiceLibrary::VoiceLibrary teto = voiceLibrary::VoiceLibrary("teto");//"tetoreal/重音テト音声ライブラリー/重音テト単独音");
+	voiceLibrary::VoiceLibrary teto = voiceLibrary::VoiceLibrary(
+		"tetoreal/重音テト音声ライブラリー/重音テト単独音",
+		8, //overlap
+		1024 //windowSize
+	);
 	cerr << "...done.\n";
 
 	cerr << "loading song...";
-	song::Song sang = song::Song("kekko.ust");
+	song::Song sang = song::Song("youka_no_onnna.ust");
 	cerr << "done.\n";
 
 	cerr << "synthesizing...";
-	vector<double> output = sang.synthesize(teto);
+	sang.synthesize(teto, "output.wav");
 	cerr << "done.\n";
-
-	output = normalize(output);
-	cerr << "writing...";
-	if(fileio::save(output,"output.wav")){
-		cerr<<"Saved\n";
-	}else{
-		cerr<<"Error: failed to save\n";
-		exit(1);
-	}
-
-
-
 
 /*QUALITY CONTROL
 	vector<double> outpuu = vector<double> (input.size(),0);

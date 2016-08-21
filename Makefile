@@ -32,6 +32,7 @@ $(OUT): $(OBJECTS)
 	$(CC) $(FLAGS) -o $(OUT) $(OBJECTS)
 
 $(DATA) $(NUVOSOUND): $(OUT)# $(SOUND)
+	rm -f $(NUVOSOUND)
 	./$(OUT) > $(DATA)
 
 $(GRAPH): $(DATA) $(PLOT)

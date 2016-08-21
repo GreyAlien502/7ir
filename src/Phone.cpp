@@ -27,33 +27,40 @@ double detectFrequency(vector<double> pcm,double sampleRate){
 	return double(sampleRate)/(minPeriod+distance( errors.begin(), max_element(errors.begin(),errors.end()) ));
 }
 
-double detectPower(vector<double> pcm){
+double detectEnergy(vector<double> pcm){
 	double energy =0.;
 	for(int i=0; i<pcm.size(); i++){
 		energy += pcm[i]*pcm[i];
 	}
-	return energy/pcm.size();
+	return energy;
 }
 
 
 
 
 voiceLibrary::Phone::Phone(vector<double> pcm,
-				double consonantTime, double preutterTime, double overlapTime,
-				int windowOverlap, int windowSize, int sampleRate){
-	//initialize class variables
-	consonant = floor(consonantTime/1000.*sampleRate/sample.hop);
-	preutter = floor(preutterTime/1000.*sampleRate/sample.hop);
-	overlap = floor(overlapTime/1000.*sampleRate/sample.hop);
-	vector<double> vowelPart = vector<double>(pcm.begin()+consonant*sample.hop, pcm.end());
-	frequency = detectFrequency(vowelPart, sampleRate);
-	cerr<<frequency<<endl;
-	double powerroot = 1;sqrt(detectPower(vowelPart));
+		double consonantTime, double preutterTime, double overlapTime,
+		int windowOverlap, int windowSize, int sampleRate){
 
+	int hop = windowSize/windowOverlap;
+
+	//initialize class variables
+	consonant = floor(consonantTime/1000.*sampleRate/hop);
+	preutter = floor(preutterTime/1000.*sampleRate/hop);
+	overlap = floor(overlapTime/1000.*sampleRate/hop);
+	vector<double> vowelPart = vector<double>(
+		pcm.begin()+consonant*hop,
+		pcm.end()
+	);
+	frequency = detectFrequency(vowelPart, sampleRate);
+	 /*
+	double powerroot = sqrt(detectEnergy(vowelPart))/pcm.size();
+	cerr<<powerroot<<endl;
 	for(int i=0; i<pcm.size(); i++){
 		pcm[i] /= powerroot;
 	}
-	sample = sound::Sound(pcm);
+	//*/
+	sample = sound::Sound(pcm,windowOverlap, windowSize, sampleRate);
 }
 
 sound::Sound voiceLibrary::Phone::note(int notenum, double length){

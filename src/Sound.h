@@ -1,9 +1,12 @@
 #include <vector>
 #include <complex>
 namespace sound{
+	int samplesFromTime(double time);
+	double timeFromSamples(int samples);
+
 	class Sound{
 		private:
-			std::vector<std::vector<double> > lengthenVector(std::vector<std::vector<double> > input, int start, int end, int nuvolength);
+			void lengthenVector(std::vector<std::vector<double> >& input, int start, int end, int nuvolength);
 		public:
 			int sampleRate;
 			int windowLength;
@@ -21,9 +24,5 @@ namespace sound{
 			void transpose(double);
 			void transpose(std::vector<double>);
 			void setLength(int start, int end, int nuvohopnum);
-			void lowpass(double);
-			void highpass(double);
-			void append(Sound);
-			void setHops(unsigned int);
 	};
 }

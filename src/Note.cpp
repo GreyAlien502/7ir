@@ -26,13 +26,14 @@ map<string,string> song::parameters(ifstream& fileobject){
 	}
 }
 
+
 song::Note::Note(ifstream& fileobject){
 	map<string,string> parameterList = song::parameters(fileobject);
 	
 	lyric = parameterList["Lyric"];
 
 	notenum = stoi(parameterList["NoteNum"]);
-	velocity = stod(parameterList["Velocity"]);
+	velocity = stod(parameterList["Velocity"])/100.;
 	delta = stod(parameterList["Delta"]);
 	duration = stod(parameterList["Duration"]);
 	length = stod(parameterList["Length"]);
@@ -57,7 +58,7 @@ sound::Sound song::Note::getSound(voiceLibrary::VoiceLibrary library){
 	output.setLength(phone.consonant, output.hops, length/1000*library.sampleRate/library.hop);
 	for(int hop=0; hop<output.hops; hop++){
 		for(int freq=0; freq<output.magnitudes[0].size(); freq++){
-			output.magnitudes[hop][freq] *= velocity;
+			output.magnitudes[hop][freq] *= velocity/100;
 		}
 	}
 	return output;

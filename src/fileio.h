@@ -2,13 +2,15 @@
 #include <string>
 
 namespace fileio{
-	class fileReadError: public std::runtime_error{
+	class fileOpenError: public std::runtime_error{
 		public:
 			std::string filename;
 
-			fileReadError(std::string name);
+			fileOpenError(std::string name);
 			const char* what() const noexcept;
 	};
-	bool save(std::vector<double>sound,std::string filename);
+
+	bool write(std::vector<double>sound,std::string filename);
+	void append(std::vector<double>sound, std::string filename);
 	std::vector<double> read(std::string filename);
 }

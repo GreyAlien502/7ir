@@ -7,7 +7,7 @@
 namespace voiceLibrary{
 	class Phone{
 		public:
-			int consonant;
+			int consonant; //all in hops
 			int preutter;
 			int overlap;
 			double frequency;

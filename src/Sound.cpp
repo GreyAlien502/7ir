@@ -18,7 +18,11 @@ vector<double> hamming(int windowLength) {
 	return output;
 }
 
-
+/*TODO:finish
+/converts time in seconds to samples.
+int samplesFromTime(double time){
+	return time *
+	*/
 
 
 
@@ -86,6 +90,7 @@ sound::Sound::Sound(vector<double> pcm, int overlapFactor, int sizeOfWindow, int
 	fftw_free(in);
 	fftw_free(out);
 }
+//makes a pcm vector from the sound
 vector<double> sound::Sound::synthesize(){
 	double const PI = 3.1415926535897926323;
 	vector<double> output = vector<double>(length(),0);
@@ -93,22 +98,6 @@ vector<double> sound::Sound::synthesize(){
 		output[i] = 0;
 	}
 	vector<double> window = hamming(windowLength);
-
-	//WINDOW ANALYSIS
-	/*double pTot =0;
-	double pMax =0;
-	double pMin =windowLength*100;
-	double pSum;
-	for(int i=0;i<hop;i++){
-		pSum=0;
-		for(int j=i;j<windowLength;j+=hop){
-			pSum += window[j]*window[j];
-		}
-		pTot +=pSum;
-		if(pSum>pMax){ pMax=pSum; }
-		if(pSum<pMin){ pMin=pSum; }
-	}
-	*/
 
 	complex<double>* in = (complex<double>*) fftw_alloc_complex(sizeof(fftw_complex)*(windowLength/2+1));
 	double* out = (double*) fftw_malloc(sizeof(double)*(windowLength));
@@ -139,6 +128,7 @@ vector<double> sound::Sound::synthesize(){
 	fftw_destroy_plan(toTime);
 	return output;
 }
+
 
 void sound::Sound::transpose(double factor){
 	for(int hopnum=0; hopnum<hops; hopnum++){
@@ -176,79 +166,32 @@ void sound::Sound::transpose(vector<double> factors){
 	}
 }
 
-//Appends a sound object to another, probably not very fast or useful 
-void sound::Sound::append(Sound sound2){
-	if( sound2.windowLength != windowLength ||
-			sound2.overlap != overlap){
-		throw(invalid_argument("Incompatible Sound objects"));
-	}
-	hops += sound2.hops;
-	magnitudes.insert(
-		magnitudes.end(),
-		sound2.magnitudes.begin(),
-		sound2.magnitudes.end());
-	frequencies.insert(
-		frequencies.end(),
-		sound2.frequencies.begin(),
-		sound2.frequencies.end());
-}
 
-vector<vector<double> > sound::Sound::lengthenVector(vector<vector<double> > input, int start, int end, int nuvolength){
+	/*lengthens subsection vector of vector of doubles
+	**adds extra elements or removes elements from start to end indices
+	**to make the distance between them nuvolength.
+	*/
+void sound::Sound::lengthenVector(vector<vector<double> >& input, int start, int end, int nuvolength){
 	int length = end-start;
 	if(nuvolength<length){
 		input.erase(input.begin()+start+nuvolength, input.begin()+end);
 	}else{
-		input.insert(input.begin()+start, nuvolength - length, vector<double>(windowLength/2+1));
-		for(int i=0; i<nuvolength; i++){
-			int passnum = i/length;
-			int phase = i - passnum;
-			if(passnum%2 !=0){
-				input[start+i] = input[start+phase];
-			}else{
-				input[start+i] = input[start+length-phase];
-			}
+		input.insert(input.begin()+start+length, nuvolength - length, vector<double>(windowLength/2+1));
+		for(int i=length; i<nuvolength; i++){
+			int mapTo = length - abs(i % (2*length) - length);
+			input[start+i] = input[start+mapTo];
 		}
 	}
-	return input;
 }
+
+	/*expands the region of the sound between hops
+	**start and end to be size nuvohops,
+	**adding similar sound in the new region
+	**if a new regian must be created.
+	*/
 void sound::Sound::setLength(int start, int end, int nuvohops){
-	magnitudes = lengthenVector(magnitudes, start, end, nuvohops);
-	frequencies = lengthenVector(frequencies, start, end, nuvohops);
+	lengthenVector(magnitudes, start, end, nuvohops);
+	lengthenVector(frequencies, start, end, nuvohops);
 	
 	hops += nuvohops-(end-start);
-}
-
-	
-
-
-void sound::Sound::setHops(unsigned int nuvohops){
-	vector< vector<double> > nuvomagnitudes = vector<vector<double> > (nuvohops, vector<double>(windowLength/2+1,0.));
-	vector< vector<double> > nuvofrequencies = vector<vector<double> > (nuvohops, vector<double>(windowLength/2+1,0.));
-	for(int hopnum=0; hopnum<nuvohops; hopnum++){
-		double virtualOldHopnum = double(hopnum)*nuvohops/hops;
-		int oldHopnum = floor(virtualOldHopnum);
-		double phase = virtualOldHopnum - oldHopnum;
-		if(oldHopnum +1 >= hops){
-			oldHopnum = hops-2;
-			phase = 0;
-		}
-		for(int i=0; i<windowLength/2+1; i++){
-			nuvomagnitudes[hopnum][i] = magnitudes[oldHopnum][i]*(1-phase) + magnitudes[oldHopnum+1][i]*(phase);
-			nuvofrequencies[hopnum][i] = frequencies[oldHopnum][i]*(1-phase) + frequencies[oldHopnum+1][i]*(phase);
-		}
-	}
-	magnitudes = nuvomagnitudes;
-	frequencies = nuvofrequencies;
-	hops = nuvohops;
-}
-	
-
-void sound::Sound::lowpass(double frequency){
-	for(int hopnum=0;hopnum<hops;hopnum++){
-		for(int i=0;i<windowLength/2+1;i++){
-			if(frequencies[hopnum][i]>frequency){
-				magnitudes[hopnum][i] =0;
-			}
-		}
-	}
 }

@@ -35,10 +35,16 @@ voiceLibrary::VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, in
 			string alias = line.substr(start,end-start);
 
 			string settings = filename + line.substr(end+1, line.length());
-			if(find(presets.begin(), presets.end(), settings) != presets.end()){
+			vector<string>::iterator repeat = find(presets.begin(), presets.end(), settings);
+			if(repeat != presets.end()){
+				cerr<<'+';
+				aliases.insert({
+					alias,
+					distance(presets.begin(), repeat)
+				});
 				continue;
 			}
-			cerr<<alias<<"\t";
+			cerr<<"\t"<<alias;
 			presets.push_back(settings);
 
 			start = end + 1;
@@ -70,12 +76,12 @@ voiceLibrary::VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, in
 				voiceLibrary::Phone telephone = voiceLibrary::Phone(
 					pcm,
 					consonant, preutter, overlap,
-					windowOverlap, windowSize, rate);
+					windowOverlap, windowSize, sampleRate);
 
 				phones.push_back(telephone);
 				aliases.insert({alias,i});
 				i++;
-			}catch(fileio::fileReadError& exc){
+			}catch(fileio::fileOpenError& exc){
 				cerr<<filename<<" not found."<<endl;
 			}
 		}
@@ -90,6 +96,5 @@ bool voiceLibrary::VoiceLibrary::hasPhone(string alias){
 }
 
 voiceLibrary::Phone voiceLibrary::VoiceLibrary::getPhone(string alias){
-	cerr<<alias;
 	return phones[aliases.at(alias)];
 }
