@@ -10,12 +10,12 @@
 
 using namespace std;
 
-voiceLibrary::VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, int windowSize, int rate){
+VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, int windowSize, int rate){
 	sampleRate = rate;
 	windowLength = windowSize;
 	hop = windowLength/windowOverlap;
 
-	phones = vector<voiceLibrary::Phone>();
+	phones = vector<Phone>();
 	aliases = map<string,int>();
 	vector<string> presets = vector<string> ();
 
@@ -73,7 +73,7 @@ voiceLibrary::VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, in
 							pcm.begin()+offset/1000.*sampleRate,
 							pcm.end()-cutoff/1000.*sampleRate);
 
-				voiceLibrary::Phone telephone = voiceLibrary::Phone(
+				Phone telephone = Phone(
 					pcm,
 					consonant, preutter, overlap,
 					windowOverlap, windowSize, sampleRate);
@@ -91,10 +91,14 @@ voiceLibrary::VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, in
 	}		
 }
 
-bool voiceLibrary::VoiceLibrary::hasPhone(string alias){
+bool VoiceLibrary::hasPhone(string alias){
 	return aliases.find(alias) != aliases.end();
 }
 
-voiceLibrary::Phone voiceLibrary::VoiceLibrary::getPhone(string alias){
-	return phones[aliases.at(alias)];
+Phone VoiceLibrary::getPhone(Note note){
+	if(hasPhone(note.lyric)){
+		return phones[aliases.at(note.lyric)].adjustPhone(note);
+	}else{
+		return Phone();
+	}
 }

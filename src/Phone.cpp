@@ -22,7 +22,6 @@ double detectFrequency(vector<double> pcm,double sampleRate){
 			}
 		}
 		errors[period-minPeriod] /= (periods-1)*period;
-		cout<<double(sampleRate)/period<<'\t'<<errors[period-minPeriod]<<endl;
 	}
 	return double(sampleRate)/(minPeriod+distance( errors.begin(), max_element(errors.begin(),errors.end()) ));
 }
@@ -37,8 +36,7 @@ double detectEnergy(vector<double> pcm){
 
 
 
-
-voiceLibrary::Phone::Phone(vector<double> pcm,
+Phone::Phone(vector<double> pcm,
 		double consonantTime, double preutterTime, double overlapTime,
 		int windowOverlap, int windowSize, int sampleRate){
 
@@ -60,12 +58,19 @@ voiceLibrary::Phone::Phone(vector<double> pcm,
 		pcm[i] /= powerroot;
 	}
 	//*/
-	sample = sound::Sound(pcm,windowOverlap, windowSize, sampleRate);
+	sample = Sound(pcm,windowOverlap, windowSize, sampleRate);
 }
 
-sound::Sound voiceLibrary::Phone::note(int notenum, double length){
-	sound::Sound output = sample;
-	output.transpose( 440.*pow(2.,(notenum-69.)/12.) / frequency );
-	output.setLength(consonant, sample.hops,length/1000*sample.sampleRate/sample.hop);
+Phone Phone::adjustPhone(Note& note){
+	Phone output = *this;
+	output.sample.transpose( 440.*pow(2.,(note.notenum-69.)/12.) / frequency );
+	output.sample.setLength(output.consonant,
+		output.sample.hops,
+		note.duration/1000.*sample.sampleRate/sample.hop);
+	for(int hopnum=0; hopnum<output.sample.hops; hopnum++){
+		for(int freq=0; freq<output.sample.magnitudes[0].size(); freq++){
+			output.sample.magnitudes[hopnum][freq] *= note.velocity*.1;
+		}
+	}
 	return output;
 }

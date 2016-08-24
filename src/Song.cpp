@@ -8,7 +8,7 @@
 
 using namespace std;
 
-song::Song::Song(string path){
+Song::Song(string path){
 	ifstream ust(path);
 	string line;
 	if(ust.is_open()){
@@ -16,16 +16,15 @@ song::Song::Song(string path){
 			getline(ust, line);
 			cerr<<line<<endl;
 		}
-		map<string,string> parameters = song::parameters(ust);
+		map<string,string> parameterlecian = parameters(ust);
 		
-		tempo = stod(parameters["Tempo"]);
-		projectName = parameters["ProjectName"];
-		outFile = parameters["OutFile"];
-		voiceDir = parameters["VoiceDir"];
+		tempo = stod(parameterlecian["Tempo"]);
+		projectName = parameterlecian["ProjectName"];
+		outFile = parameterlecian["OutFile"];
+		voiceDir = parameterlecian["VoiceDir"];
 
 		getline(ust,line);
 		while(line != "[#TRACKEND]"){
-			cerr<<line<<endl;
 			notes.push_back(Note(ust));
 			getline(ust,line);
 		}
@@ -35,54 +34,53 @@ song::Song::Song(string path){
 	}
 }
 
-void correlate(sound::Sound& sound1, sound::Sound& sound2, int start, int duration){
-		/*if(i+1 < notes.size()){
-			if(notes[i].duration >
-					notes[i+1].delta
-					- notes[i+1].getPhone(library).preutter*hop/sampleRate*1000.){
-				//TODO:smoothe overlapped area
-				cerr<<"ignoring overlap\n";
-			}
-		}*/
+void correlate(Sound& sound1, Sound& sound2, int start, int duration){
+	int corlen = sound1.hops - start;
+	for(int hopindex = 0; hopindex < corlen; hopindex++){
+		double centroid =
+			  sound1.getCentroid(start+hopindex) * double(hopindex)/corlen
+			+ sound2.getCentroid(hopindex) * (1 - double(hopindex)/corlen);
+		sound1.setCentroid(hopindex, centroid);
+		//sound2.setCentroid(hopindex, centroid);
+	}
 }
 
-void song::Song::synthesize(voiceLibrary::VoiceLibrary library, string filename){
+void Song::synthesize(VoiceLibrary library, string filename){
 	int sampleRate = library.sampleRate;
 	int hop = library.hop;
 	
 	if(notes.size()==1){
 		cerr<<notes[0].lyric<<endl;
 		fileio::write(
-			notes[0].getSound(library).synthesize(),
+			library.getPhone(notes[0]).sample.synthesize(),
 			filename
 		);
 	}else{
 		vector<double> prepcm = vector<double>();
-		sound::Sound sound = notes[0].getSound(library);
-		sound::Sound postsound;
+		Phone actuaphone = library.getPhone(notes[0]);
+		Phone postphone;
 
 
 		for(int i=0; i<notes.size(); i++){
-			cerr<<notes[i].lyric<<endl;
+			cerr<<notes[i].lyric;
 			if(i<notes.size()-1){
-				cerr<<"Ni+1.sound\n";
-				postsound = notes[i+1].getSound(library);
+				//Ni+1.sound
+				postphone = library.getPhone(notes[i+1]);
 				
-				/*cerr<<"correlate Ni, Ni+1\n";
+				/*correlate Ni, Ni+1
 				correlate(
-					sound,
-					postsound,
-					notes[i].getPhone(library).preutter
-						+ notes[i+1].delta
-						- notes[i+1].getPhone(library).preutter,
-					notes[i+1].getPhone(library).preutter
-				);*/
+					actuaphone
+					postphone,
+					postphane.delta/1000.*sampleRate/hop
+						+actuaphone.preutter
+						-postphone.preutter,
+				);//*/
 			}
 
-			cerr<<"Ni.synth\n";
-			vector<double> pcm = sound.synthesize();
+			//Ni.synth
+			vector<double> pcm = actuaphone.sample.synthesize();
 
-			cerr<<"add Ni-1, Ni\n";
+			//add Ni-1, Ni
 			if(prepcm.size() < pcm.size()){//expand prepcm if needed
 				prepcm.resize(pcm.size(), 0);
 			}
@@ -92,16 +90,16 @@ void song::Song::synthesize(voiceLibrary::VoiceLibrary library, string filename)
 			}
 
 
-			cerr<<"write part Ni-1,i\n";
+			//write part Ni-1,i
 			int writeLength;
 			if(i<notes.size()-1){
 				writeLength = 
-					notes[i].getPhone(library).preutter
+					actuaphone.preutter
 					+ notes[i+1].delta/1000.*sampleRate/hop
-					- notes[i+1].getPhone(library).preutter;
+					- postphone.preutter;
 			}else{
 				writeLength = 
-					notes[i].getPhone(library).preutter
+					actuaphone.preutter
 					+ notes[i].duration/1000.*sampleRate/hop;
 			}
 			fileio::append(
@@ -112,7 +110,7 @@ void song::Song::synthesize(voiceLibrary::VoiceLibrary library, string filename)
 				filename
 			);
 
-			cerr<<"SHIFT\n";
+			//SHIFT
 			if(hop*(writeLength)<prepcm.size()){
 				prepcm = vector<double>(
 					prepcm.begin() + hop*(writeLength),
@@ -121,7 +119,7 @@ void song::Song::synthesize(voiceLibrary::VoiceLibrary library, string filename)
 			}else{
 				prepcm=vector<double>();
 			}
-			sound = postsound;
+			actuaphone = postphone;
 		}
 	}
 }

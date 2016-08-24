@@ -11,15 +11,33 @@ using namespace std;
 
 int main(int args, char** argv){
 	cerr << "loading voice library...";
-	voiceLibrary::VoiceLibrary teto = voiceLibrary::VoiceLibrary(
+	VoiceLibrary teto = VoiceLibrary(
 		"tetoreal/重音テト音声ライブラリー/重音テト単独音",
-		8, //overlap
+		16, //overlap
 		1024 //windowSize
 	);
 	cerr << "...done.\n";
 
+/*
+	sound::Sound nge = teto.getPhone("ク").sample;
+	for(int i=0; i<nge.hops; i++){
+		cout<< nge.getCentroid(i)<<endl;
+		nge.setCentroid(
+			i,
+			+(2000-4500)/nge.hops*i + 4500.
+		);
+	}
+
+	vector<double> pcm = nge.synthesize();
+	for(int i=0; i<pcm.size(); i++){
+		pcm[i] *= .3;
+	}
+	fileio::write(pcm,"output.wav");
+*/
+
+
 	cerr << "loading song...";
-	song::Song sang = song::Song("youka_no_onnna.ust");
+	Song sang = Song("kek.ust");
 	cerr << "done.\n";
 
 	cerr << "synthesizing...";

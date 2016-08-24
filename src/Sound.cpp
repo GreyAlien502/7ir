@@ -26,12 +26,12 @@ int samplesFromTime(double time){
 
 
 
-int sound::Sound::length(){
+int Sound::length(){
 	return hops*hop+windowLength;
 }
 
 //make sound based off of input pcm data
-sound::Sound::Sound(vector<double> pcm, int overlapFactor, int sizeOfWindow, int rate){
+Sound::Sound(vector<double> pcm, int overlapFactor, int sizeOfWindow, int rate){
 	double PI = 3.14159265358979323846;
 	int length = pcm.size();
 	vector<double> window = hamming(sizeOfWindow);
@@ -91,7 +91,7 @@ sound::Sound::Sound(vector<double> pcm, int overlapFactor, int sizeOfWindow, int
 	fftw_free(out);
 }
 //makes a pcm vector from the sound
-vector<double> sound::Sound::synthesize(){
+vector<double> Sound::synthesize(){
 	double const PI = 3.1415926535897926323;
 	vector<double> output = vector<double>(length(),0);
 	for(unsigned int i=0;i>output.size();i++){
@@ -130,7 +130,7 @@ vector<double> sound::Sound::synthesize(){
 }
 
 
-void sound::Sound::transpose(double factor){
+void Sound::transpose(double factor){
 	for(int hopnum=0; hopnum<hops; hopnum++){
 		vector<double> nuvofrequencies(windowLength/2+1,0);
 		vector<double> nuvomagnitudes(windowLength/2+1,0.);
@@ -145,7 +145,7 @@ void sound::Sound::transpose(double factor){
 		frequencies[hopnum] = nuvofrequencies;
 	}
 }
-void sound::Sound::transpose(vector<double> factors){
+void Sound::transpose(vector<double> factors){
 	if(factors.size() != hops){
 		throw(invalid_argument("Number of transposition factors does not match sound length."));
 	}
@@ -171,7 +171,7 @@ void sound::Sound::transpose(vector<double> factors){
 	**adds extra elements or removes elements from start to end indices
 	**to make the distance between them nuvolength.
 	*/
-void sound::Sound::lengthenVector(vector<vector<double> >& input, int start, int end, int nuvolength){
+void Sound::lengthenVector(vector<vector<double> >& input, int start, int end, int nuvolength){
 	int length = end-start;
 	if(nuvolength<length){
 		input.erase(input.begin()+start+nuvolength, input.begin()+end);
@@ -179,6 +179,7 @@ void sound::Sound::lengthenVector(vector<vector<double> >& input, int start, int
 		input.insert(input.begin()+start+length, nuvolength - length, vector<double>(windowLength/2+1));
 		for(int i=length; i<nuvolength; i++){
 			int mapTo = length - abs(i % (2*length) - length);
+			//int mapTo = length*sin(length - abs(i % (2*length) - length);
 			input[start+i] = input[start+mapTo];
 		}
 	}
@@ -189,9 +190,39 @@ void sound::Sound::lengthenVector(vector<vector<double> >& input, int start, int
 	**adding similar sound in the new region
 	**if a new regian must be created.
 	*/
-void sound::Sound::setLength(int start, int end, int nuvohops){
+void Sound::setLength(int start, int end, int nuvohops){
 	lengthenVector(magnitudes, start, end, nuvohops);
 	lengthenVector(frequencies, start, end, nuvohops);
 	
 	hops += nuvohops-(end-start);
+}
+
+double Sound::getCentroid(int hopnum){
+	double total = 0;
+	double magnitude = 0;
+	for(int i=0; i<windowLength/2+1; i++){
+		total += magnitudes[hopnum][i] * frequencies[hopnum][i];
+		magnitude += magnitudes[hopnum][i];
+	}
+	return total/magnitude;
+}
+
+void Sound::setCentroid(int hopnum, double centroid){
+	double premagnitude = 0;
+	double postmagnitude = 0;
+	for(int i=0; i<windowLength/2+1; i++){
+		if(frequencies[hopnum][i]<centroid){
+			premagnitude += magnitudes[hopnum][i];
+		}else{
+			postmagnitude += magnitudes[hopnum][i];
+		}
+	}
+
+	for(int i=0; i<windowLength/2+1; i++){
+		if(frequencies[hopnum][i]<centroid){
+			magnitudes[hopnum][i] *= (premagnitude+postmagnitude)/premagnitude*.1;
+		}else{
+			magnitudes[hopnum][i] *= (premagnitude+postmagnitude)/postmagnitude*.1;
+		}
+	}
 }
