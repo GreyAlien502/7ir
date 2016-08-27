@@ -4,7 +4,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "Song.h"
+#include "Note.h"
 
 using namespace std;
 
