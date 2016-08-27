@@ -67,10 +67,6 @@ Phone Phone::adjustPhone(Note& note){
 	output.sample.setLength(output.consonant,
 		output.sample.hops,
 		note.duration/1000.*sample.sampleRate/sample.hop);
-	for(int hopnum=0; hopnum<output.sample.hops; hopnum++){
-		for(int freq=0; freq<output.sample.magnitudes[0].size(); freq++){
-			output.sample.magnitudes[hopnum][freq] *= note.velocity*.1;
-		}
-	}
+	output.sample.amplify(note.velocity*.1);
 	return output;
 }

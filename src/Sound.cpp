@@ -166,6 +166,14 @@ void Sound::transpose(vector<double> factors){
 	}
 }
 
+void Sound::amplify(double factor){
+	for(int hopnum=0; hopnum<hops; hopnum++){
+		for(int freq=0; freq<frequencies[0].size(); freq++){
+			magnitudes[hopnum][freq] *= factor;
+		}
+	}
+}
+
 
 	/*lengthens subsection vector of vector of doubles
 	**adds extra elements or removes elements from start to end indices
