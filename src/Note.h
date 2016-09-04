@@ -1,9 +1,5 @@
 #include <map>
 #include <string>
-#include <iostream>
-#include <fstream>
-
-std::map<std::string,std::string> parameters(std::ifstream& file);
 
 class Note{
 	public:
@@ -14,5 +10,11 @@ class Note{
 		double duration;//in ms
 		double length;//in ms
 
-		Note(std::ifstream& file);
+		Note(std::string lyric, int notenum, double velocity, double delta, double duration, double length):
+			lyric(lyric),
+			notenum(notenum),
+			velocity(velocity),
+			delta(delta),
+			duration(duration),
+			length(length){}
 };

@@ -8,26 +8,11 @@
 
 using namespace std;
 
-map<string,string> parameters(ifstream& fileobject){
-	map<string,string> output = map<string,string>();
-
-	long lastPosition = fileobject.tellg();
-	for(string line; getline(fileobject, line);){
-		if(line[0] == '[' & line[line.length()-1] == ']'){
-			fileobject.seekg(lastPosition);
-			return output;
-		}
-		if(line[0] == '#'){cerr<<line;continue;}
-
-		string::size_type equals = line.find('=');
-		if(equals == string::npos){cerr<<"unused line in file.\n";continue;}
-		output.insert({line.substr(0,equals), line.substr(equals+1)});
-		lastPosition = fileobject.tellg();
-	}
+/*
+Note::Note(string lyric, int notenum, double delta, double duration, double length){
 }
 
-
-Note::Note(ifstream& fileobject){
+Note::Note(string lyric, int notenum, double delta, double duration, double length){
 	map<string,string> parameterList = parameters(fileobject);
 	
 	lyric = parameterList["Lyric"];
@@ -39,7 +24,6 @@ Note::Note(ifstream& fileobject){
 	length = stod(parameterList["Length"]);
 }
 
-/*
 Phone Note::getPhone(VoiceLibrary library){
 	if(!library.hasPhone(lyric)){
 		cerr<<lyric<<" not found.\n";

@@ -10,15 +10,8 @@
 using namespace std;
 
 int main(int args, char** argv){
-	cerr << "loading voice library...";
-	VoiceLibrary teto = VoiceLibrary(
-		"tetoreal/重音テト音声ライブラリー/重音テト単独音",
-		16, //overlap
-		1024 //windowSize
-	);
-	cerr << "...done.\n";
-
 /*
+
 	sound::Sound nge = teto.getPhone("ク").sample;
 	for(int i=0; i<nge.hops; i++){
 		cout<< nge.getCentroid(i)<<endl;
@@ -37,8 +30,16 @@ int main(int args, char** argv){
 
 
 	cerr << "loading song...";
-	Song sang = Song("kek.ust");
+	Song sang = Song("worldismine.ust");
 	cerr << "done.\n";
+//*her
+	cerr << "loading voice library...";
+	VoiceLibrary teto = VoiceLibrary(
+		"teto",
+		4, //overlap
+		1024 //windowSize
+	);
+	cerr << "...done.\n";
 
 	cerr << "synthesizing...";
 	sang.synthesize(teto, "output.wav");

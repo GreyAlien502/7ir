@@ -1,7 +1,11 @@
 #include <vector>
 #include <string>
+#include <iostream>
+#include <fstream>
 
 #include "VoiceLibrary.h"
+
+std::map<std::string,std::string> parameters(std::ifstream& file);
 
 class Song{
 	public:

@@ -16,4 +16,7 @@ class Phone{
 			double consonantTime=0, double preutterTime=0, double overlapTime=0,
 			int windowOverlap=16, int windowSize=2048, int sampleRate=44100);
 		Phone adjustPhone(Note& note);
+		double getConsonant();
+		double getPreutter();
+		double getOverlap();
 };

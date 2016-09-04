@@ -70,3 +70,7 @@ Phone Phone::adjustPhone(Note& note){
 	output.sample.amplify(note.velocity*.1);
 	return output;
 }
+
+double Phone::getConsonant(){ return sample.hop*consonant; }
+double Phone::getPreutter(){ return sample.hop*preutter; }
+double Phone::getOverlap(){ return sample.hop*overlap; }
