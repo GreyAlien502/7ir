@@ -1,0 +1,13 @@
+Y	UST version 2.0
+Y	Velocity
+Y	Note Num
+Y	Lyric
+Y	Timing
+Y	UST version 1
+N	Modulation
+N	Pitch Shift
+N	Envelope
+N	Boundary Smoothing
+N	Complex Voice Libraries
+N	Tempo
+?	CVC Voice Libraries
