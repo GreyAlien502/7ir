@@ -43,14 +43,15 @@ Phone::Phone(vector<double> pcm,
 	int hop = windowSize/windowOverlap;
 
 	//initialize class variables
-	consonant = floor(consonantTime/1000.*sampleRate/hop);
-	preutter = floor(preutterTime/1000.*sampleRate/hop);
-	overlap = floor(overlapTime/1000.*sampleRate/hop);
+	consonant = floor(consonantTime*sampleRate/hop);
+	preutter = floor(preutterTime*sampleRate/hop);
+	overlap = floor(overlapTime*sampleRate/hop);
 	vector<double> vowelPart = vector<double>(
 		pcm.begin()+consonant*hop,
 		pcm.end()
 	);
 	frequency = detectFrequency(vowelPart, sampleRate);
+	cerr<<frequency;
 	 /*
 	double powerroot = sqrt(detectEnergy(vowelPart))/pcm.size();
 	cerr<<powerroot<<endl;
@@ -63,11 +64,30 @@ Phone::Phone(vector<double> pcm,
 
 Phone Phone::adjustPhone(Note& note){
 	Phone output = *this;
+	output.sample.printFreqs(
+		output.consonant,
+		output.sample.hops
+	);
+	double centroid = output.sample.getCentroid(
+		output.consonant,
+		output.sample.hops
+	);
 	output.sample.transpose( 440.*pow(2.,(note.notenum-69.)/12.) / frequency );
-	output.sample.setLength(output.consonant,
+	output.sample.setCentroid(
+		centroid*2,
+		output.consonant,
+		output.sample.hops
+	);
+	cerr<< ',';output.sample.getCentroid(
+		output.consonant,
+		output.sample.hops
+	);
+	output.sample.setLength(
+		output.consonant,
 		output.sample.hops,
-		note.duration/1000.*sample.sampleRate/sample.hop);
-	output.sample.amplify(note.velocity*.1);
+		note.duration*sample.sampleRate/sample.hop
+	);
+	output.sample.amplify(note.velocity*1);
 	return output;
 }
 

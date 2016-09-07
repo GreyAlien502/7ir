@@ -37,7 +37,6 @@ VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, int windowSize, 
 			string settings = filename + line.substr(end+1, line.length());
 			vector<string>::iterator repeat = find(presets.begin(), presets.end(), settings);
 			if(repeat != presets.end()){
-				cerr<<'+';
 				aliases.insert({
 					alias,
 					distance(presets.begin(), repeat)
@@ -49,29 +48,29 @@ VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, int windowSize, 
 
 			start = end + 1;
 			end = line.find(',', start);
-			double offset = stod(line.substr(start,end-start));
+			double offset = stod(line.substr(start,end-start))/1000.;
 
 			start = end + 1;
 			end = line.find(',', start);
-			double consonant = stod(line.substr(start,end-start));
+			double consonant = stod(line.substr(start,end-start))/1000.;
 
 			start = end + 1;
 			end = line.find(',', start);
-			double cutoff = stod(line.substr(start,end-start));
+			double cutoff = stod(line.substr(start,end-start))/1000.;
 
 			start = end + 1;
 			end = line.find(',', start);
-			double preutter = stod(line.substr(start,end-start));
+			double preutter = stod(line.substr(start,end-start))/1000.;
 
 			start = end + 1;
 			end = line.length();
-			double overlap = stod(line.substr(start,end-start));
+			double overlap = stod(line.substr(start,end-start))/1000.;
 
 			try{
 				vector<double> pcm = fileio::read(path+'/'+filename);
 				pcm = vector<double>(
-							pcm.begin()+offset/1000.*sampleRate,
-							pcm.end()-cutoff/1000.*sampleRate);
+							pcm.begin()+offset*sampleRate,
+							pcm.end()-cutoff*sampleRate);
 
 				Phone telephone = Phone(
 					pcm,
@@ -97,7 +96,8 @@ bool VoiceLibrary::hasPhone(string alias){
 
 Phone VoiceLibrary::getPhone(Note note){
 	if(hasPhone(note.lyric)){
-		return phones[aliases.at(note.lyric)].adjustPhone(note);
+		Phone phony= phones[aliases.at(note.lyric)].adjustPhone(note);
+		return phony;
 	}else{
 		return Phone();
 	}

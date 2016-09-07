@@ -30,7 +30,7 @@ int main(int args, char** argv){
 
 
 	cerr << "loading song...";
-	Song sang = Song("worldismine.ust");
+	Song sang = Song("kekko.ust");
 	cerr << "done.\n";
 //*her
 	cerr << "loading voice library...";

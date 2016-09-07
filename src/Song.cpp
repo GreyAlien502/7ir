@@ -49,7 +49,7 @@ Song::Song(string path){
 			map<string,string> parameterList = parameters(ust);
 			
 			string lyric = parameterList["Lyric"];
-			double length = stod(parameterList["Length"]);
+			double length = stod(parameterList["Length"])/1000.;
 			double notenum;
 			double velocity;
 			double duration;
@@ -63,8 +63,8 @@ Song::Song(string path){
 					velocity = 1;
 				}else{
 					velocity = stod(parameterList["Velocity"])/100.;
-					delta = stod(parameterList["Delta"]);
-					duration = stod(parameterList["Duration"]);
+					delta = stod(parameterList["Delta"])/1000.;
+					duration = stod(parameterList["Duration"])/1000.;
 				}
 
 				cerr<<lyric;
@@ -96,6 +96,7 @@ Song::Song(string path){
 
 void correlate(Sound& sound1, Sound& sound2, int start, int duration){
 	int corlen = sound1.hops - start;
+	/*
 	for(int hopindex = 0; hopindex < corlen; hopindex++){
 		double centroid =
 			  sound1.getCentroid(start+hopindex) * double(hopindex)/corlen
@@ -103,6 +104,7 @@ void correlate(Sound& sound1, Sound& sound2, int start, int duration){
 		sound1.setCentroid(hopindex, centroid);
 		//sound2.setCentroid(hopindex, centroid);
 	}
+	*/
 }
 
 void Song::synthesize(VoiceLibrary library, string filename){
@@ -121,7 +123,7 @@ void Song::synthesize(VoiceLibrary library, string filename){
 
 
 		for(int i=0; i<notes.size(); i++){
-			cerr<<notes[i].lyric<<notes[i].delta<<','<<notes[i].duration<<','<<notes[i].length<<endl;
+			cerr<<notes[i].lyric;
 			if(i<notes.size()-1){
 				//Ni+1.sound
 				postphone = library.getPhone(notes[i+1]);
@@ -130,7 +132,7 @@ void Song::synthesize(VoiceLibrary library, string filename){
 				correlate(
 					actuaphone
 					postphone,
-					postphane.delta/1000.*sampleRate/
+					postphane.delta*sampleRate/
 						+actuaphone.preutter
 						-postphone.preutter,
 				);//*/
@@ -153,13 +155,13 @@ void Song::synthesize(VoiceLibrary library, string filename){
 			int writeLength;
 			if(i<notes.size()-1){
 				writeLength = 
-					notes[i+1].delta/1000.*sampleRate
+					notes[i+1].delta*sampleRate
 					+ actuaphone.getPreutter()
 					- postphone.getPreutter();
 			}else{
 				writeLength = 
 					actuaphone.getPreutter();
-					+ notes[i].duration/1000.*sampleRate;
+					+ notes[i].duration*sampleRate;
 			}
 			if(prepcm.size() < writeLength){
 				prepcm.resize(writeLength, 0);

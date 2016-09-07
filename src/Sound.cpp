@@ -18,12 +18,6 @@ vector<double> hamming(int windowLength) {
 	return output;
 }
 
-/*TODO:finish
-/converts time in seconds to samples.
-int samplesFromTime(double time){
-	return time *
-	*/
-
 
 
 int Sound::length(){
@@ -205,32 +199,61 @@ void Sound::setLength(int start, int end, int nuvohops){
 	hops += nuvohops-(end-start);
 }
 
-double Sound::getCentroid(int hopnum){
+double Sound::getCentroid(int hopstart, int hopend){
 	double total = 0;
 	double magnitude = 0;
-	for(int i=0; i<windowLength/2+1; i++){
-		total += magnitudes[hopnum][i] * frequencies[hopnum][i];
-		magnitude += magnitudes[hopnum][i];
+	for(int hopnum=hopstart; hopnum<hopend; hopnum++){
+		for(int i=0; i<windowLength/2+1; i++){
+			total += magnitudes[hopnum][i] * frequencies[hopnum][i];
+			magnitude += magnitudes[hopnum][i];
+		}
 	}
+	cerr<< total/magnitude;
 	return total/magnitude;
 }
 
-void Sound::setCentroid(int hopnum, double centroid){
-	double premagnitude = 0;
-	double postmagnitude = 0;
-	for(int i=0; i<windowLength/2+1; i++){
-		if(frequencies[hopnum][i]<centroid){
-			premagnitude += magnitudes[hopnum][i];
-		}else{
-			postmagnitude += magnitudes[hopnum][i];
+void Sound::setCentroid(double centroid, int hopstart, int hopend){
+	double lowmagnitude = 0;
+	double lowtotal = 0;
+	double highmagnitude = 0;
+	double hightotal = 0;
+	for(int hopnum=hopstart;hopnum<hopend;hopnum++){
+		for(int i=0; i<windowLength/2+1; i++){
+			if(frequencies[hopnum][i]<centroid){
+				lowtotal += magnitudes[hopnum][i] * frequencies[hopnum][i];
+				lowmagnitude += magnitudes[hopnum][i];
+			}else{
+				hightotal += magnitudes[hopnum][i] * frequencies[hopnum][i];
+				highmagnitude += magnitudes[hopnum][i];
+			}
 		}
 	}
 
-	for(int i=0; i<windowLength/2+1; i++){
-		if(frequencies[hopnum][i]<centroid){
-			magnitudes[hopnum][i] *= (premagnitude+postmagnitude)/premagnitude*.1;
-		}else{
-			magnitudes[hopnum][i] *= (premagnitude+postmagnitude)/postmagnitude*.1;
+	double lowcenter = lowtotal/lowmagnitude;
+	double highcenter = hightotal/highmagnitude;
+	double lowratio = (lowmagnitude+highmagnitude) * (centroid-lowcenter)/
+			(lowmagnitude * (lowcenter - highcenter) );
+	double highratio = (lowmagnitude+highmagnitude) * (centroid-lowcenter)/
+			(lowmagnitude * (lowcenter - highcenter) );
+
+
+	for(int hopnum=0;hopnum<hops;hopnum++){
+		for(int i=0; i<windowLength/2+1; i++){
+			if(frequencies[hopnum][i]<centroid){
+				//magnitudes[hopnum][i] *= lowratio;
+			}else{
+				//magnitudes[hopnum][i] *= highratio;
+			}
 		}
 	}
 }
+
+void Sound::printFreqs(int hopstart, int hopend){
+	for(int hopnum=hopstart; hopnum<hopend; hopnum++){
+		for(int freqnum=0; freqnum<windowLength/2+1; freqnum++){
+			cout << frequencies[hopnum][freqnum]<<','<<magnitudes[hopnum][freqnum]<<endl;
+		}
+	}
+}
+
+

@@ -26,6 +26,7 @@ class Sound{
 		void amplify(double factor);
 		void setLength(int start, int end, int nuvohopnum);
 
-		double getCentroid(int hopnum);
-		void setCentroid(int hopnum, double centroid);
+		double getCentroid(int hopstart, int hopend);
+		void setCentroid(double centroid, int hopstart, int hopend);
+		void printFreqs(int hopstart, int hopend);
 };
