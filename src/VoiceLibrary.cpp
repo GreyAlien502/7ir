@@ -81,7 +81,7 @@ VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, int windowSize, 
 				aliases.insert({alias,i});
 				i++;
 			}catch(fileio::fileOpenError& exc){
-				cerr<<filename<<" not found."<<endl;
+				cerr<<endl<<filename<<" not found."<<endl;
 			}
 		}
 	}else{

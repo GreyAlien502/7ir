@@ -10,39 +10,39 @@
 using namespace std;
 
 int main(int args, char** argv){
-/*
+	/*
 
-	sound::Sound nge = teto.getPhone("ク").sample;
-	for(int i=0; i<nge.hops; i++){
-		cout<< nge.getCentroid(i)<<endl;
-		nge.setCentroid(
-			i,
-			+(2000-4500)/nge.hops*i + 4500.
-		);
-	}
+	   sound::Sound nge = teto.getPhone("ク").sample;
+	   for(int i=0; i<nge.hops; i++){
+	   cout<< nge.getCentroid(i)<<endl;
+	   nge.setCentroid(
+	   i,
+	   +(2000-4500)/nge.hops*i + 4500.
+	   );
+	   }
 
-	vector<double> pcm = nge.synthesize();
-	for(int i=0; i<pcm.size(); i++){
-		pcm[i] *= .3;
-	}
-	fileio::write(pcm,"output.wav");
+	   vector<double> pcm = nge.synthesize();
+	   for(int i=0; i<pcm.size(); i++){
+	   pcm[i] *= .3;
+	   }
+	   fileio::write(pcm,"output.wav");
 */
 
 
 	cerr << "loading song...";
 	Song sang = Song("kekko.ust");
 	cerr << "done.\n";
-//*her
+
 	cerr << "loading voice library...";
-	VoiceLibrary teto = VoiceLibrary(
-		"teto",
+	VoiceLibrary library = VoiceLibrary(
+		"kaikai",
 		4, //overlap
 		1024 //windowSize
 	);
 	cerr << "...done.\n";
 
 	cerr << "synthesizing...";
-	sang.synthesize(teto, "output.wav");
+	sang.synthesize(library, "output.wav");
 	cerr << "done.\n";
 
 /*QUALITY CONTROL

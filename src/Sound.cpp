@@ -208,7 +208,6 @@ double Sound::getCentroid(int hopstart, int hopend){
 			magnitude += magnitudes[hopnum][i];
 		}
 	}
-	cerr<< total/magnitude;
 	return total/magnitude;
 }
 
