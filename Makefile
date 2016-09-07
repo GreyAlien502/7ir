@@ -8,7 +8,7 @@
 #fileio:
 #	g++ -Wall -Wextra -c src/fileio.cpp
 
-OUT = test
+OUT = re8 
 DATA = data
 #SOUND = voicelibrary/_にゃ.wav
 NUVOSOUND = output.wav
