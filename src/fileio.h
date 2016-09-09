@@ -4,9 +4,7 @@
 namespace fileio{
 	class fileOpenError: public std::runtime_error{
 		public:
-
 			fileOpenError();
-			const char* what() const noexcept;
 	};
 
 	bool write(std::vector<double>sound,std::string filename);

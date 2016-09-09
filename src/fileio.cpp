@@ -16,9 +16,6 @@ using namespace std;
 fileio::fileOpenError::fileOpenError():
 	runtime_error("Could not read file."){
 }
-const char* fileio::fileOpenError::what() const noexcept{
-	return ("Could not open file.");
-}
 
 
 
