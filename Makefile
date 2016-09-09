@@ -1,31 +1,22 @@
-#all:pls
-#main: tranpose fileio
-#	g++ -lfftw3 -lm -Wall -Wextra -o main src/main.cpp
-#	./main
-#transpose: fileio
-#	g++ -Wall -Wextra -c src/transpose.cpp
-#	g++ -lfftw3 -lm -Wall -Wextra -o tr transpose.o fileio.o
-#fileio:
-#	g++ -Wall -Wextra -c src/fileio.cpp
-
 OUT = re8 
 DATA = data
-#SOUND = voicelibrary/_にゃ.wav
 NUVOSOUND = output.wav
 GRAPH = graph.png
-PLOT = plot.gpi
+
 
 CC = g++
-FLAGS = -Wall -Wextra -lfftw3 -lm
+FLAGS = -Wall -Wextra -pedantic -lfftw3 -lm -std=c++11
 ODIR = obj
 SDIR = src
 SOURCES = $(wildcard $(SDIR)/*.cpp)
 OBJECTS = $(SOURCES:$(SDIR)/%.cpp=$(ODIR)/%.o)
 
-.PHONY: all
+
+.PHONY: all clean pls
 all: $(NUVOSOUND) $(DATA)
 
 $(ODIR)/%.o: $(SDIR)/%.cpp
+	mkdir -p $(ODIR)
 	$(CC) $(FLAGS) -c $< -o $@
 
 $(OUT): $(OBJECTS) 
@@ -38,8 +29,8 @@ $(DATA) $(NUVOSOUND): $(OUT)# $(SOUND)
 $(GRAPH): $(DATA) $(PLOT)
 	gnuplot -e 'dada="'$(DATA)'";graf="'$(GRAPH)'"' $(PLOT)
 
-.PHONY: clean
+
 clean:
 	rm -f $(ODIR)/* $(OUT) $(DATA) $(GRAPH) $(NUVOSOUND)
-.PHONY: pls
+
 pls: clean  all
