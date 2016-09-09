@@ -4,9 +4,8 @@
 namespace fileio{
 	class fileOpenError: public std::runtime_error{
 		public:
-			std::string filename;
 
-			fileOpenError(std::string name);
+			fileOpenError();
 			const char* what() const noexcept;
 	};
 

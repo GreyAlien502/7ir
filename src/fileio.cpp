@@ -13,12 +13,11 @@
 #include "fileio.h"
 
 using namespace std;
-fileio::fileOpenError::fileOpenError(string name):
-	runtime_error("Could not read file "+name+"."){
-		string filename = name;
+fileio::fileOpenError::fileOpenError():
+	runtime_error("Could not read file."){
 }
 const char* fileio::fileOpenError::what() const noexcept{
-	return ("Could not open file "+filename+".").c_str();
+	return ("Could not open file.");
 }
 
 
@@ -33,7 +32,7 @@ bool fileio::write(vector<double>sound,string filename){
 		}
 		file.write((char*)&temp[0],temp.size()*sizeof(int16_t));
 	}else{
-		fileio::fileOpenError errorz = fileio::fileOpenError(filename);
+		fileio::fileOpenError errorz = fileio::fileOpenError();
 		throw(errorz);
 	}
 }
@@ -47,7 +46,7 @@ void fileio::append(vector<double>sound, string filename){
 		}
 		file.write((char*)&temp[0],temp.size()*sizeof(int16_t));
 	}else{
-		fileio::fileOpenError errorz = fileio::fileOpenError(filename);
+		fileio::fileOpenError errorz = fileio::fileOpenError();
 		throw(errorz);
 	}
 }
@@ -63,7 +62,7 @@ vector<double> fileio::read(string filename){
 		for(unsigned int i=0; i<temp.size(); i++){ output[i]=temp[i]/32767.; }
 		return output;
 	}else{
-		fileio::fileOpenError errorz = fileio::fileOpenError(filename);
+		fileio::fileOpenError errorz = fileio::fileOpenError();
 		throw(errorz);
 	}
 }
