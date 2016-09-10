@@ -7,7 +7,7 @@
 class VoiceLibrary{
 	private:
 		int windowLength;
-		std::vector<Phone> phones;
+		std::vector<basePhone> phones;
 		std::map<std::string,int> aliases;
 
 		bool hasPhone(std::string alias);

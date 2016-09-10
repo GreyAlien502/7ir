@@ -15,7 +15,7 @@ VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, int windowSize, 
 	windowLength = windowSize;
 	hop = windowLength/windowOverlap;
 
-	phones = vector<Phone>();
+	phones = vector<basePhone>();
 	aliases = map<string,int>();
 	vector<string> presets = vector<string> ();
 
@@ -72,12 +72,11 @@ VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, int windowSize, 
 							pcm.begin()+offset*sampleRate,
 							pcm.end()-cutoff*sampleRate);
 
-				Phone telephone = Phone(
+				phones.push_back(basePhone(
 					pcm,
 					consonant, preutter, overlap,
-					windowOverlap, windowSize, sampleRate);
-
-				phones.push_back(telephone);
+					windowOverlap, windowSize, sampleRate
+				));
 				aliases.insert({alias,i});
 				i++;
 			}catch(fileio::fileOpenError& exc){

@@ -25,11 +25,11 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.98994949"
-     inkscape:cx="435.67016"
-     inkscape:cy="569.81409"
+     inkscape:zoom="1.979899"
+     inkscape:cx="377.58639"
+     inkscape:cy="933.46901"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="g4729-4"
      showgrid="false"
      inkscape:window-width="1276"
      inkscape:window-height="796"
@@ -141,212 +141,48 @@
     <g
        id="g4347"
        transform="matrix(0.84227972,0,0,0.82109803,47.786884,216.34846)">
-      <rect
-         y="295.1373"
-         x="491.34653"
-         height="104.44981"
-         width="35.87838"
-         id="rect4156"
-         style="fill:#00ffff;fill-opacity:1;stroke:#0000ff;stroke-width:0.83590251;stroke-opacity:0" />
-      <ellipse
-         ry="22.857143"
-         rx="12.142858"
-         cy="373.79077"
-         cx="507.85715"
-         id="path4193"
-         style="fill:#ff00ff;fill-opacity:1;stroke:#0000ff;stroke-opacity:0" />
-      <flowRoot
-         transform="translate(7.0710678,7.5761441)"
-         style="font-style:normal;font-weight:normal;font-size:11.25px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         id="flowRoot4228"
-         xml:space="preserve"><flowRegion
-           id="flowRegion4230"><rect
-             style="font-size:11.25px"
-             y="288.07648"
-             x="484.28571"
-             height="17.256681"
-             width="38.393089"
-             id="rect4232" /></flowRegion><flowPara
-           id="flowPara4234">phone</flowPara></flowRoot>      <text
-         sodipodi:linespacing="125%"
-         id="text4343"
-         y="345.7605"
-         x="494.97476"
-         style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         xml:space="preserve"><tspan
-           style="font-size:7.5px"
-           y="345.7605"
+      <g
+         id="g4290">
+        <rect
+           style="fill:#00ffff;fill-opacity:1;stroke:#0000ff;stroke-width:0.83590251;stroke-opacity:0"
+           id="rect4156"
+           width="35.87838"
+           height="104.44981"
+           x="491.34653"
+           y="295.1373" />
+        <ellipse
+           style="fill:#ff00ff;fill-opacity:1;stroke:#0000ff;stroke-opacity:0"
+           id="path4193"
+           cx="507.85715"
+           cy="373.79077"
+           rx="12.142858"
+           ry="22.857143" />
+        <flowRoot
+           xml:space="preserve"
+           id="flowRoot4228"
+           style="font-style:normal;font-weight:normal;font-size:11.25px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           transform="translate(7.0710678,7.5761441)"><flowRegion
+             id="flowRegion4230"><rect
+               id="rect4232"
+               width="38.992722"
+               height="34.480125"
+               x="484.28571"
+               y="288.07648"
+               style="font-size:11.25px" /></flowRegion><flowPara
+             id="flowPara4277">base</flowPara><flowPara
+             id="flowPara4275">phone</flowPara></flowRoot>        <text
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
            x="494.97476"
-           id="tspan4345"
-           sodipodi:role="line">sample</tspan></text>
-    </g>
-    <g
-       transform="matrix(0.84227972,0,0,0.82109803,84.230412,217.10689)"
-       id="g4347-3">
-      <rect
-         y="295.1373"
-         x="491.34653"
-         height="104.44981"
-         width="35.87838"
-         id="rect4156-2"
-         style="fill:#00ffff;fill-opacity:1;stroke:#0000ff;stroke-width:0.83590251;stroke-opacity:0" />
-      <ellipse
-         ry="22.857143"
-         rx="12.142858"
-         cy="373.79077"
-         cx="507.85715"
-         id="path4193-0"
-         style="fill:#ff00ff;fill-opacity:1;stroke:#0000ff;stroke-opacity:0" />
-      <flowRoot
-         transform="translate(7.0710678,7.5761441)"
-         style="font-style:normal;font-weight:normal;font-size:11.25px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         id="flowRoot4228-6"
-         xml:space="preserve"><flowRegion
-           id="flowRegion4230-1"><rect
-             style="font-size:11.25px"
-             y="288.07648"
-             x="484.28571"
-             height="17.256681"
-             width="38.393089"
-             id="rect4232-5" /></flowRegion><flowPara
-           id="flowPara4234-5">phone</flowPara></flowRoot>      <text
-         sodipodi:linespacing="125%"
-         id="text4343-4"
-         y="345.7605"
-         x="494.97476"
-         style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         xml:space="preserve"><tspan
-           style="font-size:7.5px"
            y="345.7605"
-           x="494.97476"
-           id="tspan4345-7"
-           sodipodi:role="line">sample</tspan></text>
-    </g>
-    <g
-       transform="matrix(0.84227972,0,0,0.82109803,122.94323,217.52161)"
-       id="g4347-6">
-      <rect
-         y="295.1373"
-         x="491.34653"
-         height="104.44981"
-         width="35.87838"
-         id="rect4156-5"
-         style="fill:#00ffff;fill-opacity:1;stroke:#0000ff;stroke-width:0.83590251;stroke-opacity:0" />
-      <ellipse
-         ry="22.857143"
-         rx="12.142858"
-         cy="373.79077"
-         cx="507.85715"
-         id="path4193-6"
-         style="fill:#ff00ff;fill-opacity:1;stroke:#0000ff;stroke-opacity:0" />
-      <flowRoot
-         transform="translate(7.0710678,7.5761441)"
-         style="font-style:normal;font-weight:normal;font-size:11.25px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         id="flowRoot4228-9"
-         xml:space="preserve"><flowRegion
-           id="flowRegion4230-3"><rect
-             style="font-size:11.25px"
-             y="288.07648"
-             x="484.28571"
-             height="17.256681"
-             width="38.393089"
-             id="rect4232-7" /></flowRegion><flowPara
-           id="flowPara4234-4">phone</flowPara></flowRoot>      <text
-         sodipodi:linespacing="125%"
-         id="text4343-5"
-         y="345.7605"
-         x="494.97476"
-         style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         xml:space="preserve"><tspan
-           style="font-size:7.5px"
-           y="345.7605"
-           x="494.97476"
-           id="tspan4345-2"
-           sodipodi:role="line">sample</tspan></text>
-    </g>
-    <g
-       transform="matrix(0.84227972,0,0,0.82109803,158.25272,216.69217)"
-       id="g4347-5">
-      <rect
-         y="295.1373"
-         x="491.34653"
-         height="104.44981"
-         width="35.87838"
-         id="rect4156-4"
-         style="fill:#00ffff;fill-opacity:1;stroke:#0000ff;stroke-width:0.83590251;stroke-opacity:0" />
-      <ellipse
-         ry="22.857143"
-         rx="12.142858"
-         cy="373.79077"
-         cx="507.85715"
-         id="path4193-7"
-         style="fill:#ff00ff;fill-opacity:1;stroke:#0000ff;stroke-opacity:0" />
-      <flowRoot
-         transform="translate(7.0710678,7.5761441)"
-         style="font-style:normal;font-weight:normal;font-size:11.25px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         id="flowRoot4228-4"
-         xml:space="preserve"><flowRegion
-           id="flowRegion4230-4"><rect
-             style="font-size:11.25px"
-             y="288.07648"
-             x="484.28571"
-             height="17.256681"
-             width="38.393089"
-             id="rect4232-3" /></flowRegion><flowPara
-           id="flowPara4234-0">phone</flowPara></flowRoot>      <text
-         sodipodi:linespacing="125%"
-         id="text4343-7"
-         y="345.7605"
-         x="494.97476"
-         style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         xml:space="preserve"><tspan
-           style="font-size:7.5px"
-           y="345.7605"
-           x="494.97476"
-           id="tspan4345-8"
-           sodipodi:role="line">sample</tspan></text>
-    </g>
-    <g
-       transform="matrix(0.84227972,0,0,0.82109803,198.24178,215.44802)"
-       id="g4347-68">
-      <rect
-         y="295.1373"
-         x="491.34653"
-         height="104.44981"
-         width="35.87838"
-         id="rect4156-8"
-         style="fill:#00ffff;fill-opacity:1;stroke:#0000ff;stroke-width:0.83590251;stroke-opacity:0" />
-      <ellipse
-         ry="22.857143"
-         rx="12.142858"
-         cy="373.79077"
-         cx="507.85715"
-         id="path4193-4"
-         style="fill:#ff00ff;fill-opacity:1;stroke:#0000ff;stroke-opacity:0" />
-      <flowRoot
-         transform="translate(7.0710678,7.5761441)"
-         style="font-style:normal;font-weight:normal;font-size:11.25px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         id="flowRoot4228-3"
-         xml:space="preserve"><flowRegion
-           id="flowRegion4230-14"><rect
-             style="font-size:11.25px"
-             y="288.07648"
-             x="484.28571"
-             height="17.256681"
-             width="38.393089"
-             id="rect4232-9" /></flowRegion><flowPara
-           id="flowPara4234-2">phone</flowPara></flowRoot>      <text
-         sodipodi:linespacing="125%"
-         id="text4343-0"
-         y="345.7605"
-         x="494.97476"
-         style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         xml:space="preserve"><tspan
-           style="font-size:7.5px"
-           y="345.7605"
-           x="494.97476"
-           id="tspan4345-6"
-           sodipodi:role="line">sample</tspan></text>
+           id="text4343"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan4345"
+             x="494.97476"
+             y="345.7605"
+             style="font-size:7.5px">sample</tspan></text>
+      </g>
     </g>
     <ellipse
        style="fill:#00ff00;fill-opacity:1;stroke:#0000ff;stroke-width:1.23361611;stroke-opacity:0"
@@ -635,18 +471,13 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="322.73715"
-       y="407.90768"
+       x="317.1813"
+       y="408.91785"
        id="text4256-6"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
-         id="tspan4258-7"
-         x="322.73715"
-         y="407.90768"
-         style="font-size:13.75px;fill:#0000ff;fill-opacity:1">processed</tspan><tspan
-         sodipodi:role="line"
-         x="322.73715"
-         y="425.09518"
+         x="317.1813"
+         y="408.91785"
          style="font-size:13.75px;fill:#0000ff;fill-opacity:1"
          id="tspan4469">phone</tspan></text>
     <path
@@ -679,8 +510,8 @@
        transform="translate(188.34375,434.74618)"><flowRegion
          id="flowRegion4705"><rect
            id="rect4707"
-           width="240"
-           height="50"
+           width="98.578651"
+           height="50.505077"
            x="35.714287"
            y="195.21935" /></flowRegion><flowPara
          id="flowPara4709">.wav</flowPara></flowRoot>    <path
@@ -700,5 +531,189 @@
            x="271.42856"
            y="182.3622" /></flowRegion><flowPara
          style="fill:#ffff7f;fill-opacity:1"
-         id="flowPara4422">.utau</flowPara></flowRoot>  </g>
+         id="flowPara4422">.utau</flowPara></flowRoot>    <g
+       id="g4347-3"
+       transform="matrix(0.84227972,0,0,0.82109803,86.721845,218.12587)">
+      <g
+         id="g4290-6">
+        <rect
+           style="fill:#00ffff;fill-opacity:1;stroke:#0000ff;stroke-width:0.83590251;stroke-opacity:0"
+           id="rect4156-7"
+           width="35.87838"
+           height="104.44981"
+           x="491.34653"
+           y="295.1373" />
+        <ellipse
+           style="fill:#ff00ff;fill-opacity:1;stroke:#0000ff;stroke-opacity:0"
+           id="path4193-5"
+           cx="507.85715"
+           cy="373.79077"
+           rx="12.142858"
+           ry="22.857143" />
+        <flowRoot
+           xml:space="preserve"
+           id="flowRoot4228-3"
+           style="font-style:normal;font-weight:normal;font-size:11.25px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           transform="translate(7.0710678,7.5761441)"><flowRegion
+             id="flowRegion4230-5"><rect
+               id="rect4232-6"
+               width="38.992722"
+               height="34.480125"
+               x="484.28571"
+               y="288.07648"
+               style="font-size:11.25px" /></flowRegion><flowPara
+             id="flowPara4277-2">base</flowPara><flowPara
+             id="flowPara4275-9">phone</flowPara></flowRoot>        <text
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           x="494.97476"
+           y="345.7605"
+           id="text4343-1"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan4345-2"
+             x="494.97476"
+             y="345.7605"
+             style="font-size:7.5px">sample</tspan></text>
+      </g>
+    </g>
+    <g
+       id="g4347-7"
+       transform="matrix(0.84227972,0,0,0.82109803,122.58226,218.63095)">
+      <g
+         id="g4290-0">
+        <rect
+           style="fill:#00ffff;fill-opacity:1;stroke:#0000ff;stroke-width:0.83590251;stroke-opacity:0"
+           id="rect4156-93"
+           width="35.87838"
+           height="104.44981"
+           x="491.34653"
+           y="295.1373" />
+        <ellipse
+           style="fill:#ff00ff;fill-opacity:1;stroke:#0000ff;stroke-opacity:0"
+           id="path4193-6"
+           cx="507.85715"
+           cy="373.79077"
+           rx="12.142858"
+           ry="22.857143" />
+        <flowRoot
+           xml:space="preserve"
+           id="flowRoot4228-0"
+           style="font-style:normal;font-weight:normal;font-size:11.25px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           transform="translate(7.0710678,7.5761441)"><flowRegion
+             id="flowRegion4230-6"><rect
+               id="rect4232-2"
+               width="38.992722"
+               height="34.480125"
+               x="484.28571"
+               y="288.07648"
+               style="font-size:11.25px" /></flowRegion><flowPara
+             id="flowPara4277-6">base</flowPara><flowPara
+             id="flowPara4275-1">phone</flowPara></flowRoot>        <text
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           x="494.97476"
+           y="345.7605"
+           id="text4343-8"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan4345-7"
+             x="494.97476"
+             y="345.7605"
+             style="font-size:7.5px">sample</tspan></text>
+      </g>
+    </g>
+    <g
+       id="g4347-9"
+       transform="matrix(0.84227972,0,0,0.82109803,158.44268,219.13603)">
+      <g
+         id="g4290-2">
+        <rect
+           style="fill:#00ffff;fill-opacity:1;stroke:#0000ff;stroke-width:0.83590251;stroke-opacity:0"
+           id="rect4156-0"
+           width="35.87838"
+           height="104.44981"
+           x="491.34653"
+           y="295.1373" />
+        <ellipse
+           style="fill:#ff00ff;fill-opacity:1;stroke:#0000ff;stroke-opacity:0"
+           id="path4193-23"
+           cx="507.85715"
+           cy="373.79077"
+           rx="12.142858"
+           ry="22.857143" />
+        <flowRoot
+           xml:space="preserve"
+           id="flowRoot4228-7"
+           style="font-style:normal;font-weight:normal;font-size:11.25px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           transform="translate(7.0710678,7.5761441)"><flowRegion
+             id="flowRegion4230-59"><rect
+               id="rect4232-22"
+               width="38.992722"
+               height="34.480125"
+               x="484.28571"
+               y="288.07648"
+               style="font-size:11.25px" /></flowRegion><flowPara
+             id="flowPara4277-8">base</flowPara><flowPara
+             id="flowPara4275-97">phone</flowPara></flowRoot>        <text
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           x="494.97476"
+           y="345.7605"
+           id="text4343-3"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan4345-6"
+             x="494.97476"
+             y="345.7605"
+             style="font-size:7.5px">sample</tspan></text>
+      </g>
+    </g>
+    <g
+       id="g4347-1"
+       transform="matrix(0.84227972,0,0,0.82109803,196.82848,220.14618)">
+      <g
+         id="g4290-29">
+        <rect
+           style="fill:#00ffff;fill-opacity:1;stroke:#0000ff;stroke-width:0.83590251;stroke-opacity:0"
+           id="rect4156-3"
+           width="35.87838"
+           height="104.44981"
+           x="491.34653"
+           y="295.1373" />
+        <ellipse
+           style="fill:#ff00ff;fill-opacity:1;stroke:#0000ff;stroke-opacity:0"
+           id="path4193-1"
+           cx="507.85715"
+           cy="373.79077"
+           rx="12.142858"
+           ry="22.857143" />
+        <flowRoot
+           xml:space="preserve"
+           id="flowRoot4228-9"
+           style="font-style:normal;font-weight:normal;font-size:11.25px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           transform="translate(7.0710678,7.5761441)"><flowRegion
+             id="flowRegion4230-4"><rect
+               id="rect4232-7"
+               width="38.992722"
+               height="34.480125"
+               x="484.28571"
+               y="288.07648"
+               style="font-size:11.25px" /></flowRegion><flowPara
+             id="flowPara4277-84">base</flowPara><flowPara
+             id="flowPara4275-5">phone</flowPara></flowRoot>        <text
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           x="494.97476"
+           y="345.7605"
+           id="text4343-0"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan4345-3"
+             x="494.97476"
+             y="345.7605"
+             style="font-size:7.5px">sample</tspan></text>
+      </g>
+    </g>
+  </g>
 </svg>
