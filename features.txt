@@ -11,4 +11,4 @@ N	Boundary Smoothing
 N	Complex Voice Libraries
 N	Multipitch Voice Libraries
 N	Tempo
-?	CVC Voice Libraries
+N	VCV Voice Libraries
