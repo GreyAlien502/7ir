@@ -73,13 +73,13 @@ basePhone::basePhone(vector<double> pcm,
 	sample = Sound(pcm,windowOverlap, windowSize, sampleRate);
 }
 
-Phone basePhone::adjustPhone(Note& note){
+Phone basePhone::adjustPhone(Note& note, double tempo){
 	Sound samp = sample;
 	samp.transpose( 440.*pow(2.,(note.notenum-69.)/12.) / frequency );
 	samp.setLength(
 		consonant,
 		samp.hops,
-		note.duration*samp.sampleRate/samp.hop
+		note.duration /tempo  *samp.sampleRate/samp.hop
 	);
 	samp.amplify(note.velocity);
 	return Phone(consonant, preutter, overlap, samp);

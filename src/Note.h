@@ -6,9 +6,9 @@ class Note{
 		std::string lyric;
 		int notenum;
 		double velocity;
-		double delta;//in ms
-		double duration;//in ms
-		double length;//in ms
+		double delta;//in beats
+		double duration;//in beats
+		double length;//in beats
 
 		Note(std::string lyric, int notenum, double velocity, double delta, double duration, double length):
 			lyric(lyric),

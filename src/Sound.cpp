@@ -114,7 +114,7 @@ vector<double> Sound::synthesize(){
 		fftw_execute(toTime);
 
 		for(int i=0; i<windowLength; i++){
-			output[pos+i] += out[i]/windowLength*window[i];
+			output[pos+i] += out[i]/windowLength/overlap*window[i];
 		}
 	}
 	fftw_free(in);
@@ -122,7 +122,12 @@ vector<double> Sound::synthesize(){
 	fftw_destroy_plan(toTime);
 	return output;
 }
-
+/*
+void Sound::transpose(double initFreq, double finalFreq){
+	for(int hopnum=0; hopnum<hops; hopnum++){
+			
+	}
+} */
 
 void Sound::transpose(double factor){
 	for(int hopnum=0; hopnum<hops; hopnum++){

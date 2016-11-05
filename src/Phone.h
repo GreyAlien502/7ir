@@ -26,5 +26,5 @@ class basePhone: public Phone{
 		basePhone(std::vector<double> pcm = std::vector<double>(2048,0),
 			double consonantTime=0, double preutterTime=0, double overlapTime=0,
 			int windowOverlap=16, int windowSize=2048, int sampleRate=44100);
-		Phone adjustPhone(Note& note);
+		Phone adjustPhone(Note& note, double tempo);
 };

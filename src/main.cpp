@@ -30,13 +30,13 @@ int main(int args, char** argv){
 
 
 	cerr << "loading song...";
-	Song sang = Song("kekko.ust");
+	Song sang = Song("wim.ust");
 	cerr << "done.\n";
 
 	cerr << "loading voice library...";
 	VoiceLibrary library = VoiceLibrary(
-		"kaikai",
-		4, //overlap
+		"teto",
+		16, //overlap
 		1024 //windowSize
 	);
 	cerr << "...done.\n";

@@ -37,7 +37,7 @@ Song::Song(string path){
 		}
 		map<string,string> parameterlecian = parameters(ust);
 		
-		tempo = stod(parameterlecian["Tempo"]);
+		tempo = stod(parameterlecian["Tempo"])/60.;
 		projectName = parameterlecian["ProjectName"];
 		outFile = parameterlecian["OutFile"];
 		voiceDir = parameterlecian["VoiceDir"];
@@ -49,7 +49,7 @@ Song::Song(string path){
 			map<string,string> parameterList = parameters(ust);
 			
 			string lyric = parameterList["Lyric"];
-			double length = stod(parameterList["Length"])/1000.;
+			double length = stod(parameterList["Length"])/480.;
 			double notenum;
 			double velocity;
 			double duration;
@@ -63,8 +63,8 @@ Song::Song(string path){
 					velocity = 1;
 				}else{
 					velocity = stod(parameterList["Velocity"])/100.;
-					delta = stod(parameterList["Delta"])/1000.;
-					duration = stod(parameterList["Duration"])/1000.;
+					delta = stod(parameterList["Delta"])/480.;
+					duration = stod(parameterList["Duration"])/480.;
 				}
 
 				cerr<<lyric;
@@ -113,20 +113,19 @@ void Song::synthesize(VoiceLibrary library, string filename){
 	if(notes.size()==1){
 		cerr<<notes[0].lyric;
 		fileio::write(
-			library.getPhone(notes[0]).sample.synthesize(),
+			library.getPhone(notes[0], tempo).sample.synthesize(),
 			filename
 		);
 	}else{
 		vector<double> prepcm = vector<double>();
-		Phone actuaphone = library.getPhone(notes[0]);
+		Phone actuaphone = library.getPhone(notes[0],tempo);
 		Phone postphone;
 
 
 		for(int i=0; i<notes.size(); i++){
-			cerr<<notes[i].lyric;
 			if(i<notes.size()-1){
 				//Ni+1.sound
-				postphone = library.getPhone(notes[i+1]);
+				postphone = library.getPhone(notes[i+1],tempo);
 				
 				/*correlate Ni, Ni+1
 				correlate(
@@ -155,24 +154,26 @@ void Song::synthesize(VoiceLibrary library, string filename){
 			int writeLength;
 			if(i<notes.size()-1){
 				writeLength = 
-					notes[i+1].delta*sampleRate
+					notes[i+1].delta/tempo*sampleRate
 					+ actuaphone.getPreutter()
 					- postphone.getPreutter();
 			}else{
 				writeLength = 
 					actuaphone.getPreutter();
-					+ notes[i].duration*sampleRate;
+					+ notes[i].duration/tempo*sampleRate;
 			}
-			if(prepcm.size() < writeLength){
-				prepcm.resize(writeLength, 0);
+			if(writeLength > 0){
+				if(prepcm.size() < writeLength){
+					prepcm.resize(writeLength, 0);
+				}
+				fileio::append(
+					vector<double>(
+						prepcm.begin(),
+						prepcm.begin() + writeLength
+					),
+					filename
+				);
 			}
-			fileio::append(
-				vector<double>(
-					prepcm.begin(),
-					prepcm.begin() + writeLength
-				),
-				filename
-			);
 
 			//SHIFT
 			if(writeLength<prepcm.size()){

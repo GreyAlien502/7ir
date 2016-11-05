@@ -19,5 +19,5 @@ class VoiceLibrary{
 			int overlap=16,
 			int windowSize=2048,
 			int sampleRate=44100);
-		Phone getPhone(Note note);
+		Phone getPhone(Note note, double tempo);
 };
