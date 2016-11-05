@@ -4,11 +4,11 @@ Y	Timing
 Y	Lyric
 Y	Note Num
 Y	Velocity
+Y	Tempo
 N	Modulation
 N	Pitch Shift
 N	Envelope
 N	Boundary Smoothing
 N	Complex Voice Libraries
 N	Multipitch Voice Libraries
-N	Tempo
 N	VCV Voice Libraries
