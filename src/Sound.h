@@ -21,7 +21,7 @@ class Sound{
 
 		int length();
 
-		void transpose(double);
+		void transpose(double,double);
 		void transpose(std::vector<double>);
 		void amplify(double factor);
 		void setLength(int start, int end, int nuvohopnum);

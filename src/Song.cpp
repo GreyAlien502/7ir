@@ -123,6 +123,7 @@ void Song::synthesize(VoiceLibrary library, string filename){
 
 
 		for(int i=0; i<notes.size(); i++){
+			cerr<<notes[i].lyric;
 			if(i<notes.size()-1){
 				//Ni+1.sound
 				postphone = library.getPhone(notes[i+1],tempo);

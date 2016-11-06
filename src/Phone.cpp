@@ -75,7 +75,7 @@ basePhone::basePhone(vector<double> pcm,
 
 Phone basePhone::adjustPhone(Note& note, double tempo){
 	Sound samp = sample;
-	samp.transpose( 440.*pow(2.,(note.notenum-69.)/12.) / frequency );
+	samp.transpose( frequency, 440.*pow(2.,(note.notenum-69.)/12.) );
 	samp.setLength(
 		consonant,
 		samp.hops,

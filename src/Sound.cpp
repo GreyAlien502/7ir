@@ -122,13 +122,58 @@ vector<double> Sound::synthesize(){
 	fftw_destroy_plan(toTime);
 	return output;
 }
-/*
+
 void Sound::transpose(double initFreq, double finalFreq){
 	for(int hopnum=0; hopnum<hops; hopnum++){
-			
-	}
-} */
+		//cerr<<hopnum<<endl;
+		//detect peaks
+		vector<unsigned int> harmonicIndices = vector<unsigned int>(sampleRate/initFreq+1,0);
+		for(int scannedIndex=0; scannedIndex<magnitudes.size(); scannedIndex++){
+			int harmonic = frequencies[hopnum][scannedIndex]/initFreq;
 
+			if( 1 > harmonic || harmonic > sampleRate/initFreq+1 ){ continue; }
+			if(harmonicIndices[harmonic] == 0){
+				harmonicIndices[harmonic] = scannedIndex;
+				continue;
+			}
+
+			if( magnitudes[hopnum][harmonicIndices[harmonic]] < magnitudes[hopnum][scannedIndex]){
+				harmonicIndices[harmonic] = scannedIndex;
+			}
+		}
+		vector<double> harmonicMags = vector<double>(harmonicIndices.size(),0);
+		vector<double> harmonicFreqDisplacements = vector<double>(harmonicIndices.size(),0);
+		for(int harmonic=1; harmonic<harmonicIndices.size(); harmonic++){
+			if(harmonicIndices[harmonic] == 0){
+				harmonicMags[harmonic]=0;
+			}else{
+				harmonicMags[harmonic]=magnitudes[hopnum][harmonicIndices[harmonic]];
+			}
+			harmonicFreqDisplacements[harmonic] =
+				frequencies[hopnum][harmonicIndices[harmonic]]/harmonic/initFreq-1;
+		}
+		//interpolate
+		//add new frequencies
+		vector<double> nuvofrequencies(windowLength/2+1,0.);
+		vector<double> nuvomagnitudes(windowLength/2+1,0.);
+		for(int harmonic=1; harmonic<harmonicIndices.size(); harmonic++){
+			double mag = harmonicMags[harmonic];
+			double freq = (harmonicFreqDisplacements[harmonic]+1)*harmonic*finalFreq;
+			int i = freq/sampleRate*windowLength;
+			if(0 < i&&i < windowLength/2+1){
+				nuvofrequencies[i] = freq;
+				nuvomagnitudes[i] = mag;
+			}
+		}
+		magnitudes[hopnum] = nuvomagnitudes;
+		frequencies[hopnum] = nuvofrequencies;
+		/*
+		// */
+	//cerr<<	"aeralop\n";
+	}
+	//cerr<<	"ainterbap\n";
+} 
+/*
 void Sound::transpose(double factor){
 	for(int hopnum=0; hopnum<hops; hopnum++){
 		vector<double> nuvofrequencies(windowLength/2+1,0);
@@ -144,6 +189,7 @@ void Sound::transpose(double factor){
 		frequencies[hopnum] = nuvofrequencies;
 	}
 }
+*/
 void Sound::transpose(vector<double> factors){
 	if(factors.size() != hops){
 		throw(invalid_argument("Number of transposition factors does not match sound length."));
