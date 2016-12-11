@@ -148,17 +148,31 @@ void Sound::transpose(double initFreq, double finalFreq){
 				harmonicMags[harmonic]=0;
 			}else{
 				harmonicMags[harmonic]=magnitudes[hopnum][harmonicIndices[harmonic]];
+				harmonicFreqDisplacements[harmonic] =
+					frequencies[hopnum][harmonicIndices[harmonic]]/harmonic/initFreq-1;
 			}
-			harmonicFreqDisplacements[harmonic] =
-				frequencies[hopnum][harmonicIndices[harmonic]]/harmonic/initFreq-1;
 		}
+
 		//interpolate
+		vector<double>nuvoharmonicMags = vector<double>(sampleRate/finalFreq+1,0);
+		vector<double>nuvofreqDisplacements = vector<double>(sampleRate/finalFreq+1,0);
+		for(int newHarmonic=1; newHarmonic < nuvoharmonicMags.size(); newHarmonic++){ 
+			int oldHarmonic = newHarmonic * finalFreq/initFreq;
+			double interpolationFactor = newHarmonic/initFreq - oldHarmonic/finalFreq;
+			nuvoharmonicMags[newHarmonic] =
+				 harmonicMags[oldHarmonic]*(1-interpolationFactor)
+				+harmonicMags[oldHarmonic+1]*(interpolationFactor);
+			nuvofreqDisplacements[newHarmonic] =
+				 harmonicFreqDisplacements[oldHarmonic]*(1-interpolationFactor)
+				+harmonicFreqDisplacements[oldHarmonic+1]*(interpolationFactor);
+		}
+
 		//add new frequencies
 		vector<double> nuvofrequencies(windowLength/2+1,0.);
 		vector<double> nuvomagnitudes(windowLength/2+1,0.);
-		for(int harmonic=1; harmonic<harmonicIndices.size(); harmonic++){
-			double mag = harmonicMags[harmonic];
-			double freq = (harmonicFreqDisplacements[harmonic]+1)*harmonic*finalFreq;
+		for(int nuvoharmonic=1; nuvoharmonic<nuvoharmonicMags.size(); nuvoharmonic++){
+			double mag = nuvoharmonicMags[nuvoharmonic];
+			double freq = (nuvofreqDisplacements[nuvoharmonic]+1)*nuvoharmonic*finalFreq;
 			int i = freq/sampleRate*windowLength;
 			if(0 < i&&i < windowLength/2+1){
 				nuvofrequencies[i] = freq;
