@@ -171,7 +171,7 @@ void Sound::transpose(double initFreq, double finalFreq){
 		vector<double> nuvofrequencies(windowLength/2+1,0.);
 		vector<double> nuvomagnitudes(windowLength/2+1,0.);
 		for(int nuvoharmonic=1; nuvoharmonic<nuvoharmonicMags.size(); nuvoharmonic++){
-			double mag = nuvoharmonicMags[nuvoharmonic];
+			double mag = nuvoharmonicMags[nuvoharmonic]*finalFreq/initFreq;
 			double freq = (nuvofreqDisplacements[nuvoharmonic]+1)*nuvoharmonic*finalFreq;
 			int i = freq/sampleRate*windowLength;
 			if(0 < i&&i < windowLength/2+1){
