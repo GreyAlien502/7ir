@@ -55,7 +55,7 @@ Sound::Sound(vector<double> pcm, int overlapFactor, int sizeOfWindow, int rate){
 	for(int hopnum=0; hopnum<hops; hopnum++){
 		pos = hopnum*hop;
 
-		//copy sample in to be analyzed 
+		//copy sample in to be analyzed
 		for(int i=0; i<windowLength; i++){
 			in[i] = pcm[pos+i]*window[i];//multiply by window
 		}
@@ -129,7 +129,7 @@ void Sound::transpose(double initFreq, double finalFreq){
 		//detect peaks
 		vector<unsigned int> harmonicIndices = vector<unsigned int>(sampleRate/initFreq+1,0);
 		for(int scannedIndex=0; scannedIndex<magnitudes.size(); scannedIndex++){
-			int harmonic = frequencies[hopnum][scannedIndex]/initFreq;
+			int harmonic = frequencies[hopnum][scannedIndex]/initFreq+.5;
 
 			if( 1 > harmonic || harmonic > sampleRate/initFreq+1 ){ continue; }
 			if(harmonicIndices[harmonic] == 0){
@@ -156,7 +156,7 @@ void Sound::transpose(double initFreq, double finalFreq){
 		//interpolate
 		vector<double>nuvoharmonicMags = vector<double>(sampleRate/finalFreq+1,0);
 		vector<double>nuvofreqDisplacements = vector<double>(sampleRate/finalFreq+1,0);
-		for(int newHarmonic=1; newHarmonic < nuvoharmonicMags.size(); newHarmonic++){ 
+		for(int newHarmonic=1; newHarmonic < nuvoharmonicMags.size(); newHarmonic++){
 			int oldHarmonic = newHarmonic * finalFreq/initFreq;
 			double interpolationFactor = newHarmonic/initFreq - oldHarmonic/finalFreq;
 			nuvoharmonicMags[newHarmonic] =
@@ -186,7 +186,7 @@ void Sound::transpose(double initFreq, double finalFreq){
 	//cerr<<	"aeralop\n";
 	}
 	//cerr<<	"ainterbap\n";
-} 
+}
 /*
 void Sound::transpose(double factor){
 	for(int hopnum=0; hopnum<hops; hopnum++){
