@@ -2,6 +2,8 @@ OUT = re8
 DATA = data
 NUVOSOUND = output.wav
 GRAPH = graph.png
+UST = ust.ust
+UTAU = voicelibrary
 
 
 CC = g++
@@ -22,7 +24,7 @@ $(ODIR)/%.o: $(SDIR)/%.cpp
 $(OUT): $(OBJECTS) 
 	$(CC) $(FLAGS) -o $(OUT) $(OBJECTS)
 
-$(DATA) $(NUVOSOUND): $(OUT)# $(SOUND)
+$(DATA) $(NUVOSOUND): $(OUT) $(UST) $(UTAU)
 	rm -f $(NUVOSOUND)
 	./$(OUT) > $(DATA)
 

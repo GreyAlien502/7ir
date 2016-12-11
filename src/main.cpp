@@ -30,12 +30,12 @@ int main(int args, char** argv){
 
 
 	cerr << "loading song...";
-	Song sang = Song("wim.ust");
+	Song sang = Song("ust.ust");
 	cerr << "done.\n";
 
 	cerr << "loading voice library...";
 	VoiceLibrary library = VoiceLibrary(
-		"teto",
+		"voicelibrary",
 		16, //overlap
 		1024 //windowSize
 	);
