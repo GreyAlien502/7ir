@@ -8,14 +8,20 @@ UTAU = voicelibrary
 
 CC = g++
 FLAGS = -Wall -Wextra -pedantic -lfftw3 -lm -std=c++11
+DEBUG_FLAGS = -D_GLIBCXX_DEBUG
 ODIR = obj
 SDIR = src
 SOURCES = $(wildcard $(SDIR)/*.cpp)
 OBJECTS = $(SOURCES:$(SDIR)/%.cpp=$(ODIR)/%.o)
 
 
-.PHONY: all clean pls
-all: $(NUVOSOUND) $(DATA)
+.PHONY: all clean pls release
+all: debug
+
+release: $(OUT)
+
+debug: FLAGS += $(DEBUG_FLAGS)
+debug: $(NUVOSOUND) $(DATA)
 
 $(ODIR)/%.o: $(SDIR)/%.cpp
 	mkdir -p $(ODIR)
