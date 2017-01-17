@@ -7,8 +7,30 @@
 
 #include "fileio.h"
 #include "VoiceLibrary.h"
+#include "conversionTable.h"
 
 using namespace std;
+
+string convert(string inLyric){
+	vector< pair<string,string> >::iterator outPair = find_if(
+		begin(conversionTable),
+		end(conversionTable),
+		[&inLyric](pair<string,string> testPair){return testPair.first == inLyric;}
+	);
+	if(outPair != end(conversionTable)){
+		return outPair->second;
+	}
+	outPair = find_if(
+		conversionTable.begin(), 
+		conversionTable.end(),
+		[&inLyric](pair<string,string> testPair){return testPair.second == inLyric;}
+	);
+	if(outPair != conversionTable.end()){
+		return outPair->first;
+	}
+	return inLyric;
+}
+
 
 VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, int windowSize, int rate){
 	sampleRate = rate;
@@ -94,9 +116,13 @@ bool VoiceLibrary::hasPhone(string alias){
 }
 
 Phone VoiceLibrary::getPhone(Note note, double tempo){
+	string lyric = note.lyric;
 	if(hasPhone(note.lyric)){
-		return phones[aliases.at(note.lyric)].adjustPhone(note, tempo);
-	}else{
-		return Phone();
+		return phones[aliases.at(lyric)].adjustPhone(note, tempo);
 	}
+	lyric = convert(note.lyric);
+	if(hasPhone(lyric)){
+		return phones[aliases.at(lyric)].adjustPhone(note, tempo);
+	}
+	return Phone();
 }
