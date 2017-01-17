@@ -21,13 +21,23 @@ vector<double> hamming(int windowLength) {
 
 
 int Sound::length(){
-	return hops*hop+windowLength;
+	return hops*hop+windowLength-hop;
+}
+
+int Sound::getHop(double time){
+	int hopnum = (sampleRate*time -windowLength/2)/hop;
+	if(hopnum < 0){hopnum=0;}
+	if(hopnum > hops){hopnum=hops;}
+	return hopnum;
 }
 
 //make sound based off of input pcm data
 Sound::Sound(vector<double> pcm, int overlapFactor, int sizeOfWindow, int rate){
-	double PI = 3.14159265358979323846;
-	int length = pcm.size();
+	if(sizeOfWindow%overlapFactor != 0){
+		throw invalid_argument("Window size munt be a multiple of overlap factor.(");
+	}
+
+	double const PI = 3.14159265358979323846;
 	vector<double> window = hamming(sizeOfWindow);
 
 	//initialize object variables
@@ -35,7 +45,15 @@ Sound::Sound(vector<double> pcm, int overlapFactor, int sizeOfWindow, int rate){
 	windowLength = sizeOfWindow;
 	overlap = overlapFactor;
 	hop = windowLength/overlap;
-	hops = (length-windowLength)/hop;
+	if(pcm.size()<sizeOfWindow){
+		hops = 1;
+	}else{
+		hops = (pcm.size() - sizeOfWindow +hop*2-1)/hop;
+	}
+
+	duration = double(pcm.size())/rate;
+	pcm.resize(windowLength + hops*hop-hop,0);
+
 	magnitudes = vector<vector<double> > (hops, vector<double>(windowLength/2+1,0.));
 	frequencies = vector<vector<double> > (hops, vector<double>(windowLength/2+1));
 
@@ -104,7 +122,6 @@ vector<double> Sound::synthesize(){
 	int pos = 0;
 	vector<double> tempPhases(windowLength/2+1,0.);
 	for(int hopnum=0; hopnum<hops; hopnum++){
-		pos += hop;
 
 		for(int i=0; i<windowLength/2+1; i++){
 			tempPhases[i] += 2.*PI/overlap*frequencies[hopnum][i]*windowLength/double(sampleRate);
@@ -116,26 +133,29 @@ vector<double> Sound::synthesize(){
 		for(int i=0; i<windowLength; i++){
 			output[pos+i] += out[i]/windowLength/overlap*window[i];
 		}
+		pos += hop;
 	}
 	fftw_free(in);
 	fftw_free(out);
 	fftw_destroy_plan(toTime);
-	return output;
+	return vector<double>(
+		output.begin(),
+		output.begin()+duration*sampleRate
+	);
 }
 
 void Sound::transpose(double initFreq, double finalFreq){
 	for(int hopnum=0; hopnum<hops; hopnum++){
-		//cerr<<hopnum<<endl;
 		//detect peaks
 		vector<unsigned int> harmonicIndices = vector<unsigned int>(sampleRate/initFreq+1,0);
-		for(int scannedIndex=0; scannedIndex<magnitudes.size(); scannedIndex++){
+		for(int scannedIndex=0; scannedIndex<windowLength/2+1; scannedIndex++){
 			int harmonic = frequencies[hopnum][scannedIndex]/initFreq+.5;
 
 			if( 1 > harmonic || harmonic > sampleRate/initFreq+1 ){ continue; }
-			if(harmonicIndices[harmonic] == 0){
-				harmonicIndices[harmonic] = scannedIndex;
-				continue;
-			}
+			//if(harmonicIndices[harmonic] == 0){
+			//	harmonicIndices[harmonic] = scannedIndex;
+			//	continue;
+			//}
 
 			if( magnitudes[hopnum][harmonicIndices[harmonic]] < magnitudes[hopnum][scannedIndex]){
 				harmonicIndices[harmonic] = scannedIndex;
@@ -146,6 +166,7 @@ void Sound::transpose(double initFreq, double finalFreq){
 		for(int harmonic=1; harmonic<harmonicIndices.size(); harmonic++){
 			if(harmonicIndices[harmonic] == 0){
 				harmonicMags[harmonic]=0;
+				harmonicFreqDisplacements[harmonic]=0;
 			}else{
 				harmonicMags[harmonic]=magnitudes[hopnum][harmonicIndices[harmonic]];
 				harmonicFreqDisplacements[harmonic] =
@@ -154,10 +175,11 @@ void Sound::transpose(double initFreq, double finalFreq){
 		}
 
 		//interpolate
-		vector<double>nuvoharmonicMags = vector<double>(sampleRate/finalFreq+1,0);
-		vector<double>nuvofreqDisplacements = vector<double>(sampleRate/finalFreq+1,0);
-		for(int newHarmonic=1; newHarmonic < nuvoharmonicMags.size(); newHarmonic++){
+		vector<double>nuvoharmonicMags = vector<double>(harmonicMags.size(),0);
+		vector<double>nuvofreqDisplacements = vector<double>(harmonicMags.size(),0);
+		for(int newHarmonic=1; newHarmonic < harmonicMags.size()-1; newHarmonic++){
 			int oldHarmonic = newHarmonic * finalFreq/initFreq;
+			if(oldHarmonic>=harmonicMags.size()-1){continue;}
 			double interpolationFactor = newHarmonic/initFreq - oldHarmonic/finalFreq;
 			nuvoharmonicMags[newHarmonic] =
 				 harmonicMags[oldHarmonic]*(1-interpolationFactor)
@@ -170,9 +192,10 @@ void Sound::transpose(double initFreq, double finalFreq){
 		//add new frequencies
 		vector<double> nuvofrequencies(windowLength/2+1,0.);
 		vector<double> nuvomagnitudes(windowLength/2+1,0.);
-		for(int nuvoharmonic=1; nuvoharmonic<nuvoharmonicMags.size(); nuvoharmonic++){
+		for(int nuvoharmonic=1; nuvoharmonic<harmonicMags.size(); nuvoharmonic++){
 			double mag = nuvoharmonicMags[nuvoharmonic]*finalFreq/initFreq;
 			double freq = (nuvofreqDisplacements[nuvoharmonic]+1)*nuvoharmonic*finalFreq;
+
 			int i = freq/sampleRate*windowLength;
 			if(0 < i&&i < windowLength/2+1){
 				nuvofrequencies[i] = freq;
@@ -181,11 +204,7 @@ void Sound::transpose(double initFreq, double finalFreq){
 		}
 		magnitudes[hopnum] = nuvomagnitudes;
 		frequencies[hopnum] = nuvofrequencies;
-		/*
-		// */
-	//cerr<<	"aeralop\n";
 	}
-	//cerr<<	"ainterbap\n";
 }
 /*
 void Sound::transpose(double factor){
@@ -239,29 +258,47 @@ void Sound::amplify(double factor){
 	**to make the distance between them nuvolength.
 	*/
 void Sound::lengthenVector(vector<vector<double> >& input, int start, int end, int nuvolength){
-	int length = end-start;
-	if(nuvolength<length){
+	int veclength = end-start;
+	if(nuvolength<veclength){
 		input.erase(input.begin()+start+nuvolength, input.begin()+end);
 	}else{
-		input.insert(input.begin()+start+length, nuvolength - length, vector<double>(windowLength/2+1));
-		for(int i=length; i<nuvolength; i++){
-			int mapTo = length - abs(i % (2*length) - length);
+		input.insert(input.begin()+start+veclength, nuvolength - veclength, vector<double>(windowLength/2+1));
+		for(int i=nuvolength-1; i>0; i--){
+			input[start+i] = input[start+i*veclength/nuvolength];
+			//int mapTo = length - abs(i % (2*length) - length);
 			//int mapTo = length*sin(length - abs(i % (2*length) - length);
-			input[start+i] = input[start+mapTo];
+			//input[start+i] = input[start+mapTo];
 		}
 	}
 }
 
-	/*expands the region of the sound between hops
-	**start and end to be size nuvohops,
+	/*expands or contracts the region of the sound between
+	**times start and end to be size nuvolength
 	**adding similar sound in the new region
 	**if a new regian must be created.
 	*/
-void Sound::setLength(int start, int end, int nuvohops){
-	lengthenVector(magnitudes, start, end, nuvohops);
-	lengthenVector(frequencies, start, end, nuvohops);
+void Sound::setLength(double start, double end, double nuvolength){
+	int startHop = getHop(start);
+	int   endHop =   getHop(end);
+	int nuvohops;
+	int soundSize = (duration+nuvolength-(end-start))*sampleRate;
+	if(soundSize<windowLength){
+		nuvohops = 1;
+	}else{
+		nuvohops = (soundSize - windowLength +hop*2-1)/hop - hops + (endHop-startHop);
+	}
+	/*
+	h + nh - (eh-sh) = d + nl - (e-s)
+	nh - (eh-sh) = d + nl - (e-s) - h
+	nh = (d + nl - (e-s))/hop - h + (eh-sh)
+	if( (nuvolength-(end-start))/hop > 0){ nuvohops++; }
+	*/
+
+	lengthenVector(magnitudes,  startHop, endHop, nuvohops);
+	lengthenVector(frequencies, startHop, endHop, nuvohops);
 	
-	hops += nuvohops-(end-start);
+	hops += nuvohops-(endHop-startHop);
+	duration += nuvolength-(end-start);
 }
 
 double Sound::getCentroid(int hopstart, int hopend){
@@ -319,5 +356,3 @@ void Sound::printFreqs(int hopstart, int hopend){
 		}
 	}
 }
-
-

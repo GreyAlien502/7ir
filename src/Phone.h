@@ -5,13 +5,13 @@
 
 class Phone{
 	protected:
-		int consonant; //all in hops
-		int preutter;
-		int overlap;
+		 double consonant; //all in samples
+		 double preutter;
+		 double overlap;
 	public:
 		Sound sample;
 
-		Phone(int consonant=0, int preutter=0, int overlap=0,
+		Phone(double consonant=0, double preutter=0, double overlap=0,
 			Sound sample=Sound());
 		double getConsonant();
 		double getPreutter();
