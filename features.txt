@@ -12,3 +12,6 @@ N	Boundary Smoothing
 N	Complex Voice Libraries
 N	Multipitch Voice Libraries
 N	VCV Voice Libraries
+N	Hiragana <-> Ro-maji autoconversion
+N	VCV <-> CVC autoconversion
+N	Voice Library Caching
