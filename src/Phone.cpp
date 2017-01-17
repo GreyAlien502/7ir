@@ -36,15 +36,15 @@ double detectEnergy(vector<double> pcm){
 
 
 
-Phone::Phone(int cons, int preut, int overLap, Sound samp){
-	consonant = cons;
-	preutter = preut;
+Phone::Phone(double cons, double preut, double overLap, Sound samp){
+	consonant = cons ;
+	preutter = preut ;
 	overlap = overLap;
-	sample = samp;
+	sample = samp;    
 }
-double Phone::getConsonant(){ return sample.hop*consonant; }
-double Phone::getPreutter(){ return sample.hop*preutter; }
-double Phone::getOverlap(){ return sample.hop*overlap; }
+double Phone::getConsonant(){ return consonant; }
+double Phone::getPreutter (){ return preutter; }
+double Phone::getOverlap  (){ return overlap; }
 
 
 
@@ -55,11 +55,11 @@ basePhone::basePhone(vector<double> pcm,
 	int hop = windowSize/windowOverlap;
 
 	//initialize class variables
-	consonant = floor(consonantTime*sampleRate/hop);
-	preutter = floor(preutterTime*sampleRate/hop);
-	overlap = floor(overlapTime*sampleRate/hop);
+	consonant = consonantTime;
+	preutter = preutterTime;
+	overlap =  overlapTime;
 	vector<double> vowelPart = vector<double>(
-		pcm.begin()+consonant*hop,
+		pcm.begin()+consonant*sampleRate,
 		pcm.end()
 	);
 	frequency = detectFrequency(vowelPart, sampleRate);
@@ -75,11 +75,11 @@ basePhone::basePhone(vector<double> pcm,
 
 Phone basePhone::adjustPhone(Note& note, double tempo){
 	Sound samp = sample;
-	samp.transpose( 440.*pow(2.,(note.notenum-69.)/12.) / frequency );
+	samp.transpose( frequency, 440.*pow(2.,(note.notenum-69.)/12.) );
 	samp.setLength(
 		consonant,
-		samp.hops,
-		note.duration /tempo  *samp.sampleRate/samp.hop
+		samp.duration,
+		note.duration / tempo + preutter - consonant
 	);
 	samp.amplify(note.velocity);
 	return Phone(consonant, preutter, overlap, samp);

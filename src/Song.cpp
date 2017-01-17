@@ -87,16 +87,16 @@ Song::Song(string path){
 			}
 			getline(ust,line);
 		}
-		notes[notes.size()].length = notes[notes.size()].duration;
+		notes[notes.size()-1].length = notes[notes.size()-1].duration;
 	}else{
 		cerr<<"Couldn't open ust file\n";
 		exit(1);
 	}
 }
 
+	/*
 void correlate(Sound& sound1, Sound& sound2, int start, int duration){
 	int corlen = sound1.hops - start;
-	/*
 	for(int hopindex = 0; hopindex < corlen; hopindex++){
 		double centroid =
 			  sound1.getCentroid(start+hopindex) * double(hopindex)/corlen
@@ -104,8 +104,8 @@ void correlate(Sound& sound1, Sound& sound2, int start, int duration){
 		sound1.setCentroid(hopindex, centroid);
 		//sound2.setCentroid(hopindex, centroid);
 	}
-	*/
 }
+	*/
 
 void Song::synthesize(VoiceLibrary library, string filename){
 	int sampleRate = library.sampleRate;
@@ -123,6 +123,7 @@ void Song::synthesize(VoiceLibrary library, string filename){
 
 
 		for(int i=0; i<notes.size(); i++){
+			cerr<<notes[i].lyric;
 			if(i<notes.size()-1){
 				//Ni+1.sound
 				postphone = library.getPhone(notes[i+1],tempo);
@@ -153,14 +154,14 @@ void Song::synthesize(VoiceLibrary library, string filename){
 			//write part Ni-1,i
 			int writeLength;
 			if(i<notes.size()-1){
-				writeLength = 
-					notes[i+1].delta/tempo*sampleRate
+				writeLength = sampleRate*( 
+					notes[i+1].delta/tempo
 					+ actuaphone.getPreutter()
-					- postphone.getPreutter();
+					- postphone.getPreutter()  );
 			}else{
-				writeLength = 
-					actuaphone.getPreutter();
-					+ notes[i].duration/tempo*sampleRate;
+				writeLength = sampleRate*(
+					actuaphone.getPreutter()
+					+ notes[i].duration/tempo);
 			}
 			if(writeLength > 0){
 				if(prepcm.size() < writeLength){
@@ -173,17 +174,21 @@ void Song::synthesize(VoiceLibrary library, string filename){
 					),
 					filename
 				);
+			}else{
+				cerr<<"WARINING CEALLY SMAL"<<endl;
 			}
 
 			//SHIFT
-			if(writeLength<prepcm.size()){
-				prepcm = vector<double>(
-					prepcm.begin() + writeLength,
-					prepcm.end()
-				);
-			}else{
-				prepcm=vector<double>();
+			if(writeLength>0){
+				if(writeLength<prepcm.size()){
+					prepcm = vector<double>(
+						prepcm.begin() + writeLength,
+						prepcm.end()
+					);
+				}else{
+				}
 			}
+					prepcm=vector<double>();
 			actuaphone = postphone;
 		}
 	}

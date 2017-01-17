@@ -95,8 +95,7 @@ bool VoiceLibrary::hasPhone(string alias){
 
 Phone VoiceLibrary::getPhone(Note note, double tempo){
 	if(hasPhone(note.lyric)){
-		Phone phony= phones[aliases.at(note.lyric)].adjustPhone(note, tempo);
-		return phony;
+		return phones[aliases.at(note.lyric)].adjustPhone(note, tempo);
 	}else{
 		return Phone();
 	}
