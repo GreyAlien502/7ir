@@ -32,7 +32,7 @@ $(OUT): $(OBJECTS)
 
 $(DATA) $(NUVOSOUND): $(OUT) $(UST) $(UTAU)
 	rm -f $(NUVOSOUND)
-	./$(OUT) > $(DATA)
+	./$(OUT) $(UST) $(UTAU) > $(DATA)
 
 $(GRAPH): $(DATA) $(PLOT)
 	gnuplot -e 'dada="'$(DATA)'";graf="'$(GRAPH)'"' $(PLOT)

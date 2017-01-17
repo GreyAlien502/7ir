@@ -11,18 +11,15 @@ using namespace std;
 
 int main(int args, char** argv){
 	cerr << "loading song...";
-	Song sang = Song("ust.ust");
-	cerr << "done.\n";
+	Song sang = Song(argv[1]);
 
-	cerr << "loading voice library...";
+	cerr <<endl<<"loading voice library...";
 	VoiceLibrary library = VoiceLibrary(
-		"voicelibrary",
+		argv[2],
 		16, //overlap
 		1024 //windowSize
 	);
-	cerr << "...done.\n";
 
-	cerr << "synthesizing...";
+	cerr <<endl<<"synthesizing...";
 	sang.synthesize(library, "output.wav");
-	cerr << "done.\n";
 }
