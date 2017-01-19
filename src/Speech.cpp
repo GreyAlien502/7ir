@@ -1,11 +1,11 @@
 #include <vector>
-#include <iostream>
+#include <algorithm>
 
-#include "Voice.h"
+#include "Speech.h"
 
 using namespace std;
 
-int Voice::getHop(double time){
+int Speech::getHop(double time){
 	int hopnum = (sampleRate*time -windowLength/2)/hop;
 	if(hopnum < 0){hopnum=0;}
 	if(hopnum > hops){hopnum=hops;}
@@ -13,7 +13,7 @@ int Voice::getHop(double time){
 }
 
 //make sound based off of input pcm data
-Voice::Voice(Sound sample, double freq){
+Speech::Speech(Sound sample, double freq){
 	//set class variables
 	sampleRate = sample.sampleRate;
 	windowLength = sample.windowLength;
@@ -23,11 +23,10 @@ Voice::Voice(Sound sample, double freq){
 
 	magnitudes = vector<vector<double>>(hops,vector<double>(sampleRate/freq+1));
 	freqDisplacements = vector<vector<double>>(hops,vector<double>(sampleRate/freq+1));
-	frequencies = vector<double>(hops,0);
+	frequencies = vector<double>(hops,freq);
 
 	//detect peaks
 	for(int hopnum=0; hopnum<hops; hopnum++){
-		frequencies[hopnum] = freq;
 		vector<double> harmonicIndices = vector<double>(sampleRate/freq+1);
 		for(int scannedIndex=0; scannedIndex<windowLength/2+1; scannedIndex++){
 			int harmonic = sample.frequencies[hopnum][scannedIndex]/freq+.5;
@@ -56,9 +55,8 @@ Voice::Voice(Sound sample, double freq){
 	}
 }
 //makes a pcm vector from the sound
-vector<double> Voice::synthesize(){
+vector<double> Speech::synthesize(){
 	Sound sample = Sound(vector<double>(duration*sampleRate,0),windowLength/hop,windowLength,sampleRate);
-	cerr<<getHop(duration)<<'.'<<sample.magnitudes.size()<<'.'<<sample.frequencies.size();
 	for(int hopnum=0; hopnum<hops; hopnum++){
 		//add new frequencies
 		for(int nuvoharmonic=1; nuvoharmonic<magnitudes[0].size(); nuvoharmonic++){
@@ -75,7 +73,7 @@ vector<double> Voice::synthesize(){
 	return sample.synthesize();
 }
 
-void Voice::transpose(double targetFreq){
+void Speech::transpose(double targetFreq){
 	for(int hopnum=0; hopnum<hops; hopnum++){
 		//interpolate
 		double initFreq = frequencies[hopnum];
@@ -94,10 +92,11 @@ void Voice::transpose(double targetFreq){
 		}
 		magnitudes[hopnum] = nuvomagnitudes;
 		freqDisplacements[hopnum] = nuvofreqDisplacements;
+		frequencies[hopnum] = targetFreq;
 	}
 }
 
-void Voice::amplify(double factor){
+void Speech::amplify(double factor){
 	for(int hopnum=0; hopnum<hops; hopnum++){
 		for(int freq=0; freq<magnitudes[0].size(); freq++){
 			magnitudes[hopnum][freq] *= factor;
@@ -130,7 +129,7 @@ template void lengthenVector(vector<vector<double>>&,int,int,int);
 	**adding similar sound in the new region
 	**if a new regian must be created.
 	*/
-void Voice::stretch(double start, double end, double nuvolength){
+void Speech::stretch(double start, double end, double nuvolength){
 	int startHop = getHop(start);
 	int   endHop =   getHop(end);
 	int nuvohops;
@@ -140,7 +139,6 @@ void Voice::stretch(double start, double end, double nuvolength){
 	}else{
 		nuvohops = (soundSize - windowLength +hop*2-1)/hop - hops + (endHop-startHop);
 	}
-	cerr<<nuvohops<<endl;
 
 	lengthenVector(magnitudes,  startHop, endHop, nuvohops);
 	lengthenVector(freqDisplacements, startHop, endHop, nuvohops);

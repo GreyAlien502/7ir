@@ -2,7 +2,7 @@
 
 #include "Sound.h"
 
-class Voice{
+class Speech{
 	private:
 		int windowLength;
 		int hop;
@@ -16,7 +16,7 @@ class Voice{
 	public:
 		double sampleRate;
 		double duration;
-		Voice(Sound sample=Sound(),double freq=440);
+		Speech(Sound sample=Sound(), double frequency=440);
 		std::vector<double> synthesize();
 
 		void stretch(double start, double end, double nuvolength);
