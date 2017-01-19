@@ -4,11 +4,9 @@
 
 class Voice{
 	private:
-		double sampleRate;
 		int windowLength;
 		int hop;
 		int hops;
-		double duration;
 		
 		std::vector< std::vector<double> > magnitudes;
 		std::vector< std::vector<double> > freqDisplacements;
@@ -16,7 +14,9 @@ class Voice{
 
 		int getHop(double time);
 	public:
-		Voice(Sound sample,double freq);
+		double sampleRate;
+		double duration;
+		Voice(Sound sample=Sound(),double freq=440);
 		std::vector<double> synthesize();
 
 		void stretch(double start, double end, double nuvolength);

@@ -1,4 +1,5 @@
 #include <vector>
+#include <iostream>
 
 #include "Voice.h"
 
@@ -18,6 +19,7 @@ Voice::Voice(Sound sample, double freq){
 	windowLength = sample.windowLength;
 	hop = sample.hop;
 	hops = sample.hops;
+	duration = sample.duration;
 
 	magnitudes = vector<vector<double>>(hops,vector<double>(sampleRate/freq+1));
 	freqDisplacements = vector<vector<double>>(hops,vector<double>(sampleRate/freq+1));
@@ -56,6 +58,7 @@ Voice::Voice(Sound sample, double freq){
 //makes a pcm vector from the sound
 vector<double> Voice::synthesize(){
 	Sound sample = Sound(vector<double>(duration*sampleRate,0),windowLength/hop,windowLength,sampleRate);
+	cerr<<getHop(duration)<<'.'<<sample.magnitudes.size()<<'.'<<sample.frequencies.size();
 	for(int hopnum=0; hopnum<hops; hopnum++){
 		//add new frequencies
 		for(int nuvoharmonic=1; nuvoharmonic<magnitudes[0].size(); nuvoharmonic++){
@@ -137,6 +140,7 @@ void Voice::stretch(double start, double end, double nuvolength){
 	}else{
 		nuvohops = (soundSize - windowLength +hop*2-1)/hop - hops + (endHop-startHop);
 	}
+	cerr<<nuvohops<<endl;
 
 	lengthenVector(magnitudes,  startHop, endHop, nuvohops);
 	lengthenVector(freqDisplacements, startHop, endHop, nuvohops);

@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include "fileio.h"
-#include "VoiceLibrary.h"
+#include "Phone.h"
 
 using namespace std;
 
