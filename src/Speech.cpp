@@ -1,5 +1,6 @@
 #include <vector>
 #include <algorithm>
+#include <iostream>
 
 #include "Speech.h"
 
@@ -32,10 +33,10 @@ Speech::Speech(Sound sample, double freq){
 			int harmonic = sample.frequencies[hopnum][scannedIndex]/freq+.5;
 
 			if( 1 > harmonic || harmonic > sampleRate/freq+1 ){ continue; }
-			//if(harmonicIndices[harmonic] == 0){
-			//	harmonicIndices[harmonic] = scannedIndex;
-			//	continue;
-			//}
+			if(harmonicIndices[harmonic] == 0){
+				harmonicIndices[harmonic] = scannedIndex;
+				continue;
+			}
 
 			if( sample.magnitudes[hopnum][harmonicIndices[harmonic]] < sample.magnitudes[hopnum][scannedIndex]){
 				harmonicIndices[harmonic] = scannedIndex;
@@ -59,11 +60,11 @@ vector<double> Speech::synthesize(){
 	Sound sample = Sound(vector<double>(duration*sampleRate,0),windowLength/hop,windowLength,sampleRate);
 	for(int hopnum=0; hopnum<hops; hopnum++){
 		//add new frequencies
-		for(int nuvoharmonic=1; nuvoharmonic<magnitudes[0].size(); nuvoharmonic++){
+		for(int nuvoharmonic=1; nuvoharmonic<magnitudes[hopnum].size(); nuvoharmonic++){
 			double mag = magnitudes[hopnum][nuvoharmonic];
 			double freq = (1+freqDisplacements[hopnum][nuvoharmonic])*nuvoharmonic*frequencies[hopnum];
 
-			int i = freq/sampleRate*windowLength;
+			int i = freq/sampleRate*windowLength+.5;
 			if(0 < i&&i < windowLength/2+1){
 				sample.frequencies[hopnum][i] = freq;
 				sample.magnitudes[hopnum][i] = mag;
@@ -79,9 +80,9 @@ void Speech::transpose(double targetFreq){
 		double initFreq = frequencies[hopnum];
 		vector<double> nuvomagnitudes = vector<double>(magnitudes[0].size(),0);
 		vector<double> nuvofreqDisplacements = vector<double>(magnitudes[0].size(),0);
-		for(int newHarmonic=1; newHarmonic < magnitudes[0].size()-1; newHarmonic++){
+		for(int newHarmonic=1; newHarmonic < magnitudes[hopnum].size()-1; newHarmonic++){
 			int oldHarmonic = newHarmonic * targetFreq/initFreq;
-			if(oldHarmonic>=magnitudes[0].size()-1){continue;}
+			if(oldHarmonic>=magnitudes[hopnum].size()-1){continue;}
 			double interpolationFactor = newHarmonic/initFreq - oldHarmonic/targetFreq;
 			nuvomagnitudes[newHarmonic] =
 				 magnitudes[hopnum][oldHarmonic]*(1-interpolationFactor)
