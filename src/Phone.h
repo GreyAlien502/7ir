@@ -1,6 +1,6 @@
 #include <vector>
 
-#include "Sound.h"
+#include "Speech.h"
 #include "Note.h"
 
 class Phone{
@@ -9,10 +9,10 @@ class Phone{
 		 double preutter;
 		 double overlap;
 	public:
-		Sound sample;
+		Speech sample;
 
 		Phone(double consonant=0, double preutter=0, double overlap=0,
-			Sound sample=Sound());
+			Speech sample=Speech());
 		double getConsonant();
 		double getPreutter();
 		double getOverlap();
@@ -20,7 +20,6 @@ class Phone{
 
 class basePhone: public Phone{
 	private:
-		double frequency;
 
 	public:
 		basePhone(std::vector<double> pcm = std::vector<double>(2048,0),

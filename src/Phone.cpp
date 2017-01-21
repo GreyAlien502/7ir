@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include "fileio.h"
-#include "VoiceLibrary.h"
+#include "Phone.h"
 
 using namespace std;
 
@@ -34,9 +34,7 @@ double detectEnergy(vector<double> pcm){
 	return energy;
 }
 
-
-
-Phone::Phone(double cons, double preut, double overLap, Sound samp){
+Phone::Phone(double cons, double preut, double overLap, Speech samp){
 	consonant = cons ;
 	preutter = preut ;
 	overlap = overLap;
@@ -62,7 +60,7 @@ basePhone::basePhone(vector<double> pcm,
 		pcm.begin()+consonant*sampleRate,
 		pcm.end()
 	);
-	frequency = detectFrequency(vowelPart, sampleRate);
+	double frequency = detectFrequency(vowelPart, sampleRate);
 	 /*
 	double powerroot = sqrt(detectEnergy(vowelPart))/pcm.size();
 	cerr<<powerroot<<endl;
@@ -70,13 +68,13 @@ basePhone::basePhone(vector<double> pcm,
 		pcm[i] /= powerroot;
 	}
 	//*/
-	sample = Sound(pcm,windowOverlap, windowSize, sampleRate);
+	sample = Speech(Sound(pcm,windowOverlap, windowSize, sampleRate),frequency);
 }
 
 Phone basePhone::adjustPhone(Note& note, double tempo){
-	Sound samp = sample;
-	samp.transpose( frequency, 440.*pow(2.,(note.notenum-69.)/12.) );
-	samp.setLength(
+	Speech samp = sample;
+	samp.transpose( 440.*pow(2.,(note.notenum-69.)/12.) );
+	samp.stretch(
 		consonant,
 		samp.duration,
 		note.duration / tempo + preutter - consonant

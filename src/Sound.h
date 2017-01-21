@@ -8,15 +8,17 @@ class Sound{
 	private:
 		int getHop(double time);
 		void lengthenVector(std::vector<std::vector<double> >& input, int start, int end, int nuvolength);
-		std::vector< std::vector<double> > magnitudes;
-		std::vector< std::vector<double> > frequencies;
 	public:
-		double duration;
-		int sampleRate;
 		int windowLength;
 		int overlap;
 		int hop;
 		int hops;
+
+		std::vector< std::vector<double> > magnitudes;
+		std::vector< std::vector<double> > frequencies;
+
+		double duration;
+		int sampleRate;
 
 		Sound(std::vector<double> pcm=std::vector<double>(0,0), int overlap=8, int windowSize=1024, int rate=44100);
 		std::vector<double> synthesize();
