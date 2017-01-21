@@ -1,13 +1,13 @@
 OUT = re8 
 DATA = data
-NUVOSOUND = output.wav
+SOUND = output.wav
 GRAPH = graph.png
 UST = ust.ust
 UTAU = voicelibrary
 
 
 CC = g++
-FLAGS = -Wall -Wextra -pedantic -lfftw3 -lm -std=c++11
+FLAGS = -static -Wall -Wextra -pedantic -lfftw3 -lm -std=c++11 
 DEBUG_FLAGS = -D_GLIBCXX_DEBUG
 ODIR = obj
 SDIR = src
@@ -21,7 +21,7 @@ all: debug
 release: $(OUT)
 
 debug: FLAGS += $(DEBUG_FLAGS)
-debug: $(NUVOSOUND) $(DATA)
+debug: $(SOUND) $(DATA)
 
 $(ODIR)/%.o: $(SDIR)/%.cpp
 	mkdir -p $(ODIR)
@@ -30,15 +30,15 @@ $(ODIR)/%.o: $(SDIR)/%.cpp
 $(OUT): $(OBJECTS) 
 	$(CC) $(FLAGS) -o $(OUT) $(OBJECTS)
 
-$(DATA) $(NUVOSOUND): $(OUT) $(UST) $(UTAU)
-	rm -f $(NUVOSOUND)
-	./$(OUT) $(UST) $(UTAU) > $(DATA)
+$(DATA) $(SOUND): $(OUT) $(UST) $(UTAU)
+	rm -f $(SOUND)
+	./$(OUT) $(UST) $(UTAU) $(SOUND) > $(DATA)
 
 $(GRAPH): $(DATA) $(PLOT)
 	gnuplot -e 'dada="'$(DATA)'";graf="'$(GRAPH)'"' $(PLOT)
 
 
 clean:
-	rm -f $(ODIR)/* $(OUT) $(DATA) $(GRAPH) $(NUVOSOUND)
+	rm -f $(ODIR)/* $(OUT) $(DATA) $(GRAPH) $(SOUND)
 
 pls: clean  all

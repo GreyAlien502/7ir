@@ -1,0 +1,77 @@
+ABOUT
+	joj-re8 is a singing speech synthesizer.
+	It accepts UST files and UTAU voice libraries.
+	It outputs the resulting sound file.
+
+FEATURES
+	has?	feature
+	Y	UST version 1
+	Y	UST version 2.0
+	Y	Timing
+	Y	Lyric
+	Y	Note Num
+	Y	Velocity
+	Y	Tempo
+	Y	Kana <-> Roumaji autoconversion
+	N	Modulation
+	N	Pitch Shift
+	N	Envelope
+	N	Boundary Smoothing
+	N	Complex Voice Libraries
+	N	Multipitch Voice Libraries
+	N	VCV Voice Libraries
+	N	VCV <-> VC autoconversion
+	N	Voice library caching
+	N	Cross-platform compatability
+
+REQUIREMENTS
+	Currently on known to compile on Linux.
+	The program itself requires only FFTW3 [www.fftw.org].
+	but some of the utilities
+	for preparing USTs and voice libraries on Linux have more.
+	These utilities are not necessary,
+	but you'll have to find another way
+	to get the files in the correct format.
+	The following are required for all the utilities to function correctly.
+		iconv
+		dos2unix
+		aplay
+		ffmpeg
+		bsdtar
+		convmv
+
+COMPILING
+	-linux:   run "make release"
+	-mac:     not supported yet
+	-windows: not supported yet
+
+RUNNING
+	usage: re8 <ust-filename> <voicelibrary-filename> <output-filename>
+	Linux:
+		You must have the correct format
+		for all files, specifically UST and oto.ini
+		- To extract an archive (rar/zip/tar), use:
+
+		   $ utils/unzip-jis.sh <filename>
+
+		   The archive will be expanded to <filename>.dir.
+
+		- To convert a file to utf-8 and unix endlines, use:
+
+		   $ utils/format <filename>
+
+		   Make sure to run this on any UST
+		   and the oto.ini of any voice library.
+		
+		Then you should be able to run the re8 command.
+
+HELP
+	You can email <my username> at gmail.com
+	if you have questions,
+	problems running the program,
+	or suggestions.
+
+LISCENSE
+	GPL some version
+	Also, i'm not responsibe
+	if it does something unexpected.

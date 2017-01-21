@@ -10,6 +10,11 @@
 using namespace std;
 
 int main(int args, char** argv){
+	if(args != 4){
+		cerr << "usage: re8 <ust-filename> <voicelibrary-filename> <output-filename>" << endl;
+		exit(EXIT_FAILURE);
+	}
+
 	cerr << "loading song...";
 	Song sang = Song(argv[1]);
 
@@ -21,5 +26,5 @@ int main(int args, char** argv){
 	);
 
 	cerr <<endl<<"synthesizing...";
-	sang.synthesize(library, "output.wav");
+	sang.synthesize(library, argv[3]);
 }
