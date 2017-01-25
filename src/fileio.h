@@ -1,5 +1,6 @@
 #include <vector>
 #include <string>
+#include <iostream>
 
 namespace fileio{
 	class fileOpenError: public std::runtime_error{
@@ -7,7 +8,7 @@ namespace fileio{
 			fileOpenError();
 	};
 
-	bool write(std::vector<double>sound,std::string filename);
+	bool wavWrite(std::vector<double>sound,std::string filename);
+	std::vector<double> wavRead(std::string path);
 	void append(std::vector<double>sound, std::string filename);
-	std::vector<double> read(std::string filename);
 }

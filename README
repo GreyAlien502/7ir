@@ -26,7 +26,8 @@ FEATURES
 
 REQUIREMENTS
 	Currently on known to compile on Linux.
-	The program itself requires only FFTW3 [www.fftw.org].
+	The program itself requires only FFTW3 [www.fftw.org]
+	and boost [www.boost.org] (currently).
 	but some of the utilities
 	for preparing USTs and voice libraries on Linux have more.
 	These utilities are not necessary,

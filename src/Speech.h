@@ -1,4 +1,5 @@
 #include <vector>
+#include <iostream>
 
 #include "Sound.h"
 
@@ -16,8 +17,12 @@ class Speech{
 	public:
 		double sampleRate;
 		double duration;
+
 		Speech(Sound sample=Sound(), double frequency=440);
 		std::vector<double> synthesize();
+
+		Speech(std::istream& filestream);
+		void write(std::ostream& filestream);
 
 		void stretch(double start, double end, double nuvolength);
 		void amplify(double amplitude);

@@ -13,6 +13,7 @@
 #include "fileio.h"
 
 using namespace std;
+
 fileio::fileOpenError::fileOpenError():
 	runtime_error("Could not read file."){
 }
@@ -20,7 +21,7 @@ fileio::fileOpenError::fileOpenError():
 
 
 
-bool fileio::write(vector<double>sound,string filename){
+bool fileio::wavWrite(vector<double>sound,string filename){
 	std::ofstream file(filename, ios::out|ios::binary|ios::trunc );
 	if(file.is_open()){
 		vector<int16_t> temp(sound.size());
@@ -48,7 +49,7 @@ void fileio::append(vector<double>sound, string filename){
 	}
 }
 
-vector<double> fileio::read(string filename){
+vector<double> fileio::wavRead(string filename){
 	ifstream file(filename, ios::in|ios::binary|ios::ate );
 	if(file.is_open()){
 		ifstream::pos_type length = file.tellg();

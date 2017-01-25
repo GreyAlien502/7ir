@@ -112,7 +112,7 @@ void Song::synthesize(VoiceLibrary library, string filename){
 	
 	if(notes.size()==1){
 		cerr<<notes[0].lyric;
-		fileio::write(
+		fileio::wavWrite(
 			library.getPhone(notes[0], tempo).sample.synthesize(),
 			filename
 		);

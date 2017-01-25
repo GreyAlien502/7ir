@@ -148,3 +148,57 @@ void Speech::stretch(double start, double end, double nuvolength){
 	hops += nuvohops-(endHop-startHop);
 	duration += nuvolength-(end-start);
 }
+
+void Speech::write(ostream& filestream){
+	filestream.write(reinterpret_cast<char*>(&windowLength),sizeof(windowLength));
+	filestream.write(reinterpret_cast<char*>(&hop),sizeof(hop));
+	filestream.write(reinterpret_cast<char*>(&hops),sizeof(hops));
+	filestream.write(reinterpret_cast<char*>(&sampleRate),sizeof(sampleRate));
+	filestream.write(reinterpret_cast<char*>(&duration),sizeof(duration));
+
+	filestream.write(reinterpret_cast<char*>(&frequencies[0]),hops*sizeof(frequencies[0]));
+
+	int magSize, freqDispSize;
+	for(int hopnum=0; hopnum<hops; hopnum++){
+		magSize = magnitudes[hopnum].size();
+		filestream.write(
+			reinterpret_cast<char*>(&magSize),
+			sizeof(magSize));
+		filestream.write(
+			reinterpret_cast<char*>(&magnitudes[hopnum][0]),
+			magnitudes[hopnum].size()*sizeof(magnitudes[hopnum][0]));
+
+		freqDispSize = freqDisplacements[hopnum].size();
+		filestream.write(
+			reinterpret_cast<char*>(freqDispSize),
+			sizeof(freqDispSize));
+		filestream.write(
+			reinterpret_cast<char*>(&freqDisplacements[hopnum][0]),
+			freqDisplacements[hopnum].size()*sizeof(freqDisplacements[hopnum][0]));
+	}
+}
+
+Speech::Speech(istream& filestream){
+	filestream.read(reinterpret_cast<char*>(&windowLength),sizeof(windowLength));
+	filestream.read(reinterpret_cast<char*>(&hop),sizeof(hop));
+	filestream.read(reinterpret_cast<char*>(&hops),sizeof(hops));
+	filestream.read(reinterpret_cast<char*>(&sampleRate),sizeof(sampleRate));
+	filestream.read(reinterpret_cast<char*>(&duration),sizeof(duration));
+
+	frequencies = vector<double>(hops);
+	filestream.read(reinterpret_cast<char*>(&frequencies[0]),hops*sizeof(frequencies[0]));
+	int magSize, freqDispSize;
+	for(int hopnum=0; hopnum<hops; hopnum++){
+		filestream.read(reinterpret_cast<char*>(&magSize),sizeof(magSize));
+		magnitudes[hopnum] = vector<double>(magSize);
+		filestream.read(
+			reinterpret_cast<char*>(&magnitudes[hopnum][0]),
+			magSize*sizeof(magnitudes[hopnum][0]));
+
+		filestream.read(reinterpret_cast<char*>(&freqDispSize),sizeof(freqDispSize));
+		freqDisplacements[hopnum] = vector<double>(freqDispSize);
+		filestream.read(
+			reinterpret_cast<char*>(&freqDisplacements[hopnum][0]),
+			freqDispSize*sizeof(freqDisplacements[hopnum][0]));
+	}
+}

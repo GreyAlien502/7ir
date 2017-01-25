@@ -5,11 +5,39 @@
 #include <iostream>
 #include <algorithm>
 
+#include <boost/filesystem.hpp>
+
 #include "fileio.h"
 #include "VoiceLibrary.h"
 #include "conversionTable.h"
 
 using namespace std;
+
+int getNoteNum(string noteName){
+	map<char,int> letterMap = {
+		{'C', 0},
+		{'D', 2},
+		{'E', 4},
+		{'F', 5},
+		{'G', 7},
+		{'A', 9},
+		{'B', 11}
+	};
+
+	int output = letterMap[noteName[0]];
+
+	string octave;
+	if(noteName[1] == '#'){
+		output++;
+		octave = noteName.substr(2);
+	}else{
+		octave = noteName.substr(1);
+	}
+	
+	output += stoi(octave);
+	
+	return output;
+}
 
 string convert(string inLyric){
 	vector< pair<string,string> >::iterator outPair = find_if(
@@ -31,19 +59,91 @@ string convert(string inLyric){
 	return inLyric;
 }
 
+string VoiceLibrary::affixedLyric(int noteNum, string lyric){
+	if(prefixMap.size() == 0){
+		return lyric;
+	}
+
+	string output;
+	if(noteNum < minNoteNum){
+		output = '-'+lyric;
+		if(hasPhone(output)){
+			return output;
+		}
+		output = "↓"+lyric;
+		if(hasPhone(output)){
+			return output;
+		}
+	}
+	if(noteNum > maxNoteNum){
+		output = '*'+lyric;
+		if(hasPhone(output)){
+			return output;
+		}
+		output = "↑"+lyric;
+		if(hasPhone(output)){
+			return output;
+		}
+	}
+
+	if( prefixMap.find(noteNum) != prefixMap.end() ){
+		 pair<string,string> affixes = prefixMap[noteNum];
+		 return affixes.first + lyric + affixes.second;
+	}
+
+	return lyric;
+}
 
 VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, int windowSize, int rate){
+	//initialize class variables
 	sampleRate = rate;
 	windowLength = windowSize;
 	hop = windowLength/windowOverlap;
 
 	phones = vector<basePhone>();
 	aliases = map<string,int>();
-	vector<string> presets = vector<string> ();
 
+	//read in prefix.map
+	ifstream prefix_map(path+"/prefix.map");
+	if(prefix_map.is_open()){
+		for(string line; getline(prefix_map, line);){
+			int noteNameEnd = line.find('\t');
+			int prefixEnd = line.find('\t',noteNameEnd);
+			int noteNum = getNoteNum(line.substr(0,noteNameEnd));
+
+			if(prefixMap.size() == 0){
+				maxNoteNum = minNoteNum = noteNum;
+			}else if(noteNum < minNoteNum){
+				minNoteNum = noteNum;
+			}else if(noteNum > maxNoteNum){
+				maxNoteNum = noteNum;
+			}
+
+			prefixMap.insert({
+				noteNum,
+				{
+					line.substr(noteNameEnd,prefixEnd-noteNameEnd),
+					line.substr(prefixEnd),
+				}
+			});
+		}
+	}else{
+		prefix_map = {};
+	}
+
+	//read in files based on oto.ini files
+	importDir(path);
+	for(boost::filesystem::directory_iterator currentFile(path); currentFile != boost::filesystem::directory_iterator(); currentFile++){
+		if(boost::filesystem::is_directory(currentFile->status())){
+			importDir(currentFile->path().native());
+		}
+	}
+}
+
+void VoiceLibrary::importDir(string path){
+	vector<string> presets = vector<string> ();
 	ifstream oto_ini(path+"/oto.ini");
 	if(oto_ini.is_open()){
-		int i = 0;
 		for(string line; getline(oto_ini, line);){
 			if(line[0] == '#'){continue;}
 			int start = 0;
@@ -89,26 +189,29 @@ VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, int windowSize, 
 			double overlap = stod(line.substr(start,end-start))/1000.;
 
 			try{
-				vector<double> pcm = fileio::read(path+'/'+filename);
+				vector<double> pcm = fileio::wavRead(path+'/'+filename);
+				if(cutoff > 0){
 				pcm = vector<double>(
 							pcm.begin()+offset*sampleRate,
 							pcm.end()-cutoff*sampleRate);
+				}else{
+				pcm = vector<double>(
+							pcm.begin()+offset*sampleRate,
+							pcm.begin()+(offset-cutoff)*sampleRate);
+				}
 
+
+				aliases.insert({alias,phones.size()});
 				phones.push_back(basePhone(
 					pcm,
 					consonant, preutter, overlap,
-					windowOverlap, windowSize, sampleRate
+					windowLength/hop, windowLength, sampleRate
 				));
-				aliases.insert({alias,i});
-				i++;
 			}catch(fileio::fileOpenError& exc){
 				cerr<<endl<<filename<<" not found."<<endl;
 			}
 		}
-	}else{
-		cerr<<"Couldn't open oto.ini file\n";
-		exit(1);
-	}		
+	}
 }
 
 bool VoiceLibrary::hasPhone(string alias){

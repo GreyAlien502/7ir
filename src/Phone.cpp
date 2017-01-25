@@ -83,3 +83,16 @@ Phone basePhone::adjustPhone(Note& note, double tempo){
 	return Phone(consonant, preutter, overlap, samp);
 }
 
+void basePhone::write(ostream& filestream){
+	filestream.write(reinterpret_cast<char*>(&consonant),sizeof(consonant));
+	filestream.write(reinterpret_cast<char*>(&preutter),sizeof(preutter));
+	filestream.write(reinterpret_cast<char*>(&overlap),sizeof(overlap));
+	sample.write(filestream);
+}
+
+basePhone::basePhone(istream& filestream){
+	filestream.read(reinterpret_cast<char*>(&consonant),sizeof(consonant));
+	filestream.read(reinterpret_cast<char*>(&preutter),sizeof(preutter));
+	filestream.read(reinterpret_cast<char*>(&overlap),sizeof(overlap));
+	sample = Speech(filestream);
+}

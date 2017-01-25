@@ -10,7 +10,13 @@ class VoiceLibrary{
 		std::vector<basePhone> phones;
 		std::map<std::string,int> aliases;
 
+		std::map<int,std::pair<std::string,std::string>> prefixMap;
+		int maxNoteNum;
+		int minNoteNum;
+
 		bool hasPhone(std::string alias);
+		void importDir(std::string path);
+		std::string affixedLyric(int noteNum, std::string lyric);
 	public:
 		int sampleRate;
 		int hop;
