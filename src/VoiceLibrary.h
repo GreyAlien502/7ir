@@ -15,7 +15,7 @@ class VoiceLibrary{
 		int minNoteNum;
 
 		bool hasPhone(std::string alias);
-		void importDir(std::string path);
+		void importDir(std::string path, bool compile);
 		std::string affixedLyric(int noteNum, std::string lyric);
 	public:
 		int sampleRate;

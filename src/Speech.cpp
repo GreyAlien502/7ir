@@ -158,7 +158,6 @@ void Speech::write(ostream& filestream){
 
 	filestream.write(reinterpret_cast<char*>(&frequencies[0]),hops*sizeof(frequencies[0]));
 
-cerr<<hops;
 	int magSize, freqDispSize;
 	for(int hopnum=0; hopnum<hops; hopnum++){
 		magSize = magnitudes[hopnum].size();

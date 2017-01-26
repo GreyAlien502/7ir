@@ -39,6 +39,17 @@ int getNoteNum(string noteName){
 	return output;
 }
 
+string getFormatString(){
+	uint16_t test = 0x0102;
+	char* byte = reinterpret_cast<char*>(&test);
+	string endianness = to_string(byte[0]) + to_string(byte[1]);
+
+	return
+		to_string(sizeof(int))+','+
+		to_string(sizeof(double))+','+
+		endianness;
+}
+
 string convert(string inLyric){
 	vector< pair<string,string> >::iterator outPair = find_if(
 		begin(conversionTable),
@@ -132,15 +143,26 @@ VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, int windowSize, 
 	}
 
 	//read in files based on oto.ini files
-	importDir(path);
+	ifstream compile_file(path+"/compilation");
+	string formatString;
+	getline(compile_file, formatString);
+	bool compile;
+	if(compile_file.is_open() & (formatString == getFormatString()) ){
+		compile = false;
+	}else{
+		compile = true;
+	}
+	importDir(path,compile);
 	for(boost::filesystem::directory_iterator currentFile(path); currentFile != boost::filesystem::directory_iterator(); currentFile++){
 		if(boost::filesystem::is_directory(currentFile->status())){
-			importDir(currentFile->path().native());
+			importDir(currentFile->path().native(), compile);
 		}
 	}
+	ofstream compiled_file(path+"/compilation");
+	compiled_file << getFormatString();
 }
 
-void VoiceLibrary::importDir(string path){
+void VoiceLibrary::importDir(string path, bool compile){
 	vector<string> presets = vector<string> ();
 	ifstream oto_ini(path+"/oto.ini");
 	if(oto_ini.is_open()){
@@ -203,12 +225,14 @@ void VoiceLibrary::importDir(string path){
 
 				aliases.insert({alias,phones.size()});
 				string phonePath = path+'/'+filename+".phone";
-				ofstream phoneFile(phonePath, ios::binary);
-				basePhone(
-					pcm,
-					consonant, preutter, overlap,
-					windowLength/hop, windowLength, sampleRate
-				).write(phoneFile);
+				if(compile){
+					ofstream phoneFile(phonePath, ios::binary);
+					basePhone(
+						pcm,
+						consonant, preutter, overlap,
+						windowLength/hop, windowLength, sampleRate
+					).write(phoneFile);
+				}
 				phones.push_back(phonePath);
 			}catch(fileio::fileOpenError& exc){
 				cerr<<endl<<filename<<" not found."<<endl;
