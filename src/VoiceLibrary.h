@@ -7,7 +7,7 @@
 class VoiceLibrary{
 	private:
 		int windowLength;
-		std::vector<basePhone> phones;
+		std::vector<std::string> phones;
 		std::map<std::string,int> aliases;
 
 		std::map<int,std::pair<std::string,std::string>> prefixMap;

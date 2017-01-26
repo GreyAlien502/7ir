@@ -158,6 +158,7 @@ void Speech::write(ostream& filestream){
 
 	filestream.write(reinterpret_cast<char*>(&frequencies[0]),hops*sizeof(frequencies[0]));
 
+cerr<<hops;
 	int magSize, freqDispSize;
 	for(int hopnum=0; hopnum<hops; hopnum++){
 		magSize = magnitudes[hopnum].size();
@@ -170,7 +171,7 @@ void Speech::write(ostream& filestream){
 
 		freqDispSize = freqDisplacements[hopnum].size();
 		filestream.write(
-			reinterpret_cast<char*>(freqDispSize),
+			reinterpret_cast<char*>(&freqDispSize),
 			sizeof(freqDispSize));
 		filestream.write(
 			reinterpret_cast<char*>(&freqDisplacements[hopnum][0]),
@@ -186,7 +187,10 @@ Speech::Speech(istream& filestream){
 	filestream.read(reinterpret_cast<char*>(&duration),sizeof(duration));
 
 	frequencies = vector<double>(hops);
+	magnitudes = vector<vector<double>>(hops);
+	freqDisplacements = vector<vector<double>>(hops);
 	filestream.read(reinterpret_cast<char*>(&frequencies[0]),hops*sizeof(frequencies[0]));
+
 	int magSize, freqDispSize;
 	for(int hopnum=0; hopnum<hops; hopnum++){
 		filestream.read(reinterpret_cast<char*>(&magSize),sizeof(magSize));

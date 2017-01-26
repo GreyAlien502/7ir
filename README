@@ -13,15 +13,15 @@ FEATURES
 	Y	Velocity
 	Y	Tempo
 	Y	Kana <-> Roumaji autoconversion
-	N	Modulation
-	N	Pitch Shift
-	N	Envelope
-	N	Boundary Smoothing
-	N	Complex Voice Libraries
+	Y	Voice library caching
 	N	Multipitch Voice Libraries
+	N	Complex Voice Libraries
 	N	VCV Voice Libraries
+	N	Envelope
+	N	Pitch Shift
+	N	Boundary Smoothing
+	N	Vibrato
 	N	VCV <-> VC autoconversion
-	N	Voice library caching
 	N	Cross-platform compatability
 
 REQUIREMENTS

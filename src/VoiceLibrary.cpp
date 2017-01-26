@@ -100,7 +100,7 @@ VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, int windowSize, 
 	windowLength = windowSize;
 	hop = windowLength/windowOverlap;
 
-	phones = vector<basePhone>();
+	phones = vector<string>();
 	aliases = map<string,int>();
 
 	//read in prefix.map
@@ -202,11 +202,14 @@ void VoiceLibrary::importDir(string path){
 
 
 				aliases.insert({alias,phones.size()});
-				phones.push_back(basePhone(
+				string phonePath = path+'/'+filename+".phone";
+				ofstream phoneFile(phonePath, ios::binary);
+				basePhone(
 					pcm,
 					consonant, preutter, overlap,
 					windowLength/hop, windowLength, sampleRate
-				));
+				).write(phoneFile);
+				phones.push_back(phonePath);
 			}catch(fileio::fileOpenError& exc){
 				cerr<<endl<<filename<<" not found."<<endl;
 			}
@@ -221,11 +224,17 @@ bool VoiceLibrary::hasPhone(string alias){
 Phone VoiceLibrary::getPhone(Note note, double tempo){
 	string lyric = note.lyric;
 	if(hasPhone(note.lyric)){
-		return phones[aliases.at(lyric)].adjustPhone(note, tempo);
+		ifstream phoneFile(phones[aliases.at(lyric)]);
+		if(phoneFile.is_open()){
+			return basePhone(phoneFile).adjustPhone(note, tempo);
+		}
 	}
 	lyric = convert(note.lyric);
 	if(hasPhone(lyric)){
-		return phones[aliases.at(lyric)].adjustPhone(note, tempo);
+		ifstream phoneFile(phones[aliases.at(lyric)]);
+		if(phoneFile.is_open()){
+			return basePhone(phoneFile).adjustPhone(note, tempo);
+		}
 	}
 	return Phone();
 }
