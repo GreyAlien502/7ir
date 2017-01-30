@@ -34,7 +34,7 @@ int getNoteNum(string noteName){
 		octave = noteName.substr(1);
 	}
 	
-	output += stoi(octave);
+	output += stoi(octave)*12;
 	
 	return output;
 }
@@ -119,7 +119,7 @@ VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, int windowSize, 
 	if(prefix_map.is_open()){
 		for(string line; getline(prefix_map, line);){
 			int noteNameEnd = line.find('\t');
-			int prefixEnd = line.find('\t',noteNameEnd);
+			int prefixEnd = line.find('\t',noteNameEnd+1);
 			int noteNum = getNoteNum(line.substr(0,noteNameEnd));
 
 			if(prefixMap.size() == 0){
@@ -133,8 +133,8 @@ VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, int windowSize, 
 			prefixMap.insert({
 				noteNum,
 				{
-					line.substr(noteNameEnd,prefixEnd-noteNameEnd),
-					line.substr(prefixEnd),
+					line.substr(noteNameEnd+1,prefixEnd-noteNameEnd-1),
+					line.substr(prefixEnd+1),
 				}
 			});
 		}
@@ -163,6 +163,7 @@ VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, int windowSize, 
 }
 
 void VoiceLibrary::importDir(string path, bool compile){
+	cerr<<endl<<path;
 	vector<string> presets = vector<string> ();
 	ifstream oto_ini(path+"/oto.ini");
 	if(oto_ini.is_open()){
@@ -187,7 +188,6 @@ void VoiceLibrary::importDir(string path, bool compile){
 				});
 				continue;
 			}
-			cerr<<"\t"<<alias;
 			presets.push_back(settings);
 
 			start = end + 1;
@@ -213,18 +213,18 @@ void VoiceLibrary::importDir(string path, bool compile){
 			try{
 				vector<double> pcm = fileio::wavRead(path+'/'+filename);
 				if(cutoff > 0){
-				pcm = vector<double>(
+					pcm = vector<double>(
 							pcm.begin()+offset*sampleRate,
 							pcm.end()-cutoff*sampleRate);
 				}else{
-				pcm = vector<double>(
+					pcm = vector<double>(
 							pcm.begin()+offset*sampleRate,
 							pcm.begin()+(offset-cutoff)*sampleRate);
 				}
 
 
 				aliases.insert({alias,phones.size()});
-				string phonePath = path+'/'+filename+".phone";
+				string phonePath = path+'/'+alias+".phone";
 				if(compile){
 					ofstream phoneFile(phonePath, ios::binary);
 					basePhone(
@@ -235,7 +235,7 @@ void VoiceLibrary::importDir(string path, bool compile){
 				}
 				phones.push_back(phonePath);
 			}catch(fileio::fileOpenError& exc){
-				cerr<<endl<<filename<<" not found."<<endl;
+				cerr<<endl<<path+filename<<" not found."<<endl;
 			}
 		}
 	}
@@ -246,14 +246,14 @@ bool VoiceLibrary::hasPhone(string alias){
 }
 
 Phone VoiceLibrary::getPhone(Note note, double tempo){
-	string lyric = note.lyric;
-	if(hasPhone(note.lyric)){
+	string lyric = affixedLyric(note.notenum,note.lyric);
+	if(hasPhone(lyric)){
 		ifstream phoneFile(phones[aliases.at(lyric)]);
 		if(phoneFile.is_open()){
 			return basePhone(phoneFile).adjustPhone(note, tempo);
 		}
 	}
-	lyric = convert(note.lyric);
+	lyric = affixedLyric(note.notenum,convert(note.lyric));
 	if(hasPhone(lyric)){
 		ifstream phoneFile(phones[aliases.at(lyric)]);
 		if(phoneFile.is_open()){
