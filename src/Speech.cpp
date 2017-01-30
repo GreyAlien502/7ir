@@ -21,6 +21,7 @@ Speech::Speech(Sound sample, double freq){
 	hop = sample.hop;
 	hops = sample.hops;
 	duration = sample.duration;
+	remainder = vector<double>(windowLength-hop);
 
 	magnitudes = vector<vector<double>>(hops,vector<double>(sampleRate/freq+1));
 	freqDisplacements = vector<vector<double>>(hops,vector<double>(sampleRate/freq+1));
@@ -55,10 +56,17 @@ Speech::Speech(Sound sample, double freq){
 		}
 	}
 }
-//makes a pcm vector from the sound
+
 vector<double> Speech::synthesize(){
-	Sound sample = Sound(vector<double>(duration*sampleRate,0),windowLength/hop,windowLength,sampleRate);
-	for(int hopnum=0; hopnum<hops; hopnum++){
+	return synthesize(hops);
+}
+
+/*makes a pcm vector from the sound
+**the input is the number of hops to synthesize
+*/
+vector<double> Speech::synthesize(int synthhops){
+	Sound sample = Sound(vector<double>(synthhops*hop+windowLength,0),windowLength/hop,windowLength,sampleRate);
+	for(int hopnum=0; hopnum<synthhops; hopnum++){
 		//add new frequencies
 		for(int nuvoharmonic=1; nuvoharmonic<magnitudes[hopnum].size(); nuvoharmonic++){
 			double mag = magnitudes[hopnum][nuvoharmonic];
@@ -71,8 +79,91 @@ vector<double> Speech::synthesize(){
 			}
 		}
 	}
-	return sample.synthesize();
+	vector<double> pcm = sample.synthesize();
+	if(pcm.size() > duration*sampleRate){
+		pcm.resize(duration*sampleRate);
+	}
+	return pcm;
 }
+
+vector<double> Speech::pop(double requestedLength){
+	if(requestedLength*sampleRate < (windowLength)/2){ // +1 to round up
+		return vector<double>();
+	}
+	if(requestedLength*sampleRate > duration){
+		return synthesize();
+	}
+	int actualHops = getHop(requestedLength)+1;//the number of hops that will be synthesized
+	vector<double> pcm = synthesize(actualHops);
+	for(int i=0;i<remainder.size();i++){
+		pcm[i] += remainder[i];
+	}
+
+	frequencies.erase(frequencies.begin(),frequencies.begin()+actualHops);
+	magnitudes.erase(magnitudes.begin(),magnitudes.begin()+actualHops);
+	freqDisplacements.erase(freqDisplacements.begin(),freqDisplacements.begin()+actualHops);
+
+	remainder = vector<double>(pcm.begin()+(actualHops)*hop+1,pcm.end());
+	return vector<double>(pcm.begin(),pcm.begin()+actualHops*hop);
+}
+
+/*returns the value of vec at index
+**returns 0 if that element doesn't exist
+*/
+double tryAt(vector<double>& vec, int index){
+	if(index < vec.size()){
+		return vec[index];
+	}else{
+		return 0;
+	}
+}
+
+
+void Speech::add(Speech addee, double overlap){
+	int overlapHops = overlap*sampleRate/hop;
+	if(
+		windowLength != addee.windowLength |
+		hop != addee.hop |
+		sampleRate != addee.sampleRate
+	){
+		throw invalid_argument("incompatible speech samples");
+	}
+
+	frequencies.resize(hops+addee.hops-overlapHops);
+	magnitudes.resize(hops+addee.hops-overlapHops);
+	freqDisplacements.resize(hops+addee.hops-overlapHops);
+
+	for(int hopnum=0;hopnum<overlap;hopnum++){
+		double fadeFactor = double(hopnum)/overlap;
+		frequencies[hops+hopnum] *= (1-fadeFactor);
+		frequencies[hops+hopnum] += addee.frequencies[hopnum]*fadeFactor;
+		for(int i=0;i<magnitudes[hopnum].size();i++){
+			magnitudes[hops+hopnum][i] *= (1-fadeFactor);
+			magnitudes[hops+hopnum][i] += tryAt(addee.magnitudes[hopnum],i)*fadeFactor;
+		}
+		for(int i=0;i<freqDisplacements[hopnum].size();i++){
+			freqDisplacements[hops+hopnum][i] *= (1-fadeFactor);
+			freqDisplacements[hops+hopnum][i] += tryAt(addee.freqDisplacements[hopnum],i)*fadeFactor;
+		}
+	}
+
+	copy(
+		addee.frequencies.begin()+overlapHops,
+		addee.frequencies.end(),
+		frequencies.begin()+hops+overlapHops
+	);
+	copy(
+		addee.magnitudes.begin()+overlapHops,
+		addee.magnitudes.end(),
+		magnitudes.begin()+hops+overlapHops
+	);
+	copy(
+		addee.freqDisplacements.begin()+overlapHops,
+		addee.freqDisplacements.end(),
+		freqDisplacements.begin()+hops+overlapHops
+	);
+}
+
 
 void Speech::transpose(double targetFreq){
 	for(int hopnum=0; hopnum<hops; hopnum++){

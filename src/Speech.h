@@ -13,6 +13,9 @@ class Speech{
 		std::vector< std::vector<double> > freqDisplacements;
 		std::vector<double> frequencies;
 
+		std::vector<double> synthesize(int hops);
+		std::vector<double> remainder;
+
 		int getHop(double time);
 	public:
 		double sampleRate;
@@ -20,6 +23,7 @@ class Speech{
 
 		Speech(Sound sample=Sound(), double frequency=440);
 		std::vector<double> synthesize();
+		std::vector<double> pop(double popLength);
 
 		Speech(std::istream& filestream);
 		void write(std::ostream& filestream);
@@ -27,4 +31,6 @@ class Speech{
 		void stretch(double start, double end, double nuvolength);
 		void amplify(double amplitude);
 		void transpose(double frequency);
+
+		void add(Speech adee, double overlap);
 };
