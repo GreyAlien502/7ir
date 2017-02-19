@@ -68,9 +68,14 @@ basePhone::basePhone(vector<double> pcm,
 		pcm[i] /= powerroot;
 	}
 	//*/
+	if(overlap<0){
+		pcm.insert(pcm.begin(),overlap*sampleRate);
+		overlap *= -1;
+		preutter += overlap;
+	}
 	sample = Speech(Sound(pcm,windowOverlap, windowSize, sampleRate),frequency);
 }
-
+/*
 Phone basePhone::adjustPhone(Note& note, double tempo){
 	Speech samp = sample;
 	samp.transpose( 440.*pow(2.,(note.notenum-69.)/12.) );
@@ -83,6 +88,7 @@ Phone basePhone::adjustPhone(Note& note, double tempo){
 	return Phone(consonant, preutter, overlap, samp);
 }
 
+*/
 void basePhone::write(ostream& filestream){
 	filestream.write(reinterpret_cast<char*>(&consonant),sizeof(consonant));
 	filestream.write(reinterpret_cast<char*>(&preutter),sizeof(preutter));
