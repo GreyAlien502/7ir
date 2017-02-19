@@ -36,6 +36,7 @@ bool fileio::wavWrite(vector<double>sound,string filename){
 }
 
 void fileio::append(vector<double>sound, string filename){
+	if(sound.size() == 0){return;}
 	std::ofstream file(filename, ios::out|ios::binary|ios::app);
 	if(file.is_open()){
 		vector<int16_t> temp(sound.size());
