@@ -27,4 +27,5 @@ int main(int args, char** argv){
 
 	cerr <<endl<<"synthesizing...";
 	sang.synthesize(library, argv[3]);
+	cerr<<endl;
 }

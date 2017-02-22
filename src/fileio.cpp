@@ -21,11 +21,11 @@ fileio::fileOpenError::fileOpenError():
 
 
 
-bool fileio::wavWrite(vector<double>sound,string filename){
+void fileio::wavWrite(vector<double>sound,string filename){
 	std::ofstream file(filename, ios::out|ios::binary|ios::trunc );
 	if(file.is_open()){
 		vector<int16_t> temp(sound.size());
-		for(long unsigned int i=0;i<temp.size();i++){
+		for(long int i=0;i<temp.size();i++){
 			temp[i]=int(sound[i]*32767);
 		}
 		file.write((char*)&temp[0],temp.size()*sizeof(int16_t));
@@ -40,7 +40,7 @@ void fileio::append(vector<double>sound, string filename){
 	std::ofstream file(filename, ios::out|ios::binary|ios::app);
 	if(file.is_open()){
 		vector<int16_t> temp(sound.size());
-		for(long unsigned int i=0;i<temp.size();i++){
+		for(long int i=0;i<temp.size();i++){
 			temp[i]=int(sound[i]*32767);
 		}
 		file.write((char*)&temp[0],temp.size()*sizeof(int16_t));
@@ -58,7 +58,7 @@ vector<double> fileio::wavRead(string filename){
 		vector<double> output(length/sizeof(int16_t));
 		vector<int16_t> temp(length/sizeof(int16_t));
 		file.read((char*)&temp[0], length);
-		for(unsigned int i=0; i<temp.size(); i++){ output[i]=temp[i]/32767.; }
+		for(int i=0; i<temp.size(); i++){ output[i]=temp[i]/32767.; }
 		return output;
 	}else{
 		fileio::fileOpenError errorz = fileio::fileOpenError();

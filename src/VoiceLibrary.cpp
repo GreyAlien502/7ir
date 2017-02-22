@@ -47,7 +47,8 @@ string getFormatString(){
 	return
 		to_string(sizeof(int))+','+
 		to_string(sizeof(double))+','+
-		endianness;
+		endianness+','
+		+'1';
 }
 
 string convert(string inLyric){
@@ -211,28 +212,26 @@ void VoiceLibrary::importDir(string path, bool compile){
 			double overlap = stod(line.substr(start,end-start))/1000.;
 
 			try{
-				vector<double> pcm = fileio::wavRead(path+'/'+filename);
-				if(cutoff > 0){
-					pcm = vector<double>(
-							pcm.begin()+offset*sampleRate,
-							pcm.end()-cutoff*sampleRate);
-				}else{
-					pcm = vector<double>(
-							pcm.begin()+offset*sampleRate,
-							pcm.begin()+(offset-cutoff)*sampleRate);
-				}
-
-
-				aliases.insert({alias,phones.size()});
 				string phonePath = path+'/'+alias+".phone";
 				if(compile){
+					vector<double> pcm = fileio::wavRead(path+'/'+filename);
+					if(cutoff > 0){
+						pcm = vector<double>(
+								pcm.begin()+offset*sampleRate,
+								pcm.end()-cutoff*sampleRate);
+					}else{
+						pcm = vector<double>(
+							pcm.begin()+offset*sampleRate,
+							pcm.begin()+(offset-cutoff)*sampleRate);
+					}
 					ofstream phoneFile(phonePath, ios::binary);
-					basePhone(
+					Phone(
 						pcm,
 						consonant, preutter, overlap,
 						windowLength/hop, windowLength, sampleRate
 					).write(phoneFile);
 				}
+				aliases.insert({alias,phones.size()});
 				phones.push_back(phonePath);
 			}catch(fileio::fileOpenError& exc){
 				cerr<<endl<<path+filename<<" not found."<<endl;
@@ -245,20 +244,20 @@ bool VoiceLibrary::hasPhone(string alias){
 	return aliases.find(alias) != aliases.end();
 }
 
-Phone VoiceLibrary::getPhone(Note note, double tempo){
+Phone VoiceLibrary::getPhone(Note note){
 	string lyric = affixedLyric(note.notenum,note.lyric);
 	if(hasPhone(lyric)){
 		ifstream phoneFile(phones[aliases.at(lyric)]);
 		if(phoneFile.is_open()){
-			return basePhone(phoneFile).adjustPhone(note, tempo);
+			return Phone(phoneFile);
 		}
 	}
 	lyric = affixedLyric(note.notenum,convert(note.lyric));
 	if(hasPhone(lyric)){
 		ifstream phoneFile(phones[aliases.at(lyric)]);
 		if(phoneFile.is_open()){
-			return basePhone(phoneFile).adjustPhone(note, tempo);
+			return Phone(phoneFile);
 		}
 	}
-	return Phone();
+	return Phone(windowLength/hop,windowLength, sampleRate);
 }

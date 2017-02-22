@@ -2,6 +2,8 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <cmath>
+#include <functional>
 
 #include "Song.h"
 #include "fileio.h"
@@ -13,7 +15,7 @@ map<string,string> parameters(ifstream& fileobject){
 
 	long lastPosition = fileobject.tellg();
 	for(string line; getline(fileobject, line);){
-		if(line[0] == '[' & line[line.length()-1] == ']'){
+		if((line[0] == '[' ) & (line[line.length()-1] == ']')){
 			fileobject.seekg(lastPosition);
 			return output;
 		}
@@ -24,6 +26,12 @@ map<string,string> parameters(ifstream& fileobject){
 		output.insert({line.substr(0,equals), line.substr(equals+1)});
 		lastPosition = fileobject.tellg();
 	}
+	throw runtime_error("Invalid File");
+}
+
+
+double freqFromNum(int notenum){
+	return 440.*pow(2.,(notenum-69.)/12.) ;
 }
 
 Song::Song(string path){
@@ -94,18 +102,6 @@ Song::Song(string path){
 	}
 }
 
-	/*
-void correlate(Sound& sound1, Sound& sound2, int start, int duration){
-	int corlen = sound1.hops - start;
-	for(int hopindex = 0; hopindex < corlen; hopindex++){
-		double centroid =
-			  sound1.getCentroid(start+hopindex) * double(hopindex)/corlen
-			+ sound2.getCentroid(hopindex) * (1 - double(hopindex)/corlen);
-		sound1.setCentroid(hopindex, centroid);
-		//sound2.setCentroid(hopindex, centroid);
-	}
-}
-	*/
 
 void Song::synthesize(VoiceLibrary library, string filename){
 	int sampleRate = library.sampleRate;
@@ -113,83 +109,80 @@ void Song::synthesize(VoiceLibrary library, string filename){
 	if(notes.size()==1){
 		cerr<<notes[0].lyric;
 		fileio::wavWrite(
-			library.getPhone(notes[0], tempo).sample.synthesize(),
+			library.getPhone(notes[0]).sample.synthesize(),
 			filename
 		);
 	}else{
-		vector<double> prepcm = vector<double>();
-		Phone actuaphone = library.getPhone(notes[0],tempo);
+		Speech speechStream = Speech();
+
+		Phone actuaphone = library.getPhone(notes[0]);
 		Phone postphone;
 
 
+		double writeLength = 0;
 		for(int i=0; i<notes.size(); i++){
-			cerr<<notes[i].lyric;
-			if(i<notes.size()-1){
-				//Ni+1.sound
-				postphone = library.getPhone(notes[i+1],tempo);
-				
-				/*correlate Ni, Ni+1
-				correlate(
-					actuaphone
-					postphone,
-					postphane.delta*sampleRate/
-						+actuaphone.preutter
-						-postphone.preutter,
-				);//*/
-			}
+			//stretch
+			//cerr<<'s'<<endl;
 
-			//Ni.synth
-			vector<double> pcm = actuaphone.sample.synthesize();
-
-			//add Ni-1, Ni
-			if(prepcm.size() < pcm.size()){//expand prepcm if needed
-				prepcm.resize(pcm.size(), 0);
-			}
-
-			for(int j=0; j<pcm.size(); j++){
-				prepcm[j] += pcm[j];
-			}
-
-
-			//write part Ni-1,i
-			int writeLength;
-			if(i<notes.size()-1){
-				writeLength = sampleRate*( 
-					notes[i+1].delta/tempo
-					+ actuaphone.getPreutter()
-					- postphone.getPreutter()  );
-			}else{
-				writeLength = sampleRate*(
-					actuaphone.getPreutter()
-					+ notes[i].duration/tempo);
-			}
-			if(writeLength > 0){
-				if(prepcm.size() < writeLength){
-					prepcm.resize(writeLength, 0);
-				}
-				fileio::append(
-					vector<double>(
-						prepcm.begin(),
-						prepcm.begin() + writeLength
-					),
-					filename
-				);
-			}else{
-				cerr<<"WARINING CEALLY SMAL"<<endl;
-			}
-
-			//SHIFT
-			if(writeLength>0){
-				if(writeLength<prepcm.size()){
-					prepcm = vector<double>(
-						prepcm.begin() + writeLength,
-						prepcm.end()
+			double vowelLength = notes[i].length/tempo;
+			if ( i+1 < notes.size() ){
+				postphone = library.getPhone(notes[i+1]);
+				if(notes[i].length/tempo < postphone.preutter){
+					//cerr<<"CEALLYsMOL\n";
+					postphone.sample.stretch(
+						0,
+						postphone.preutter,
+						notes[i].length/tempo
 					);
-				}else{
+					postphone.overlap *= notes[i].length/tempo/postphone.preutter;
+					postphone.preutter = notes[i].length/tempo;
 				}
+
+				vowelLength +=
+					-postphone.preutter
+					+postphone.overlap;
 			}
-					prepcm=vector<double>();
+			actuaphone.sample.stretch(
+				actuaphone.preutter,
+				actuaphone.sample.duration,
+				vowelLength
+			);
+
+			//combine
+			//cerr<<'c'<<endl;
+			if(i != 0){
+				//TODO:fix error
+				speechStream.add(actuaphone.sample,actuaphone.overlap);
+			}else{
+				speechStream = actuaphone.sample;
+			}
+
+			//transpose
+			writeLength += notes[i].length/tempo + actuaphone.preutter;
+			if( i+1 < notes.size() ){
+				writeLength -= postphone.preutter;
+			}
+
+
+			//cerr<<'t'<<endl;
+			double frequency = freqFromNum(notes[i].notenum);
+			function<double (double)> frequencies = 
+				[frequency](double time)->double{(void)time; return frequency;};
+			speechStream.transpose(
+				frequencies,
+				writeLength
+			);
+			
+			//pop&write
+			//cerr<<'p'<<endl;
+			vector<double> pcm = speechStream.pop(writeLength);
+			writeLength -= double(pcm.size())/sampleRate;
+			fileio::append(
+				pcm,
+				filename
+			);
 			actuaphone = postphone;
+			cerr<<notes[i].lyric;
 		}
 	}
 }

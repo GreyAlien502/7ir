@@ -6,29 +6,22 @@
 
 class Phone{
 	protected:
-		 double consonant; //all in samples
-		 double preutter;
-		 double overlap;
 	public:
+		double consonant; //all in seconds
+		double preutter;
+		double overlap;
 		Speech sample;
 
-		Phone(double consonant=0, double preutter=0, double overlap=0,
-			Speech sample=Speech());
+		Phone(
+			std::vector<double> pcm,
+			double consonantTime, double preutterTime, double overlapTime,
+			int windowOverlap, int windowSize, int sampleRate);
+		Phone( int windowOverlap=16, int windowSize=2048, int sampleRate=44100);
+
 		double getConsonant();
 		double getPreutter();
 		double getOverlap();
-};
 
-class basePhone: public Phone{
-	private:
-
-	public:
-		basePhone(std::vector<double> pcm = std::vector<double>(2048,0),
-			double consonantTime=0, double preutterTime=0, double overlapTime=0,
-			int windowOverlap=16, int windowSize=2048, int sampleRate=44100);
-		basePhone(std::istream& filestream);
+		Phone(std::istream& filestream);
 		void write(std::ostream& filestream);
-
-		Phone adjustPhone(Note& note, double tempo);
-
 };
