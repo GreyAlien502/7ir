@@ -7,7 +7,7 @@ UTAU = voicelibrary
 
 
 CC = g++
-FLAGS = -Wall -Wextra -pedantic -lfftw3 -lm -std=c++11 -lboost_system -lboost_filesystem
+FLAGS = -Wall -Wextra -pedantic -lfftw3 -lm -std=c++11 -lboost_system -lboost_filesystem -Wno-sign-compare
 DEBUG_FLAGS = -D_GLIBCXX_DEBUG
 ODIR = obj
 SDIR = src
