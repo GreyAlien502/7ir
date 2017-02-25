@@ -20,7 +20,6 @@ int main(int args, char** argv){
 
 	cerr << "loading song...";
 	Song sang = Song(argv[1]);
-	cerr <<endl<<"loading voice library...";
 
 	if(args==4){
 		sang.voiceDir = argv[2];
