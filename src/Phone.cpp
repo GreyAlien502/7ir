@@ -54,11 +54,11 @@ Phone::Phone(
 	}
 	//*/
 	if(overlap<0){
-		pcm.insert(pcm.begin(),overlap*sampleRate);
 		overlap *= -1;
+		pcm.insert(pcm.begin(),overlap*sampleRate,0);
 		preutter += overlap;
 	}
-	sample = Speech(Sound(pcm,windowOverlap, windowSize, sampleRate),frequency);
+	sample = Speech(Sound(pcm, windowOverlap, windowSize, sampleRate),frequency);
 }
 Phone::Phone(int overlapFactor, int windowLength, int sampleRate){
 	consonant = preutter = overlap = 0;
