@@ -27,6 +27,7 @@ class Speech{
 		//creation, addition, & destruction
 		Speech(Sound sample=Sound(), double frequency=440);
 		void add(Speech addee, double overlap);
+		Sound startToSound(double endTime);
 		std::vector<double> pop(double popLength);
 		std::vector<double> synthesize();
 
@@ -38,5 +39,4 @@ class Speech{
 		//for reading & writing to disc
 		Speech(std::istream& filestream);
 		void write(std::ostream& filestream);
-
 };

@@ -20,5 +20,6 @@ class Sound{
 		int sampleRate;
 
 		Sound(std::vector<double> pcm=std::vector<double>(0,0), int overlap=8, int windowSize=1024, int rate=44100);
+		Sound compatibleSound(std::vector<double> pcm);
 		std::vector<double> synthesize();
 };

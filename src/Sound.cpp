@@ -87,6 +87,10 @@ Sound::Sound(vector<double> pcm, int overlap, int sizeOfWindow, int rate){
 	fftw_free(in);
 	fftw_free(out);
 }
+//make a compatible sample
+Sound Sound::compatibleSound(vector<double> pcm){
+	return Sound(pcm, windowLength/hop, windowLength, sampleRate);
+}
 
 //makes a pcm vector from the sound
 vector<double> Sound::rawSynthesize(){

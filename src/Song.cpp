@@ -4,6 +4,7 @@
 #include <fstream>
 #include <cmath>
 #include <functional>
+#include <algorithm>
 
 #include "Song.h"
 #include "fileio.h"
@@ -105,84 +106,75 @@ Song::Song(string path){
 
 void Song::synthesize(VoiceLibrary library, string filename){
 	int sampleRate = library.sampleRate;
-	
-	if(notes.size()==1){
-		cerr<<notes[0].lyric;
-		fileio::wavWrite(
-			library.getPhone(notes[0]).sample.synthesize(),
-			filename
-		);
-	}else{
-		Speech speechStream = Speech();
 
-		Phone actuaphone = library.getPhone(notes[0]);
-		Phone postphone;
+	Phone phoneNow = library.getPhone(notes[0]);
+	Speech speech = Speech(phoneNow.sample.startToSound(0).compatibleSound(
+		vector<double>(phoneNow.overlap*sampleRate,0)
+	));
+	for(int note=0;note<notes.size();note++){
+		cerr<<notes[note].lyric;
+		double leftoverLength = speech.duration -phoneNow.overlap;
+		Phone phoneNext;
+		if(note+1<notes.size()){
+			phoneNext = library.getPhone(notes[note+1]);
 
-
-		double writeLength = 0;
-		for(int i=0; i<notes.size(); i++){
-			//stretch
-			//cerr<<'s'<<endl;
-
-			double vowelLength = notes[i].length/tempo;
-			if ( i+1 < notes.size() ){
-				postphone = library.getPhone(notes[i+1]);
-				if(notes[i].length/tempo < postphone.preutter){
-					//cerr<<"CEALLYsMOL\n";
-					postphone.sample.stretch(
-						0,
-						postphone.preutter,
-						notes[i].length/tempo
-					);
-					postphone.overlap *= notes[i].length/tempo/postphone.preutter;
-					postphone.preutter = notes[i].length/tempo;
-				}
-
-				vowelLength +=
-					-postphone.preutter
-					+postphone.overlap;
+		//stretch next
+			if(phoneNext.preutter>notes[note].length/tempo){
+				double newPreutter = notes[note].length/tempo;
+				double newOverlap = phoneNext.overlap * newPreutter/phoneNext.preutter;
+				phoneNext.sample.stretch(0,phoneNext.preutter,newPreutter);
+				phoneNext.preutter = newPreutter;
+				phoneNext.overlap = newOverlap;
 			}
-			actuaphone.sample.stretch(
-				actuaphone.preutter,
-				actuaphone.sample.duration,
+		//stretch now
+			double targetLength = notes[note].length/tempo
+				-phoneNext.preutter
+				+phoneNext.overlap;
+			double vowelLength = min(
+				notes[note].duration/tempo,
+				targetLength
+			);
+			phoneNow.sample.stretch(
+				phoneNow.preutter,
+				phoneNow.sample.duration,
 				vowelLength
 			);
-
-			//combine
-			//cerr<<'c'<<endl;
-			if(i != 0){
-				//TODO:fix error
-				speechStream.add(actuaphone.sample,actuaphone.overlap);
-			}else{
-				speechStream = actuaphone.sample;
+		//add space
+			double restLength = targetLength - vowelLength;
+			if(restLength!=0){
+				phoneNow.sample.add(
+					Speech(phoneNow.sample.startToSound(0).compatibleSound(
+						vector<double>(restLength*sampleRate,0)
+					)),
+					0
+				);
 			}
-
-			//transpose
-			writeLength += notes[i].length/tempo + actuaphone.preutter;
-			if( i+1 < notes.size() ){
-				writeLength -= postphone.preutter;
-			}
-
-
-			//cerr<<'t'<<endl;
-			double frequency = freqFromNum(notes[i].notenum);
-			function<double (double)> frequencies = 
-				[frequency](double time)->double{(void)time; return frequency;};
-			speechStream.transpose(
-				frequencies,
-				writeLength
-			);
-			
-			//pop&write
-			//cerr<<'p'<<endl;
-			vector<double> pcm = speechStream.pop(writeLength);
-			writeLength -= double(pcm.size())/sampleRate;
-			fileio::append(
-				pcm,
-				filename
-			);
-			actuaphone = postphone;
-			cerr<<notes[i].lyric;
 		}
+		//add to previous
+		speech.add(phoneNow.sample, phoneNow.overlap);
+//cerr<<"HERO?"<<leftoverLength+phoneNow.preutter+notes[note].length/tempo-phoneNext.preutter+phoneNext.overlap<<'	'<<speech.duration;
+		//transpose
+		double noteBoundary = leftoverLength +phoneNow.preutter;
+		double writeLength = noteBoundary +notes[note].length/tempo - phoneNext.preutter;
+		double freq1,freq2;
+		freq2 = freqFromNum(notes[note].notenum);
+		if(note!=0){
+			freq1 = freqFromNum(notes[note-1].notenum);
+		}else{
+			freq1 = freq2;
+		}
+		function<double (double)> frequency = [noteBoundary,freq1,freq2](double time){
+			if(time<noteBoundary){
+				return freq1;
+			}else{
+				return freq2;
+			}
+		};
+		speech.transpose(frequency,writeLength);
+		//pop&write
+//cerr<<"iERO?"<<writeLength<<'	'<<speech.duration;//<<'	'<<t+noteBoundary;
+		fileio::append(speech.pop(writeLength),filename);
+		//reassign
+		phoneNow = phoneNext;
 	}
 }

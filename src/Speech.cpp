@@ -26,6 +26,9 @@ Sound Speech::toSound(int endHop){
 	}
 	return sample;
 }
+Sound Speech::startToSound(double endTime){
+	return toSound(endTime/sampleRate/hop);
+}
 
 
 //make sound based off of input pcm data
@@ -77,11 +80,12 @@ void Speech::add(Speech addee, double overlap){
 	int overlapHops = (hops-1) + (addee.hops-1) - (nuvohops-1) +1;
 	if(overlap>duration){
 		cerr<<overlapHops<<"ERROR	"<<hops<<endl;
+		cerr<<overlap<<"ERROR	"<<duration<<endl;
 	}
 	if(
-			( windowLength != addee.windowLength )|
-			( hop != addee.hop )|
-			( sampleRate != addee.sampleRate )
+			( windowLength != addee.windowLength )
+			|( hop != addee.hop )
+			|( sampleRate != addee.sampleRate )
 	  ){
 		throw invalid_argument("incompatible speech samples");
 	}
@@ -101,8 +105,8 @@ void Speech::add(Speech addee, double overlap){
 		magnitudes[actualhop].resize(addee.magnitudes[hopnum].size());
 		freqDisplacements[actualhop].resize(addee.magnitudes[hopnum].size());
 		for(int i=0;i<addee.magnitudes[hopnum].size();i++){
-			magnitudes[actualhop][i] *= (1-fadeFactor);
-			magnitudes[actualhop][i] += addee.magnitudes[hopnum][i]*fadeFactor;
+			//magnitudes[actualhop][i] *= (1-fadeFactor);
+			magnitudes[actualhop][i] = addee.magnitudes[hopnum][i];//*fadeFactor;
 		}
 		for(int i=0;i<freqDisplacements[actualhop].size();i++){
 			freqDisplacements[actualhop][i] *= (1-fadeFactor);
@@ -132,7 +136,7 @@ void Speech::add(Speech addee, double overlap){
 vector<double> Speech::pop(double requestedLength){
 	int poppedHops = int(requestedLength*sampleRate)/hop;//the number of hops that will be synthesized
 	int nuvohops = hops - poppedHops;
-	double nuvoduration = duration - poppedHops*hop/sampleRate;
+	double nuvoduration = duration - poppedHops*hop/double(sampleRate); //TODO: make samplerate double always
 
 	Sound outSound = toSound(poppedHops+1);
 	vector<double> pcm = outSound.rawSynthesize();
