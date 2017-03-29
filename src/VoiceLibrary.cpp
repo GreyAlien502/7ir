@@ -4,8 +4,8 @@
 #include <fstream>
 #include <iostream>
 #include <algorithm>
-
-#include <boost/filesystem.hpp>
+#include <experimental/filesystem>
+namespace filesystem=std::experimental::filesystem;
 
 #include "fileio.h"
 #include "VoiceLibrary.h"
@@ -154,9 +154,9 @@ VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, int windowSize, 
 		compile = true;
 	}
 	importDir(path,compile);
-	for(boost::filesystem::directory_iterator currentFile(path); currentFile != boost::filesystem::directory_iterator(); currentFile++){
-		if(boost::filesystem::is_directory(currentFile->status())){
-			importDir(currentFile->path().native(), compile);
+	for(auto& currentFile : filesystem::directory_iterator(path)){
+		if(filesystem::is_directory(currentFile.status())){
+			importDir(currentFile.path().native(), compile);
 		}
 	}
 	ofstream compiled_file(path+"/compilation");

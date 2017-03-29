@@ -7,7 +7,7 @@ UTAU = voicelibrary
 
 
 CC = g++
-FLAGS = -Wall -Wextra -pedantic -lfftw3 -lm -std=c++11 -lboost_system -lboost_filesystem -Wno-sign-compare
+FLAGS = -Wall -Wextra -pedantic -std=c++17 -Wno-sign-compare -lfftw3 -lm -lstdc++fs
 DEBUG_FLAGS = -D_GLIBCXX_DEBUG
 ODIR = obj
 SDIR = src
@@ -25,10 +25,10 @@ debug: $(SOUND) $(DATA)
 
 $(ODIR)/%.o: $(SDIR)/%.cpp
 	mkdir -p $(ODIR)
-	$(CC) $(FLAGS) -c $< -o $@
+	$(CC) -c $< -o $@ $(FLAGS) 
 
 $(OUT): $(OBJECTS) 
-	$(CC) $(FLAGS) -o $(OUT) $(OBJECTS)
+	$(CC) -o $(OUT) $(OBJECTS) $(FLAGS) 
 
 $(DATA) $(SOUND): $(OUT) $(UST) $(UTAU)
 	rm -f $(SOUND)
