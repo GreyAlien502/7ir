@@ -115,10 +115,11 @@ void Song::synthesize(VoiceLibrary library, string filename){
 		cerr<<notes[note].lyric;
 		double leftoverLength = speech.duration -phoneNow.overlap;
 		Phone phoneNext;
+
 		if(note+1<notes.size()){
 			phoneNext = library.getPhone(notes[note+1]);
-
 		//stretch next
+		//cerr<<'e';
 			if(phoneNext.preutter>notes[note].length/tempo){
 				double newPreutter = notes[note].length/tempo;
 				double newOverlap = phoneNext.overlap * newPreutter/phoneNext.preutter;
@@ -126,36 +127,43 @@ void Song::synthesize(VoiceLibrary library, string filename){
 				phoneNext.preutter = newPreutter;
 				phoneNext.overlap = newOverlap;
 			}
-		//stretch now
-			double targetLength = notes[note].length/tempo
-				-phoneNext.preutter
-				+phoneNext.overlap;
-			double vowelLength = min(
-				notes[note].duration/tempo,
-				targetLength
-			);
-			phoneNow.sample.stretch(
-				phoneNow.preutter,
-				phoneNow.sample.duration,
-				vowelLength
-			);
-		//add space
-			double restLength = targetLength - vowelLength;
-			if(restLength!=0){
-				phoneNow.sample.add(
-					Speech(phoneNow.sample.startToSound(0).compatibleSound(
-						vector<double>(restLength*sampleRate,0)
-					)),
-					0
-				);
-			}
+		}else{
+			phoneNext = Phone();
+			phoneNext.preutter=phoneNext.overlap=0;
 		}
+		//stretch now
+		//cerr<<'o';
+		double targetLength = notes[note].length/tempo
+			-phoneNext.preutter
+			+phoneNext.overlap;
+		double vowelLength = min(
+			notes[note].duration/tempo,
+			targetLength
+		);
+		phoneNow.sample.stretch(
+			phoneNow.preutter,
+			phoneNow.sample.duration,
+			vowelLength
+		);
+		//add space
+		//cerr<<'s';
+		double restLength = targetLength - vowelLength;
+		if(restLength!=0){
+			phoneNow.sample.add(
+				Speech(phoneNow.sample.startToSound(0).compatibleSound(
+					vector<double>(restLength*sampleRate,0)
+				)),
+				0
+			);
+		}
+
 		//add to previous
+		//cerr<<'a';
 		speech.add(phoneNow.sample, phoneNow.overlap);
-//cerr<<"HERO?"<<leftoverLength+phoneNow.preutter+notes[note].length/tempo-phoneNext.preutter+phoneNext.overlap<<'	'<<speech.duration;
 		//transpose
+		//cerr<<'t';
 		double noteBoundary = leftoverLength +phoneNow.preutter;
-		double writeLength = noteBoundary +notes[note].length/tempo - phoneNext.preutter;
+		double writeLength = noteBoundary +notes[note].length/tempo -phoneNext.preutter;
 		double freq1,freq2;
 		freq2 = freqFromNum(notes[note].notenum);
 		if(note!=0){
@@ -172,9 +180,10 @@ void Song::synthesize(VoiceLibrary library, string filename){
 		};
 		speech.transpose(frequency,writeLength);
 		//pop&write
-//cerr<<"iERO?"<<writeLength<<'	'<<speech.duration;//<<'	'<<t+noteBoundary;
+		//cerr<<'p';
 		fileio::append(speech.pop(writeLength),filename);
 		//reassign
+		//cerr<<'r';
 		phoneNow = phoneNext;
 	}
 }
