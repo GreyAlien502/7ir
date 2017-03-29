@@ -79,8 +79,8 @@ void Speech::add(Speech addee, double overlap){
 	int nuvohops = int(nuvoduration*sampleRate)/hop+1;
 	int overlapHops = (hops-1) + (addee.hops-1) - (nuvohops-1) +1;
 	if(overlap>duration){
-		cerr<<overlapHops<<"ERROR	"<<hops<<endl;
-		cerr<<overlap<<"ERROR	"<<duration<<endl;
+		cerr<<overlapHops<<"WaARNENIGK	"<<hops<<endl;
+		cerr<<overlap<<"    WaARNENIGK	"<<duration<<endl;
 	}
 	if(
 			( windowLength != addee.windowLength )
@@ -199,6 +199,11 @@ void Speech::stretch(double start, double end, double nuvolength){
 }
 void Speech::transpose(function<double(double)>nuvofreq, double endTime){
 	int endHop = endTime*sampleRate/hop;
+	if(frequencies.size()<endHop){
+		cerr<<frequencies.size()<<'	'<<magnitudes.size()<<'	'<<endHop;
+		cerr<<endl<<endTime<<endl<<duration<<endl;
+		exit(1);
+	}
 	for(int hopnum=0; hopnum<endHop; hopnum++){
 		//interpolate
 		double initFreq = frequencies[hopnum];

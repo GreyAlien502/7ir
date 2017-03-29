@@ -213,6 +213,7 @@ void VoiceLibrary::importDir(string path, bool compile){
 
 			try{
 				string phonePath = path+'/'+alias+".phone";
+				cerr<<alias;
 				if(compile){
 					vector<double> pcm = fileio::wavRead(path+'/'+filename);
 					if(cutoff > 0){
