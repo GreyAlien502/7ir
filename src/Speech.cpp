@@ -30,6 +30,19 @@ Sound Speech::startToSound(double endTime){
 	return toSound(endTime/sampleRate/hop);
 }
 
+void Speech::crop(double startTime, double endTime){
+	double nuvoduration = endTime - startTime;
+	int nuvohops = int(nuvoduration*sampleRate)/hop +1;
+	int startHop = startTime*sampleRate/hop;
+	int endHop = startHop + nuvohops;
+
+	frequencies = vector<double>(frequencies.begin()+startHop,frequencies.begin()+endHop);
+	magnitudes = vector<vector<double>>(magnitudes.begin()+startHop,magnitudes.begin()+endHop);
+	freqDisplacements = vector<vector<double>>(freqDisplacements.begin()+startHop,freqDisplacements.begin()+endHop);
+
+	duration = nuvoduration;
+	hops = nuvohops;
+}
 
 //make sound based off of input pcm data
 Speech::Speech(Sound sample, double freq){
@@ -113,7 +126,6 @@ void Speech::add(Speech addee, double overlap){
 			freqDisplacements[actualhop][i] += addee.freqDisplacements[hopnum][i]*fadeFactor;
 		}
 	}
-	//cerr<<"bRIered\n";
 
 	copy(
 			addee.frequencies.begin()+overlapHops,
@@ -200,9 +212,9 @@ void Speech::stretch(double start, double end, double nuvolength){
 void Speech::transpose(function<double(double)>nuvofreq, double endTime){
 	int endHop = endTime*sampleRate/hop;
 	if(frequencies.size()<endHop){
+		cerr<<"bad sized boy already";
 		cerr<<frequencies.size()<<'	'<<magnitudes.size()<<'	'<<endHop;
 		cerr<<endl<<endTime<<endl<<duration<<endl;
-		exit(1);
 	}
 	for(int hopnum=0; hopnum<endHop; hopnum++){
 		//interpolate

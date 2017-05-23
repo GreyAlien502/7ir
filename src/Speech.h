@@ -28,6 +28,7 @@ class Speech{
 		Speech(Sound sample=Sound(), double frequency=440);
 		void add(Speech addee, double overlap);
 		Sound startToSound(double endTime);
+		void crop(double starttime, double endtime);
 		std::vector<double> pop(double popLength);
 		std::vector<double> synthesize();
 

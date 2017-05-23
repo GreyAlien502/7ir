@@ -7,7 +7,16 @@
 class VoiceLibrary{
 	private:
 		int windowLength;
-		std::vector<std::string> phones;
+		std::vector<
+			std::tuple<
+				std::string,
+				double, //offset
+				double, //consonant
+				double, //cutoff
+				double, //preutter
+				double  //overlap
+			>
+		> phones;
 		std::map<std::string,int> aliases;
 
 		std::map<int,std::pair<std::string,std::string>> prefixMap;
@@ -15,7 +24,8 @@ class VoiceLibrary{
 		int minNoteNum;
 
 		bool hasPhone(std::string alias);
-		void importDir(std::string path, bool compile);
+		void compile(std::string path);
+		void importDir(std::string path);
 		std::string affixedLyric(int noteNum, std::string lyric);
 	public:
 		int sampleRate;

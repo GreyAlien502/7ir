@@ -15,7 +15,12 @@ class Phone{
 		Phone(
 			std::vector<double> pcm,
 			double consonantTime, double preutterTime, double overlapTime,
-			int windowOverlap, int windowSize, int sampleRate);
+			int windowOverlap, int windowSize, int sampleRate
+		);
+		Phone(
+			Speech soundSample,
+			double consonantTime, double preutterTime, double overlapTime
+		);
 		Phone( int windowOverlap=16, int windowSize=2048, int sampleRate=44100);
 
 		double getConsonant();

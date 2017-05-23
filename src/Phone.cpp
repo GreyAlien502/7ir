@@ -60,6 +60,22 @@ Phone::Phone(
 	}
 	sample = Speech(Sound(pcm, windowOverlap, windowSize, sampleRate),frequency);
 }
+Phone::Phone(Speech speechSample, double consonantTime, double preutterTime, double overlapTime){
+	consonant = consonantTime;
+	preutter = preutterTime;
+	overlap = overlapTime;
+	if(overlap<0){
+		overlap *= -1;
+		sample = Speech(
+			speechSample.startToSound(0).compatibleSound(vector<double>(overlap*speechSample.sampleRate)),
+			440
+		);
+		sample.add(speechSample,0);
+		preutter += overlap;
+	} else {
+		sample = speechSample;
+	}
+}
 Phone::Phone(int overlapFactor, int windowLength, int sampleRate){
 	consonant = preutter = overlap = 0;
 	sample = Speech(Sound(

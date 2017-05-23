@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <vector>
 #include <string>
 #include <map>
@@ -112,7 +113,6 @@ VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, int windowSize, 
 	windowLength = windowSize;
 	hop = windowLength/windowOverlap;
 
-	phones = vector<string>();
 	aliases = map<string,int>();
 
 	//read in prefix.map
@@ -147,23 +147,48 @@ VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, int windowSize, 
 	ifstream compile_file(path+"/compilation");
 	string formatString;
 	getline(compile_file, formatString);
-	bool compile;
-	if(compile_file.is_open() & (formatString == getFormatString()) ){
-		compile = false;
-	}else{
-		compile = true;
+	if(!( compile_file.is_open() & (formatString == getFormatString()) )){
+		compile_file.close();
+		compile(path);
 	}
-	importDir(path,compile);
+	importDir(path);
 	for(auto& currentFile : filesystem::directory_iterator(path)){
 		if(filesystem::is_directory(currentFile.status())){
-			importDir(currentFile.path().native(), compile);
+			importDir(currentFile.path().native());
 		}
 	}
 	ofstream compiled_file(path+"/compilation");
 	compiled_file << getFormatString();
 }
 
-void VoiceLibrary::importDir(string path, bool compile){
+bool endsIn(string searchee, string suffix){
+	return searchee.size() >= suffix.size() &&
+		searchee.compare(searchee.size()-suffix.size(), suffix.size(), suffix)==0;
+}
+void VoiceLibrary::compile(string path){
+	ifstream oto_ini(path+"/oto.ini");
+	if(oto_ini.is_open()){
+		oto_ini.close();
+		for(auto& currentFile : filesystem::directory_iterator(path)){
+			string path = currentFile.path().native();
+			if(endsIn(path,".wav")){
+				cerr<<path<<endl;
+				//remove old speech
+				remove((path+".spch").c_str());
+				//make new speech
+				ofstream outputfile(path+".spch");
+				Speech(Sound(
+						fileio::wavRead(path),
+						windowLength/hop,
+						windowLength,
+						sampleRate
+				)).write(outputfile);
+			}
+		}
+	}
+}
+
+void VoiceLibrary::importDir(string path){
 	cerr<<endl<<path;
 	vector<string> presets = vector<string> ();
 	ifstream oto_ini(path+"/oto.ini");
@@ -212,28 +237,16 @@ void VoiceLibrary::importDir(string path, bool compile){
 			double overlap = stod(line.substr(start,end-start))/1000.;
 
 			try{
-				string phonePath = path+'/'+alias+".phone";
 				cerr<<alias;
-				if(compile){
-					vector<double> pcm = fileio::wavRead(path+'/'+filename);
-					if(cutoff > 0){
-						pcm = vector<double>(
-								pcm.begin()+offset*sampleRate,
-								pcm.end()-cutoff*sampleRate);
-					}else{
-						pcm = vector<double>(
-							pcm.begin()+offset*sampleRate,
-							pcm.begin()+(offset-cutoff)*sampleRate);
-					}
-					ofstream phoneFile(phonePath, ios::binary);
-					Phone(
-						pcm,
-						consonant, preutter, overlap,
-						windowLength/hop, windowLength, sampleRate
-					).write(phoneFile);
-				}
 				aliases.insert({alias,phones.size()});
-				phones.push_back(phonePath);
+				phones.push_back(tuple<string,double,double,double,double,double>(
+					path+'/'+filename+".spch",
+					offset,
+					consonant,
+					cutoff,
+					preutter,
+					overlap
+				));
 			}catch(fileio::fileOpenError& exc){
 				cerr<<endl<<path+filename<<" not found."<<endl;
 			}
@@ -246,19 +259,40 @@ bool VoiceLibrary::hasPhone(string alias){
 }
 
 Phone VoiceLibrary::getPhone(Note note){
+	tuple<string,double,double,double,double,double> phoneData;
+
 	string lyric = affixedLyric(note.notenum,note.lyric);
 	if(hasPhone(lyric)){
-		ifstream phoneFile(phones[aliases.at(lyric)]);
-		if(phoneFile.is_open()){
-			return Phone(phoneFile);
-		}
+		phoneData = phones[aliases.at(lyric)];
 	}
+
 	lyric = affixedLyric(note.notenum,convert(note.lyric));
 	if(hasPhone(lyric)){
-		ifstream phoneFile(phones[aliases.at(lyric)]);
-		if(phoneFile.is_open()){
-			return Phone(phoneFile);
-		}
+		phoneData = phones[aliases.at(lyric)];
 	}
-	return Phone(windowLength/hop,windowLength, sampleRate);
+
+
+	ifstream speechFile(get<0>(phoneData));
+	if(speechFile.is_open()){
+		Speech speechSample = Speech(speechFile);
+		double offset = get<1>(phoneData);
+		double consonant = get<2>(phoneData);
+		double cutoff = get<3>(phoneData);
+		double preutter = get<4>(phoneData);
+		double overlap = get<5>(phoneData);
+
+		if(cutoff >= 0){
+			speechSample.crop(offset,speechSample.duration-cutoff);
+		}else{
+			speechSample.crop(offset,offset-cutoff);
+		}
+
+		return Phone(
+			speechSample,
+			consonant, preutter, overlap
+		);
+	}else{
+		cerr<<get<0>(phoneData)+"not found"<<endl;
+		return Phone(windowLength/hop,windowLength, sampleRate);
+	}
 }
