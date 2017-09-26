@@ -27,6 +27,8 @@ class VoiceLibrary{
 		void compile(std::string path);
 		void importDir(std::string path);
 		std::string affixedLyric(int noteNum, std::string lyric);
+
+		std::string getFormatString();
 	public:
 		int sampleRate;
 		int hop;

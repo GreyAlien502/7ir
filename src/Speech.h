@@ -19,13 +19,14 @@ class Speech{
 		//helper methods/data
 		std::vector<double> remainder;
 		Sound toSound(int endHop);
+		double detectFrequency(std::vector<double> amplitudes, std::vector<double> frequencies);
 	public:
 		//public knowledge
 		double sampleRate;
 		double duration;
 
 		//creation, addition, & destruction
-		Speech(Sound sample=Sound(), double frequency=440);
+		Speech(Sound sample=Sound());
 		void add(Speech addee, double overlap);
 		Sound startToSound(double endTime);
 		void crop(double starttime, double endtime);

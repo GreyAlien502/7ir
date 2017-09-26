@@ -40,16 +40,20 @@ int getNoteNum(string noteName){
 	return output;
 }
 
-string getFormatString(){
+string VoiceLibrary::getFormatString(){
 	uint16_t test = 0x0102;
 	char* byte = reinterpret_cast<char*>(&test);
 	string endianness = to_string(byte[0]) + to_string(byte[1]);
+	char VERSION = '1';
 
 	return
 		to_string(sizeof(int))+','+
 		to_string(sizeof(double))+','+
-		endianness+','
-		+'1';
+		endianness+','+
+		to_string(hop)+','+
+		to_string(windowLength)+','+
+		to_string(sampleRate)+','+
+		VERSION;
 }
 
 string convert(string inLyric){
@@ -147,13 +151,17 @@ VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, int windowSize, 
 	ifstream compile_file(path+"/compilation");
 	string formatString;
 	getline(compile_file, formatString);
+	bool compiling;
 	if(!( compile_file.is_open() & (formatString == getFormatString()) )){
 		compile_file.close();
+		compiling = true;
 		compile(path);
 	}
 	importDir(path);
 	for(auto& currentFile : filesystem::directory_iterator(path)){
+		string pathName = currentFile.path().native();
 		if(filesystem::is_directory(currentFile.status())){
+			if(compiling){ compile(currentFile.path().native());}
 			importDir(currentFile.path().native());
 		}
 	}
@@ -292,7 +300,7 @@ Phone VoiceLibrary::getPhone(Note note){
 			consonant, preutter, overlap
 		);
 	}else{
-		cerr<<get<0>(phoneData)+"not found"<<endl;
+		cerr<<get<0>(phoneData)+" not found"<<endl;
 		return Phone(windowLength/hop,windowLength, sampleRate);
 	}
 }

@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <iostream>
 #include <functional>
+#include <stdlib.h>
+#include <math.h>
 
 #include "Speech.h"
 
@@ -44,8 +46,34 @@ void Speech::crop(double startTime, double endTime){
 	hops = nuvohops;
 }
 
-//make sound based off of input pcm data
-Speech::Speech(Sound sample, double freq){
+double Speech::detectFrequency(vector<double> amplitudes,vector<double> frequencies){
+	double minFreq = 82.407;//minimum frequency humans can sing
+	int maxAmplitude = distance(
+			amplitudes.begin(),
+			max_element(amplitudes.begin()+minFreq*windowLength/sampleRate,amplitudes.end())
+		);
+	double maxFreq = frequencies[maxAmplitude];
+	int maxFreqNum =  maxFreq/minFreq;
+	vector<double> correlations(maxFreqNum,1);
+	for(int freqNum = 1; freqNum < maxFreqNum; freqNum +=1){
+		double currentFreq = maxFreq/freqNum;
+		for(int harmonic=0;harmonic<amplitudes.size()/maxFreq*sampleRate/windowLength;harmonic++){
+			int currentIndex = currentFreq*harmonic/sampleRate*windowLength;
+			correlations[freqNum-1] += amplitudes[currentIndex];
+		}
+	}
+	double ferq = distance(
+		correlations.begin(),
+		max_element(correlations.begin(),correlations.end())
+	)+1;
+	if(maxFreq/ferq<250|maxFreq/ferq>350){
+	}
+	cout<<maxFreq<<','<<ferq<<','<<maxFreqNum<<','<<maxFreq/ferq<<endl;
+	return maxFreq/ferq;
+}
+
+//make speech based on input Sound sample
+Speech::Speech(Sound sample){
 	//set class variables
 	sampleRate = sample.sampleRate;
 	windowLength = sample.windowLength;
@@ -54,12 +82,30 @@ Speech::Speech(Sound sample, double freq){
 	duration = sample.duration;
 	remainder = vector<double>(windowLength-hop);
 
-	magnitudes = vector<vector<double>>(hops,vector<double>(sampleRate/freq+1));
-	freqDisplacements = vector<vector<double>>(hops,vector<double>(sampleRate/freq+1));
-	frequencies = vector<double>(hops,freq);
+	frequencies = vector<double>(hops);
+	magnitudes = vector<vector<double>>(hops);
+	freqDisplacements = vector<vector<double>>(hops);
 
+	//detect frequencies
+	for(int hopnum=0; hopnum<hops; hopnum++){
+		double freq = detectFrequency(sample.magnitudes[hopnum],sample.frequencies[hopnum]);
+
+		frequencies[hopnum] = freq;
+	}
+	int midIndex = frequencies.size()/2;
+	nth_element(
+		frequencies.begin(),
+		frequencies.begin()+midIndex,
+		frequencies.end()
+	);
+	double freq = frequencies[midIndex];
+	for(int hopnum=0; hopnum<hops; hopnum++){
+		magnitudes[hopnum] = vector<double>(sampleRate/freq+1);
+		freqDisplacements[hopnum] = vector<double>(sampleRate/freq+1);
+	}
 	//detect peaks
 	for(int hopnum=0; hopnum<hops; hopnum++){
+		frequencies[hopnum] = freq;
 		vector<double> harmonicIndices = vector<double>(sampleRate/freq+1);
 		for(int scannedIndex=0; scannedIndex<windowLength/2+1; scannedIndex++){
 			int harmonic = sample.frequencies[hopnum][scannedIndex]/freq+.5;
@@ -146,15 +192,19 @@ void Speech::add(Speech addee, double overlap){
 	hops = nuvohops;
 }
 vector<double> Speech::pop(double requestedLength){
+	cerr<<'S';
 	int poppedHops = int(requestedLength*sampleRate)/hop;//the number of hops that will be synthesized
 	int nuvohops = hops - poppedHops;
 	double nuvoduration = duration - poppedHops*hop/double(sampleRate); //TODO: make samplerate double always
 
 	Sound outSound = toSound(poppedHops+1);
+	cerr<<'E';
 	vector<double> pcm = outSound.rawSynthesize();
+	cerr<<'R';
 	for(int i=0;i<remainder.size();i++){
 		pcm[windowLength/2+i] += remainder[i];
 	}
+	cerr<<'E';
 
 	frequencies.erase(frequencies.begin(),frequencies.begin()+poppedHops);
 	magnitudes.erase(magnitudes.begin(),magnitudes.begin()+poppedHops);
@@ -164,6 +214,7 @@ vector<double> Speech::pop(double requestedLength){
 	hops = nuvohops;
 	duration = nuvoduration;
 
+	cerr<<'E';
 	remainder = vector<double>(pcm.end() - (windowLength+1)/2,pcm.end());
 	return vector<double>(pcm.begin()+windowLength/2,pcm.begin()+windowLength/2+poppedHops*hop);
 }

@@ -45,7 +45,7 @@ Phone::Phone(
 		pcm.begin()+consonant*sampleRate,
 		pcm.end()
 	);
-	double frequency = detectFrequency(vowelPart, sampleRate);
+	//double frequency = detectFrequency(vowelPart, sampleRate);
 	 /*
 	double powerroot = sqrt(detectEnergy(vowelPart))/pcm.size();
 	cerr<<powerroot<<endl;
@@ -58,7 +58,7 @@ Phone::Phone(
 		pcm.insert(pcm.begin(),overlap*sampleRate,0);
 		preutter += overlap;
 	}
-	sample = Speech(Sound(pcm, windowOverlap, windowSize, sampleRate),frequency);
+	sample = Speech(Sound(pcm, windowOverlap, windowSize, sampleRate));
 }
 Phone::Phone(Speech speechSample, double consonantTime, double preutterTime, double overlapTime){
 	consonant = consonantTime;
@@ -67,8 +67,7 @@ Phone::Phone(Speech speechSample, double consonantTime, double preutterTime, dou
 	if(overlap<0){
 		overlap *= -1;
 		sample = Speech(
-			speechSample.startToSound(0).compatibleSound(vector<double>(overlap*speechSample.sampleRate)),
-			440
+			speechSample.startToSound(0).compatibleSound(vector<double>(overlap*speechSample.sampleRate))
 		);
 		sample.add(speechSample,0);
 		preutter += overlap;
@@ -81,7 +80,7 @@ Phone::Phone(int overlapFactor, int windowLength, int sampleRate){
 	sample = Speech(Sound(
 		vector<double>(windowLength),
 		overlapFactor, windowLength, sampleRate
-	), 440);
+	));
 }
 
 
