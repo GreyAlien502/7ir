@@ -53,6 +53,7 @@ double Speech::detectFrequency(vector<double> amplitudes,vector<double> frequenc
 			max_element(amplitudes.begin()+minFreq*windowLength/sampleRate,amplitudes.end())
 		);
 	double maxFreq = frequencies[maxAmplitude];
+	if(maxFreq<0){maxFreq=0;}
 	int maxFreqNum =  maxFreq/minFreq;
 	vector<double> correlations(maxFreqNum,1);
 	for(int freqNum = 1; freqNum < maxFreqNum; freqNum +=1){
@@ -68,7 +69,7 @@ double Speech::detectFrequency(vector<double> amplitudes,vector<double> frequenc
 	)+1;
 	if(maxFreq/ferq<250|maxFreq/ferq>350){
 	}
-	cout<<maxFreq<<','<<ferq<<','<<maxFreqNum<<','<<maxFreq/ferq<<endl;
+	//cout<<maxFreq<<','<<ferq<<','<<maxFreqNum<<','<<maxFreq/ferq<<endl;
 	return maxFreq/ferq;
 }
 
@@ -164,8 +165,8 @@ void Speech::add(Speech addee, double overlap){
 		magnitudes[actualhop].resize(addee.magnitudes[hopnum].size());
 		freqDisplacements[actualhop].resize(addee.magnitudes[hopnum].size());
 		for(int i=0;i<addee.magnitudes[hopnum].size();i++){
-			//magnitudes[actualhop][i] *= (1-fadeFactor);
-			magnitudes[actualhop][i] = addee.magnitudes[hopnum][i];//*fadeFactor;
+			magnitudes[actualhop][i] *= (1-fadeFactor);
+			magnitudes[actualhop][i] = addee.magnitudes[hopnum][i]*fadeFactor;
 		}
 		for(int i=0;i<freqDisplacements[actualhop].size();i++){
 			freqDisplacements[actualhop][i] *= (1-fadeFactor);
@@ -195,7 +196,7 @@ vector<double> Speech::pop(double requestedLength){
 	cerr<<'S';
 	int poppedHops = int(requestedLength*sampleRate)/hop;//the number of hops that will be synthesized
 	int nuvohops = hops - poppedHops;
-	double nuvoduration = duration - poppedHops*hop/double(sampleRate); //TODO: make samplerate double always
+	double nuvoduration = duration - poppedHops*hop/double(sampleRate);
 
 	Sound outSound = toSound(poppedHops+1);
 	cerr<<'E';
