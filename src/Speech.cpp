@@ -47,7 +47,7 @@ void Speech::crop(double startTime, double endTime){
 	hops = nuvohops;
 }
 
-double Speech::detectFrequency(vector<double> amplitudes,vector<double> frequencies){
+/*double Speech::detectFrequency(vector<double> amplitudes,vector<double> frequencies){
 	double minFreq = 82.407;//minimum frequency humans can sing
 	int maxAmplitude = distance(
 			amplitudes.begin(),
@@ -72,35 +72,43 @@ double Speech::detectFrequency(vector<double> amplitudes,vector<double> frequenc
 	}
 	//cout<<maxFreq<<','<<ferq<<','<<maxFreqNum<<','<<maxFreq/ferq<<endl;
 	return maxFreq/ferq;
+}*/ //It's not very effective
+double detectFrequency(vector<double> pcm,double sampleRate){
+	int length = pcm.size();
+	int minPeriod = floor(sampleRate/1046.5);//maximum frequency humans can sing
+	int maxPeriod = floor(sampleRate/82.407);//minimum frequency humans can sing
+	vector<double> errors(maxPeriod-minPeriod,0);
+	for(int period=minPeriod; period<maxPeriod; period++){
+		int periods = length/period;//number of periods that fit in the sample
+		for(int periodsIn=0; periodsIn<periods-1; periodsIn++){
+			for(int t=0;t<period;t++){
+				errors[period-minPeriod] += pow( pcm[period*(periodsIn) + t] * pcm[period*(periodsIn+1) + t],2);
+			}
+		}
+		errors[period-minPeriod] /= (periods-1)*period;
+	}
+	return double(sampleRate)/(minPeriod+distance( errors.begin(), max_element(errors.begin(),errors.end()) ));
 }
 
 //make speech based on input Sound sample
 Speech::Speech(Sound sample){
 	//set class variables
-	sampleRate = sample.sampleRate;
-	windowLength = sample.windowLength;
-	hop = sample.hop;
-	hops = sample.hops;
-	duration = sample.duration;
-	remainder = vector<double>(windowLength-hop);
+	this->sampleRate = sample.sampleRate;
+	this->windowLength = sample.windowLength;
+	this->hop = sample.hop;
+	this->hops = sample.hops;
+	this->duration = sample.duration;
+	this->remainder = vector<double>(windowLength-hop);
 
-	frequencies = vector<double>(hops);
-	magnitudes = vector<vector<double>>(hops);
-	freqDisplacements = vector<vector<double>>(hops);
+	this->frequencies = vector<double>(hops);
+	this->magnitudes = vector<vector<double>>(hops);
+	this->freqDisplacements = vector<vector<double>>(hops);
 
+	double freq = detectFrequency(sample.synthesize(),this->sampleRate);
 	//detect frequencies
 	for(int hopnum=0; hopnum<hops; hopnum++){
-		double freq = detectFrequency(sample.magnitudes[hopnum],sample.frequencies[hopnum]);
-
 		frequencies[hopnum] = freq;
 	}
-	int midIndex = frequencies.size()/2;
-	nth_element(
-		frequencies.begin(),
-		frequencies.begin()+midIndex,
-		frequencies.end()
-	);
-	double freq = frequencies[midIndex];
 	for(int hopnum=0; hopnum<hops; hopnum++){
 		magnitudes[hopnum] = vector<double>(sampleRate/freq+1);
 		freqDisplacements[hopnum] = vector<double>(sampleRate/freq+1);

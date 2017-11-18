@@ -19,7 +19,6 @@ class Speech{
 		//helper methods/data
 		std::vector<double> remainder;
 		Sound toSound(int endHop);
-		double detectFrequency(std::vector<double> amplitudes, std::vector<double> frequencies);
 	public:
 		//public knowledge
 		double sampleRate;
