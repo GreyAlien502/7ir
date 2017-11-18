@@ -6,6 +6,7 @@
 #include <math.h>
 
 #include "Speech.h"
+#include "fileio.h"
 
 using namespace std;
 
@@ -301,59 +302,32 @@ void Speech::amplify(function<double(double)>factors){
 
 
 void Speech::write(ostream& filestream){
-	filestream.write(reinterpret_cast<char*>(&windowLength),sizeof(windowLength));
-	filestream.write(reinterpret_cast<char*>(&hop),sizeof(hop));
-	filestream.write(reinterpret_cast<char*>(&hops),sizeof(hops));
-	filestream.write(reinterpret_cast<char*>(&sampleRate),sizeof(sampleRate));
-	filestream.write(reinterpret_cast<char*>(&duration),sizeof(duration));
+	fileio::write(filestream,this->windowLength);
+	fileio::write(filestream,this->hop);
+	fileio::write(filestream,this->hops);
 
-	filestream.write(reinterpret_cast<char*>(&frequencies[0]),hops*sizeof(frequencies[0]));
+	fileio::write(filestream,this->magnitudes);
+	fileio::write(filestream,this->freqDisplacements);
+	fileio::write(filestream,this->frequencies);
 
-	int magSize, freqDispSize;
-	for(int hopnum=0; hopnum<hops; hopnum++){
-		magSize = magnitudes[hopnum].size();
-		filestream.write(
-			reinterpret_cast<char*>(&magSize),
-			sizeof(magSize));
-		filestream.write(
-			reinterpret_cast<char*>(&magnitudes[hopnum][0]),
-			magnitudes[hopnum].size()*sizeof(magnitudes[hopnum][0]));
+	fileio::write(filestream,this->remainder);
 
-		freqDispSize = freqDisplacements[hopnum].size();
-		filestream.write(
-			reinterpret_cast<char*>(&freqDispSize),
-			sizeof(freqDispSize));
-		filestream.write(
-			reinterpret_cast<char*>(&freqDisplacements[hopnum][0]),
-			freqDisplacements[hopnum].size()*sizeof(freqDisplacements[hopnum][0]));
-	}
+	fileio::write(filestream,this->duration);
+	fileio::write(filestream,this->sampleRate);
 }
 Speech::Speech(istream& filestream){
-	filestream.read(reinterpret_cast<char*>(&windowLength),sizeof(windowLength));
-	filestream.read(reinterpret_cast<char*>(&hop),sizeof(hop));
-	filestream.read(reinterpret_cast<char*>(&hops),sizeof(hops));
-	filestream.read(reinterpret_cast<char*>(&sampleRate),sizeof(sampleRate));
-	filestream.read(reinterpret_cast<char*>(&duration),sizeof(duration));
+	this->windowLength = fileio::read(filestream,int(0));
+	this->hop          = fileio::read(filestream,int(0));
+	this->hops         = fileio::read(filestream,int(0));
 
-	frequencies = vector<double>(hops);
-	magnitudes = vector<vector<double>>(hops);
-	freqDisplacements = vector<vector<double>>(hops);
-	filestream.read(reinterpret_cast<char*>(&frequencies[0]),hops*sizeof(frequencies[0]));
+	this->magnitudes        = fileio::read(filestream,vector<vector<double>>());
+	this->freqDisplacements = fileio::read(filestream,vector<vector<double>>());
+	this->frequencies       = fileio::read(filestream,vector<double>());
 
-	int magSize, freqDispSize;
-	for(int hopnum=0; hopnum<hops; hopnum++){
-		filestream.read(reinterpret_cast<char*>(&magSize),sizeof(magSize));
-		magnitudes[hopnum] = vector<double>(magSize);
-		filestream.read(
-			reinterpret_cast<char*>(&magnitudes[hopnum][0]),
-			magSize*sizeof(magnitudes[hopnum][0]));
+	this->remainder = fileio::read(filestream,vector<double>());
 
-		filestream.read(reinterpret_cast<char*>(&freqDispSize),sizeof(freqDispSize));
-		freqDisplacements[hopnum] = vector<double>(freqDispSize);
-		filestream.read(
-			reinterpret_cast<char*>(&freqDisplacements[hopnum][0]),
-			freqDispSize*sizeof(freqDisplacements[hopnum][0]));
-	}
+	this->duration   = fileio::read(filestream,double(0));
+	this->sampleRate = fileio::read(filestream,double(0));
 }
 
 

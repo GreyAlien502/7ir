@@ -65,3 +65,86 @@ vector<double> fileio::wavRead(string filename){
 		throw(errorz);
 	}
 }
+
+//WRITE TO BINARY FILE
+	template<typename type>
+	void write_template(
+		std::ostream& filestream,
+		std::enable_if_t<std::is_fundamental<type>::value,type> scalar
+	){
+		filestream.write(reinterpret_cast<char*>(&scalar),sizeof(scalar)); 
+	}
+	template<typename type>
+	void write_template(
+		std::ostream& filestream,
+		std::enable_if_t<!std::is_fundamental<type>::value,type> vec
+	){
+		write_template<int>(filestream,(int)vec.size());
+		for(int index=0; index<vec.size(); index++){//TODO:bulk copy primitive type vectors?
+			write_template<typename type::value_type>(filestream,vec[index]);
+		}
+	}
+void fileio::write(std::ostream& filestream, int                   value){
+	write_template<int>(filestream,value);
+}
+void fileio::write(std::ostream& filestream, double                value){
+	write_template<double>(filestream,value);
+}
+void fileio::write(std::ostream& filestream, vector<double>        value){
+	write_template<vector<double>>(filestream,value);
+}
+void fileio::write(std::ostream& filestream, vector<vector<double>>value){
+	write_template<vector<vector<double>>>(filestream,value);
+}
+
+//READ FROM BINARY FILE
+	template<typename type>
+	std::enable_if_t<std::is_fundamental<type>::value,type>
+	read_template(std::istream& filestream, type){
+		type output;
+		filestream.read(reinterpret_cast<char*>(&output),sizeof(output));
+		return output;
+	}
+
+	template<typename type>
+	std::vector<
+		std::enable_if_t<
+			std::is_fundamental< typename type::value_type >::value,
+			typename type::value_type
+		>
+	> read_template(std::istream& filestream, type placeholder){
+		using elementType = typename type::value_type;
+		int size = read_template<int>(filestream,(int)0);
+		vector<elementType> output = vector<elementType>(size);
+		filestream.read(
+			reinterpret_cast<char*>(&output[0]),
+			size*sizeof(output[0])
+		);
+		return output;
+	}
+
+	template<typename type>
+	vector<vector<typename type::value_type::value_type>> read_template(std::istream& filestream, type placeholder){
+		using elementType = typename type::value_type::value_type;
+		int size = read_template<int>(filestream,(int)0);
+		vector<vector<elementType>> output = vector<vector<elementType>>(size);
+		for(int index=0; index<size; index++){
+			output[index] = read_template<vector<elementType>>(filestream,vector<elementType>());
+		}
+		return output;
+	}
+int fileio::read(std::istream& filestream,int placeholder){
+	return read_template<int>(filestream,placeholder);
+}
+double fileio::read(std::istream& filestream,double placeholder){
+	return read_template(filestream,placeholder);
+}
+std::vector<int> fileio::read(std::istream& filestream,std::vector<int> placeholder){
+	return read_template<vector<int>>(filestream,placeholder);
+}
+std::vector<double> fileio::read(std::istream& filestream,std::vector<double> placeholder){
+	return read_template<vector<double>>(filestream,placeholder);
+}
+std::vector<std::vector<double>> fileio::read(std::istream& filestream,std::vector<std::vector<double>>placeholder){
+	return read_template<vector<vector<double>>>(filestream,placeholder);
+}

@@ -90,14 +90,14 @@ double Phone::getOverlap  (){ return overlap; }
 
 
 Phone::Phone(istream& filestream){
-	filestream.read(reinterpret_cast<char*>(&consonant),sizeof(consonant));
-	filestream.read(reinterpret_cast<char*>(&preutter),sizeof(preutter));
-	filestream.read(reinterpret_cast<char*>(&overlap),sizeof(overlap));
-	sample = Speech(filestream);
+	this->consonant = fileio::read(filestream,double(0));
+	this->preutter  = fileio::read(filestream,double(0));
+	this->overlap   = fileio::read(filestream,double(0));
+	this->sample = Speech(filestream);
 }
 void Phone::write(ostream& filestream){
-	filestream.write(reinterpret_cast<char*>(&consonant),sizeof(consonant));
-	filestream.write(reinterpret_cast<char*>(&preutter),sizeof(preutter));
-	filestream.write(reinterpret_cast<char*>(&overlap),sizeof(overlap));
+	fileio::write(filestream,this->consonant);
+	fileio::write(filestream,this->preutter);
+	fileio::write(filestream,this->overlap);
 	sample.write(filestream);
 }
