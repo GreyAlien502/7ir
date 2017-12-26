@@ -13,12 +13,12 @@ using namespace std;
 
 //makes a Sound object from the Speech
 Sound Speech::toSound(int endHop){
-	Sound sample = Sound(vector<double>((endHop-1)*hop+windowLength,0),windowLength/hop,windowLength,sampleRate);
+	Sound sample = Sound(vector<float>((endHop-1)*hop+windowLength,0),windowLength/hop,windowLength,sampleRate);
 	for(int hopnum=0; hopnum<endHop; hopnum++){
 		//add new frequencies
 		for(int nuvoharmonic=1; nuvoharmonic<magnitudes[hopnum].size(); nuvoharmonic++){
-			double mag = magnitudes[hopnum][nuvoharmonic];
-			double freq = (1+freqDisplacements[hopnum][nuvoharmonic])*nuvoharmonic*frequencies[hopnum];
+			float mag = magnitudes[hopnum][nuvoharmonic];
+			float freq = (1+freqDisplacements[hopnum][nuvoharmonic])*nuvoharmonic*frequencies[hopnum];
 
 			int i = freq/sampleRate*windowLength+.5;
 			if((0 < i) && (i < windowLength/2+1)){
@@ -29,42 +29,42 @@ Sound Speech::toSound(int endHop){
 	}
 	return sample;
 }
-Sound Speech::startToSound(double endTime){
+Sound Speech::startToSound(float endTime){
 	return toSound(endTime/sampleRate/hop);
 }
 
-void Speech::crop(double startTime, double endTime){
-	double nuvoduration = endTime - startTime;
+void Speech::crop(float startTime, float endTime){
+	float nuvoduration = endTime - startTime;
 	int nuvohops = int(nuvoduration*sampleRate)/hop +1;
 	int startHop = startTime*sampleRate/hop;
 	int endHop = startHop + nuvohops;
 
-	frequencies = vector<double>(frequencies.begin()+startHop,frequencies.begin()+endHop);
-	magnitudes = vector<vector<double>>(magnitudes.begin()+startHop,magnitudes.begin()+endHop);
-	freqDisplacements = vector<vector<double>>(freqDisplacements.begin()+startHop,freqDisplacements.begin()+endHop);
+	frequencies = vector<float>(frequencies.begin()+startHop,frequencies.begin()+endHop);
+	magnitudes = vector<vector<float>>(magnitudes.begin()+startHop,magnitudes.begin()+endHop);
+	freqDisplacements = vector<vector<float>>(freqDisplacements.begin()+startHop,freqDisplacements.begin()+endHop);
 
 	duration = nuvoduration;
 	hops = nuvohops;
 }
 
-/*double Speech::detectFrequency(vector<double> amplitudes,vector<double> frequencies){
-	double minFreq = 82.407;//minimum frequency humans can sing
+/*float Speech::detectFrequency(vector<float> amplitudes,vector<float> frequencies){
+	float minFreq = 82.407;//minimum frequency humans can sing
 	int maxAmplitude = distance(
 			amplitudes.begin(),
 			max_element(amplitudes.begin()+minFreq*windowLength/sampleRate,amplitudes.end())
 		);
-	double maxFreq = frequencies[maxAmplitude];
+	float maxFreq = frequencies[maxAmplitude];
 	if(maxFreq<0){maxFreq=0;}
 	int maxFreqNum =  maxFreq/minFreq;
-	vector<double> correlations(maxFreqNum,1);
+	vector<float> correlations(maxFreqNum,1);
 	for(int freqNum = 1; freqNum < maxFreqNum; freqNum +=1){
-		double currentFreq = maxFreq/freqNum;
+		float currentFreq = maxFreq/freqNum;
 		for(int harmonic=0;harmonic<amplitudes.size()/maxFreq*sampleRate/windowLength;harmonic++){
 			int currentIndex = currentFreq*harmonic/sampleRate*windowLength;
 			correlations[freqNum-1] += amplitudes[currentIndex];
 		}
 	}
-	double ferq = distance(
+	float ferq = distance(
 		correlations.begin(),
 		max_element(correlations.begin(),correlations.end())
 	)+1;
@@ -73,11 +73,11 @@ void Speech::crop(double startTime, double endTime){
 	//cout<<maxFreq<<','<<ferq<<','<<maxFreqNum<<','<<maxFreq/ferq<<endl;
 	return maxFreq/ferq;
 }*/ //It's not very effective
-double detectFrequency(vector<double> pcm,double sampleRate){
+float detectFrequency(vector<float> pcm,float sampleRate){
 	int length = pcm.size();
 	int minPeriod = floor(sampleRate/1046.5);//maximum frequency humans can sing
 	int maxPeriod = floor(sampleRate/82.407);//minimum frequency humans can sing
-	vector<double> errors(maxPeriod-minPeriod,0);
+	vector<float> errors(maxPeriod-minPeriod,0);
 	for(int period=minPeriod; period<maxPeriod; period++){
 		int periods = length/period;//number of periods that fit in the sample
 		for(int periodsIn=0; periodsIn<periods-1; periodsIn++){
@@ -87,36 +87,48 @@ double detectFrequency(vector<double> pcm,double sampleRate){
 		}
 		errors[period-minPeriod] /= (periods-1)*period;
 	}
-	return double(sampleRate)/(minPeriod+distance( errors.begin(), max_element(errors.begin(),errors.end()) ));
+	int maximum = distance( errors.begin(), max_element(errors.begin(),errors.end()) );
+	int fundamentalIndex = maximum;
+	for(int index=maximum/2; index*0>minPeriod; index--){
+		if( errors[index] > errors[maximum]*.75 ){
+			fundamentalIndex = (2*index+1)/(2*maximum);
+			cerr<<float(maximum)/fundamentalIndex<<'@'<<endl;
+		}
+	}
+	return float(sampleRate)/(minPeriod+fundamentalIndex);
 }
 
 //make speech based on input Sound sample
 Speech::Speech(Sound sample){
+	const float MAXFREQ = 20000;
 	//set class variables
 	this->sampleRate = sample.sampleRate;
 	this->windowLength = sample.windowLength;
 	this->hop = sample.hop;
 	this->hops = sample.hops;
 	this->duration = sample.duration;
-	this->remainder = vector<double>(windowLength-hop);
+	this->remainder = vector<float>(windowLength-hop);
 
-	this->frequencies = vector<double>(hops);
-	this->magnitudes = vector<vector<double>>(hops);
-	this->freqDisplacements = vector<vector<double>>(hops);
+	this->frequencies = vector<float>(hops);
+	this->magnitudes = vector<vector<float>>(hops);
+	this->freqDisplacements = vector<vector<float>>(hops);
 
-	double freq = detectFrequency(sample.synthesize(),this->sampleRate);
+	float freq = detectFrequency(sample.synthesize(),this->sampleRate);
+	cout<<freq;
+
+	cerr<<sampleRate/freq<<'>'<<MAXFREQ/freq<<endl;
 	//detect frequencies
 	for(int hopnum=0; hopnum<hops; hopnum++){
 		frequencies[hopnum] = freq;
 	}
 	for(int hopnum=0; hopnum<hops; hopnum++){
-		magnitudes[hopnum] = vector<double>(sampleRate/freq+1);
-		freqDisplacements[hopnum] = vector<double>(sampleRate/freq+1);
+		magnitudes[hopnum] = vector<float>(sampleRate/freq+1);
+		freqDisplacements[hopnum] = vector<float>(sampleRate/freq+1);
 	}
 	//detect peaks
 	for(int hopnum=0; hopnum<hops; hopnum++){
 		frequencies[hopnum] = freq;
-		vector<double> harmonicIndices = vector<double>(sampleRate/freq+1);
+		vector<float> harmonicIndices = vector<float>(sampleRate/freq+1);
 		for(int scannedIndex=0; scannedIndex<windowLength/2+1; scannedIndex++){
 			int harmonic = sample.frequencies[hopnum][scannedIndex]/freq+.5;
 
@@ -143,8 +155,8 @@ Speech::Speech(Sound sample){
 		}
 	}
 }
-void Speech::add(Speech addee, double overlap){
-	double nuvoduration = duration + addee.duration - overlap;
+void Speech::add(Speech addee, float overlap){
+	float nuvoduration = duration + addee.duration - overlap;
 	int nuvohops = int(nuvoduration*sampleRate)/hop+1;
 	int overlapHops = (hops-1) + (addee.hops-1) - (nuvohops-1) +1;
 	if(overlap>duration){
@@ -165,7 +177,7 @@ void Speech::add(Speech addee, double overlap){
 	freqDisplacements.resize(nuvohops);
 
 	for(int hopnum=0;hopnum+1<overlapHops;hopnum++){
-		double fadeFactor = double(hopnum)/overlapHops;
+		float fadeFactor = float(hopnum)/overlapHops;
 		int actualhop = hops-overlapHops+hopnum;
 
 		frequencies[actualhop] *= (1-fadeFactor);
@@ -201,15 +213,15 @@ void Speech::add(Speech addee, double overlap){
 	duration = nuvoduration;
 	hops = nuvohops;
 }
-vector<double> Speech::pop(double requestedLength){
+vector<float> Speech::pop(float requestedLength){
 	cerr<<'S';
 	int poppedHops = int(requestedLength*sampleRate)/hop;//the number of hops that will be synthesized
 	int nuvohops = hops - poppedHops;
-	double nuvoduration = duration - poppedHops*hop/double(sampleRate);
+	float nuvoduration = duration - poppedHops*hop/float(sampleRate);
 
 	Sound outSound = toSound(poppedHops+1);
 	cerr<<'E';
-	vector<double> pcm = outSound.rawSynthesize();
+	vector<float> pcm = outSound.rawSynthesize();
 	cerr<<'R';
 	for(int i=0;i<remainder.size();i++){
 		pcm[windowLength/2+i] += remainder[i];
@@ -225,15 +237,15 @@ vector<double> Speech::pop(double requestedLength){
 	duration = nuvoduration;
 
 	cerr<<'E';
-	remainder = vector<double>(pcm.end() - (windowLength+1)/2,pcm.end());
-	return vector<double>(pcm.begin()+windowLength/2,pcm.begin()+windowLength/2+poppedHops*hop);
+	remainder = vector<float>(pcm.end() - (windowLength+1)/2,pcm.end());
+	return vector<float>(pcm.begin()+windowLength/2,pcm.begin()+windowLength/2+poppedHops*hop);
 }
-vector<double> Speech::synthesize(){
+vector<float> Speech::synthesize(){
 	return toSound(hops).synthesize();
 }
 
 
-		/*lengthens subsection vector of vector of doubles
+		/*lengthens subsection vector of vector of floats
 		 **adds extra elements or removes elements from start to end indices
 		 **to make the distance between them nuvolength.
 		 */
@@ -248,16 +260,16 @@ vector<double> Speech::synthesize(){
 			}
 		}
 	}
-	template void lengthenVector(vector<double>&,int,int,int);
-	template void lengthenVector(vector<vector<double>>&,int,int,int);
+	template void lengthenVector(vector<float>&,int,int,int);
+	template void lengthenVector(vector<vector<float>>&,int,int,int);
 	/*expands or contracts the region of the sound between
 	 **times start and end to be size nuvolength
 	 **adding similar sound in the new region
 	 **if a new regian must be created.
 	 */
-void Speech::stretch(double start, double end, double nuvolength){
-	double length = end - start;
-	double nuvoduration = duration + nuvolength - length;
+void Speech::stretch(float start, float end, float nuvolength){
+	float length = end - start;
+	float nuvoduration = duration + nuvolength - length;
 	int nuvohops = nuvoduration*sampleRate/hop +1;
 	int startHop = start*sampleRate/hop;
 	int lengthHop = length*sampleRate/hop;
@@ -270,7 +282,7 @@ void Speech::stretch(double start, double end, double nuvolength){
 	hops = nuvohops;
 	duration = nuvoduration;
 }
-void Speech::transpose(function<double(double)>nuvofreq, double endTime){
+void Speech::transpose(function<float(float)>nuvofreq, float endTime){
 	int endHop = endTime*sampleRate/hop;
 	if(frequencies.size()<endHop){
 		cerr<<"bad sized boy already";
@@ -279,18 +291,18 @@ void Speech::transpose(function<double(double)>nuvofreq, double endTime){
 	}
 	for(int hopnum=0; hopnum<endHop; hopnum++){
 		//interpolate
-		double initFreq = frequencies[hopnum];
-		double targetFreq = nuvofreq(hopnum*hop/sampleRate);
-		vector<double> nuvomagnitudes = vector<double>(magnitudes[hopnum].size(),0);
-		vector<double> nuvofreqDisplacements = vector<double>(magnitudes[hopnum].size(),0);
+		float initFreq = frequencies[hopnum];
+		float targetFreq = nuvofreq(hopnum*hop/sampleRate);
+		vector<float> nuvomagnitudes = vector<float>(magnitudes[hopnum].size(),0);
+		vector<float> nuvofreqDisplacements = vector<float>(magnitudes[hopnum].size(),0);
 		for(int newHarmonic=1; newHarmonic+1 < magnitudes[hopnum].size(); newHarmonic++){
 			int oldHarmonic = newHarmonic * targetFreq/initFreq;
 			if(oldHarmonic+1>=magnitudes[hopnum].size()){continue;}
-			double interpolationFactor = newHarmonic/initFreq - oldHarmonic/targetFreq;
+			float interpolationFactor = newHarmonic/initFreq - oldHarmonic/targetFreq;
 			nuvomagnitudes[newHarmonic] =
 				 magnitudes[hopnum][oldHarmonic]*(1-interpolationFactor)
 				+magnitudes[hopnum][oldHarmonic+1]*(interpolationFactor);
-			nuvofreqDisplacements[newHarmonic] =
+			nuvofreqDisplacements[newHarmonic] =0;
 				 freqDisplacements[hopnum][oldHarmonic]*(1-interpolationFactor)
 				+freqDisplacements[hopnum][oldHarmonic+1]*(interpolationFactor);
 		}
@@ -299,9 +311,9 @@ void Speech::transpose(function<double(double)>nuvofreq, double endTime){
 		frequencies[hopnum] = targetFreq;
 	}
 }
-void Speech::amplify(function<double(double)>factors){
+void Speech::amplify(function<float(float)>factors){
 	for(int hopnum=0; hopnum<hops; hopnum++){
-		double factor = factors( hopnum*hop/sampleRate);
+		float factor = factors( hopnum*hop/sampleRate);
 		for(int freq=0; freq<magnitudes[0].size(); freq++){
 			magnitudes[hopnum][freq] *= factor;
 		}
@@ -328,14 +340,14 @@ Speech::Speech(istream& filestream){
 	this->hop          = fileio::read(filestream,int(0));
 	this->hops         = fileio::read(filestream,int(0));
 
-	this->magnitudes        = fileio::read(filestream,vector<vector<double>>());
-	this->freqDisplacements = fileio::read(filestream,vector<vector<double>>());
-	this->frequencies       = fileio::read(filestream,vector<double>());
+	this->magnitudes        = fileio::read(filestream,vector<vector<float>>());
+	this->freqDisplacements = fileio::read(filestream,vector<vector<float>>());
+	this->frequencies       = fileio::read(filestream,vector<float>());
 
-	this->remainder = fileio::read(filestream,vector<double>());
+	this->remainder = fileio::read(filestream,vector<float>());
 
-	this->duration   = fileio::read(filestream,double(0));
-	this->sampleRate = fileio::read(filestream,double(0));
+	this->duration   = fileio::read(filestream,float(0));
+	this->sampleRate = fileio::read(filestream,float(0));
 }
 
 
@@ -345,7 +357,7 @@ Speech::Speech(istream& filestream){
 
 /*returns the value of vec at index
 **returns 0 if that element doesn't exist
-double tryAt(vector<double>& vec, int index){
+float tryAt(vector<float>& vec, int index){
 	if(index < vec.size()){
 		return vec[index];
 	}else{

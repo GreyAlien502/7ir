@@ -31,7 +31,7 @@ map<string,string> parameters(ifstream& fileobject){
 }
 
 
-double freqFromNum(int notenum){
+float freqFromNum(int notenum){
 	return 440.*pow(2.,(notenum-69.)/12.) ;
 }
 
@@ -51,17 +51,17 @@ Song::Song(string path){
 		outFile = parameterlecian["OutFile"];
 		voiceDir = parameterlecian["VoiceDir"];
 
-		double delta = 0;
+		float delta = 0;
 		int i = 0;
 		getline(ust,line);
 		while(line != "[#TRACKEND]"){
 			map<string,string> parameterList = parameters(ust);
 			
 			string lyric = parameterList["Lyric"];
-			double length = stod(parameterList["Length"])/480.;
-			double notenum;
-			double velocity;
-			double duration;
+			float length = stod(parameterList["Length"])/480.;
+			float notenum;
+			float velocity;
+			float duration;
 			if((version == 1) && (lyric == "R")){
 				delta += length;
 			}else{
@@ -109,20 +109,20 @@ void Song::synthesize(VoiceLibrary library, string filename){
 
 	Phone phoneNow = library.getPhone(notes[0]);
 	Speech speech = Speech(phoneNow.sample.startToSound(0).compatibleSound(
-		vector<double>(phoneNow.overlap*sampleRate,0)
+		vector<float>(phoneNow.overlap*sampleRate,0)
 	));
 	for(int note=0;note<notes.size();note++){
 		cerr<<notes[note].lyric;
-		double leftoverLength = speech.duration -phoneNow.overlap;
+		float leftoverLength = speech.duration -phoneNow.overlap;
 		Phone phoneNext;
 
 		if(note+1<notes.size()){
 			phoneNext = library.getPhone(notes[note+1]);
 		//stretch next
-		//cerr<<'e';
+		cerr<<'e';
 			if(phoneNext.preutter>notes[note].length/tempo){
-				double newPreutter = notes[note].length/tempo;
-				double newOverlap = phoneNext.overlap * newPreutter/phoneNext.preutter;
+				float newPreutter = notes[note].length/tempo;
+				float newOverlap = phoneNext.overlap * newPreutter/phoneNext.preutter;
 				phoneNext.sample.stretch(0,phoneNext.preutter,newPreutter);
 				phoneNext.preutter = newPreutter;
 				phoneNext.overlap = newOverlap;
@@ -132,11 +132,11 @@ void Song::synthesize(VoiceLibrary library, string filename){
 			phoneNext.preutter=phoneNext.overlap=0;
 		}
 		//stretch now
-		//cerr<<'o';
-		double targetLength = notes[note].length/tempo
+		cerr<<'o';
+		float targetLength = notes[note].length/tempo
 			-phoneNext.preutter
 			+phoneNext.overlap;
-		double vowelLength = min(
+		float vowelLength = min(
 			notes[note].duration/tempo,
 			targetLength
 		);
@@ -146,32 +146,32 @@ void Song::synthesize(VoiceLibrary library, string filename){
 			vowelLength
 		);
 		//add space
-		//cerr<<'s';
-		double restLength = targetLength - vowelLength;
+		cerr<<'s';
+		float restLength = targetLength - vowelLength;
 		if(restLength!=0){
 			phoneNow.sample.add(
 				Speech(phoneNow.sample.startToSound(0).compatibleSound(
-					vector<double>(restLength*sampleRate,0)
+					vector<float>(restLength*sampleRate,0)
 				)),
 				0
 			);
 		}
 
 		//add to previous
-		//cerr<<'a';
+		cerr<<'a';
 		speech.add(phoneNow.sample, phoneNow.overlap);
 		//transpose
-		//cerr<<'t';
-		double noteBoundary = leftoverLength +phoneNow.preutter;
-		double writeLength = noteBoundary +notes[note].length/tempo -phoneNext.preutter;
-		double freq1,freq2;
+		cerr<<'t';
+		float noteBoundary = leftoverLength +phoneNow.preutter;
+		float writeLength = noteBoundary +notes[note].length/tempo -phoneNext.preutter;
+		float freq1,freq2;
 		freq2 = freqFromNum(notes[note].notenum);
 		if(note!=0){
 			freq1 = freqFromNum(notes[note-1].notenum);
 		}else{
 			freq1 = freq2;
 		}
-		function<double (double)> frequency = [noteBoundary,freq1,freq2](double time){
+		function<float (float)> frequency = [noteBoundary,freq1,freq2](float time){
 			if(time<noteBoundary){
 				return freq1;
 			}else{
@@ -180,10 +180,10 @@ void Song::synthesize(VoiceLibrary library, string filename){
 		};
 		speech.transpose(frequency,writeLength);
 		//pop&write
-		//cerr<<'p';
+		cerr<<'p';
 		fileio::append(speech.pop(writeLength),filename);
 		//reassign
-		//cerr<<'r';
+		cerr<<'r';
 		phoneNow = phoneNext;
 	}
 }

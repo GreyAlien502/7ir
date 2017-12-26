@@ -48,7 +48,7 @@ string VoiceLibrary::getFormatString(){
 
 	return
 		to_string(sizeof(int))+','+
-		to_string(sizeof(double))+','+
+		to_string(sizeof(float))+','+
 		endianness+','+
 		to_string(hop)+','+
 		to_string(windowLength)+','+
@@ -226,28 +226,28 @@ void VoiceLibrary::importDir(string path){
 
 			start = end + 1;
 			end = line.find(',', start);
-			double offset = stod(line.substr(start,end-start))/1000.;
+			float offset = stod(line.substr(start,end-start))/1000.;
 
 			start = end + 1;
 			end = line.find(',', start);
-			double consonant = stod(line.substr(start,end-start))/1000.;
+			float consonant = stod(line.substr(start,end-start))/1000.;
 
 			start = end + 1;
 			end = line.find(',', start);
-			double cutoff = stod(line.substr(start,end-start))/1000.;
+			float cutoff = stod(line.substr(start,end-start))/1000.;
 
 			start = end + 1;
 			end = line.find(',', start);
-			double preutter = stod(line.substr(start,end-start))/1000.;
+			float preutter = stod(line.substr(start,end-start))/1000.;
 
 			start = end + 1;
 			end = line.length();
-			double overlap = stod(line.substr(start,end-start))/1000.;
+			float overlap = stod(line.substr(start,end-start))/1000.;
 
 			try{
 				cerr<<alias;
 				aliases.insert({alias,phones.size()});
-				phones.push_back(tuple<string,double,double,double,double,double>(
+				phones.push_back(tuple<string,float,float,float,float,float>(
 					path+'/'+filename+".spch",
 					offset,
 					consonant,
@@ -267,7 +267,7 @@ bool VoiceLibrary::hasPhone(string alias){
 }
 
 Phone VoiceLibrary::getPhone(Note note){
-	tuple<string,double,double,double,double,double> phoneData;
+	tuple<string,float,float,float,float,float> phoneData;
 
 	string lyric = affixedLyric(note.notenum,note.lyric);
 	if(hasPhone(lyric)){
@@ -283,11 +283,11 @@ Phone VoiceLibrary::getPhone(Note note){
 	ifstream speechFile(get<0>(phoneData));
 	if(speechFile.is_open()){
 		Speech speechSample = Speech(speechFile);
-		double offset = get<1>(phoneData);
-		double consonant = get<2>(phoneData);
-		double cutoff = get<3>(phoneData);
-		double preutter = get<4>(phoneData);
-		double overlap = get<5>(phoneData);
+		float offset = get<1>(phoneData);
+		float consonant = get<2>(phoneData);
+		float cutoff = get<3>(phoneData);
+		float preutter = get<4>(phoneData);
+		float overlap = get<5>(phoneData);
 
 		if(cutoff >= 0){
 			speechSample.crop(offset,speechSample.duration-cutoff);

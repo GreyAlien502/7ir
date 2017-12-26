@@ -21,7 +21,7 @@ fileio::fileOpenError::fileOpenError():
 
 
 
-void fileio::wavWrite(vector<double>sound,string filename){
+void fileio::wavWrite(vector<float>sound,string filename){
 	std::ofstream file(filename, ios::out|ios::binary|ios::trunc );
 	if(file.is_open()){
 		vector<int16_t> temp(sound.size());
@@ -35,7 +35,7 @@ void fileio::wavWrite(vector<double>sound,string filename){
 	}
 }
 
-void fileio::append(vector<double>sound, string filename){
+void fileio::append(vector<float>sound, string filename){
 	if(sound.size() == 0){return;}
 	std::ofstream file(filename, ios::out|ios::binary|ios::app);
 	if(file.is_open()){
@@ -50,12 +50,12 @@ void fileio::append(vector<double>sound, string filename){
 	}
 }
 
-vector<double> fileio::wavRead(string filename){
+vector<float> fileio::wavRead(string filename){
 	ifstream file(filename, ios::in|ios::binary|ios::ate );
 	if(file.is_open()){
 		ifstream::pos_type length = file.tellg();
 		file.seekg(0, ios::beg);
-		vector<double> output(length/sizeof(int16_t));
+		vector<float> output(length/sizeof(int16_t));
 		vector<int16_t> temp(length/sizeof(int16_t));
 		file.read((char*)&temp[0], length);
 		for(int i=0; i<temp.size(); i++){ output[i]=temp[i]/32767.; }
@@ -87,14 +87,14 @@ vector<double> fileio::wavRead(string filename){
 void fileio::write(std::ostream& filestream, int                   value){
 	write_template<int>(filestream,value);
 }
-void fileio::write(std::ostream& filestream, double                value){
-	write_template<double>(filestream,value);
+void fileio::write(std::ostream& filestream, float                value){
+	write_template<float>(filestream,value);
 }
-void fileio::write(std::ostream& filestream, vector<double>        value){
-	write_template<vector<double>>(filestream,value);
+void fileio::write(std::ostream& filestream, vector<float>        value){
+	write_template<vector<float>>(filestream,value);
 }
-void fileio::write(std::ostream& filestream, vector<vector<double>>value){
-	write_template<vector<vector<double>>>(filestream,value);
+void fileio::write(std::ostream& filestream, vector<vector<float>>value){
+	write_template<vector<vector<float>>>(filestream,value);
 }
 
 //READ FROM BINARY FILE
@@ -136,15 +136,15 @@ void fileio::write(std::ostream& filestream, vector<vector<double>>value){
 int fileio::read(std::istream& filestream,int placeholder){
 	return read_template<int>(filestream,placeholder);
 }
-double fileio::read(std::istream& filestream,double placeholder){
+float fileio::read(std::istream& filestream,float placeholder){
 	return read_template(filestream,placeholder);
 }
 std::vector<int> fileio::read(std::istream& filestream,std::vector<int> placeholder){
 	return read_template<vector<int>>(filestream,placeholder);
 }
-std::vector<double> fileio::read(std::istream& filestream,std::vector<double> placeholder){
-	return read_template<vector<double>>(filestream,placeholder);
+std::vector<float> fileio::read(std::istream& filestream,std::vector<float> placeholder){
+	return read_template<vector<float>>(filestream,placeholder);
 }
-std::vector<std::vector<double>> fileio::read(std::istream& filestream,std::vector<std::vector<double>>placeholder){
-	return read_template<vector<vector<double>>>(filestream,placeholder);
+std::vector<std::vector<float>> fileio::read(std::istream& filestream,std::vector<std::vector<float>>placeholder){
+	return read_template<vector<vector<float>>>(filestream,placeholder);
 }

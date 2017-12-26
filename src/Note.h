@@ -5,12 +5,12 @@ class Note{
 	public:
 		std::string lyric;
 		int notenum;
-		double velocity;
-		double delta;//in beats
-		double duration;//in beats
-		double length;//in beats
+		float velocity;
+		float delta;//in beats
+		float duration;//in beats
+		float length;//in beats
 
-		Note(std::string lyric, int notenum, double velocity, double delta, double duration, double length):
+		Note(std::string lyric, int notenum, float velocity, float delta, float duration, float length):
 			lyric(lyric),
 			notenum(notenum),
 			velocity(velocity),

@@ -7,25 +7,25 @@
 class Phone{
 	protected:
 	public:
-		double consonant; //all in seconds
-		double preutter;
-		double overlap;
+		float consonant; //all in seconds
+		float preutter;
+		float overlap;
 		Speech sample;
 
 		Phone(
-			std::vector<double> pcm,
-			double consonantTime, double preutterTime, double overlapTime,
+			std::vector<float> pcm,
+			float consonantTime, float preutterTime, float overlapTime,
 			int windowOverlap, int windowSize, int sampleRate
 		);
 		Phone(
 			Speech soundSample,
-			double consonantTime, double preutterTime, double overlapTime
+			float consonantTime, float preutterTime, float overlapTime
 		);
 		Phone( int windowOverlap=16, int windowSize=2048, int sampleRate=44100);
 
-		double getConsonant();
-		double getPreutter();
-		double getOverlap();
+		float getConsonant();
+		float getPreutter();
+		float getOverlap();
 
 		Phone(std::istream& filestream);
 		void write(std::ostream& filestream);

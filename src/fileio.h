@@ -8,20 +8,20 @@ namespace fileio{
 			fileOpenError();
 	};
 
-	void wavWrite(std::vector<double>sound,std::string filename);
-	std::vector<double> wavRead(std::string path);
-	void append(std::vector<double>sound, std::string filename);
+	void wavWrite(std::vector<float>sound,std::string filename);
+	std::vector<float> wavRead(std::string path);
+	void append(std::vector<float>sound, std::string filename);
 
 	void write(std::ostream& outFile, int);
-	void write(std::ostream& outFile, double);
+	void write(std::ostream& outFile, float);
 	void write(std::ostream& outFile, std::vector<int>);
-	void write(std::ostream& outFile, std::vector<double>);
-	void write(std::ostream& outFile, std::vector<std::vector<double>>);
+	void write(std::ostream& outFile, std::vector<float>);
+	void write(std::ostream& outFile, std::vector<std::vector<float>>);
 
 	
 	int                              read(std::istream& inFile, int);
-	double                           read(std::istream& inFile, double);
+	float                           read(std::istream& inFile, float);
 	std::vector<int>              read(std::istream& inFile, std::vector<int>);
-	std::vector<double>              read(std::istream& inFile, std::vector<double>);
-	std::vector<std::vector<double>> read(std::istream& inFile, std::vector<std::vector<double>>);
+	std::vector<float>              read(std::istream& inFile, std::vector<float>);
+	std::vector<std::vector<float>> read(std::istream& inFile, std::vector<std::vector<float>>);
 }

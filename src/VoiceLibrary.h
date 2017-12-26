@@ -10,11 +10,11 @@ class VoiceLibrary{
 		std::vector<
 			std::tuple<
 				std::string,
-				double, //offset
-				double, //consonant
-				double, //cutoff
-				double, //preutter
-				double  //overlap
+				float, //offset
+				float, //consonant
+				float, //cutoff
+				float, //preutter
+				float  //overlap
 			>
 		> phones;
 		std::map<std::string,int> aliases;

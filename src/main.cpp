@@ -15,8 +15,8 @@ int main(int args, char** argv){
 		exit(EXIT_FAILURE);
 	}
 
-	const int OVERLAP = 16;
-	const int WINDOW_LENGTH = 1024;
+	const int OVERLAP = 8;
+	const int WINDOW_LENGTH = pow(2,9);
 
 	cerr << "loading song...";
 	Song sang = Song(argv[1]);
