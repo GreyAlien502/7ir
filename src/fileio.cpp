@@ -1,14 +1,4 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <cstdint>
-#include <cmath>
-#include <string.h>
-#include <fftw3.h>
-#include <iostream>
 #include <fstream>
-#include <vector>
-#include <algorithm>
-#include <stdexcept>
 
 #include "fileio.h"
 
@@ -66,15 +56,23 @@ vector<float> fileio::wavRead(string filename){
 	}
 }
 
+/* The read and write functions are used to write objects to disk and then read them back out.
+** Objects will just have to call them on each of the members that need to be stored.
+** There are template methods for code reuse, 
+** and then there are wrappers that allow other code to call those templates
+** without worrying about the fact that they are templates.
+*/
+
 //WRITE TO BINARY FILE
-	template<typename type>
+	template<typename type> //applies to  types that are fundamental
 	void write_template(
 		std::ostream& filestream,
 		std::enable_if_t<std::is_fundamental<type>::value,type> scalar
 	){
 		filestream.write(reinterpret_cast<char*>(&scalar),sizeof(scalar)); 
 	}
-	template<typename type>
+	template<typename type> // applies to types that are not fundamental
+	                        // !They are assumed to be vectors!
 	void write_template(
 		std::ostream& filestream,
 		std::enable_if_t<!std::is_fundamental<type>::value,type> vec
@@ -98,7 +96,7 @@ void fileio::write(std::ostream& filestream, vector<vector<float>>value){
 }
 
 //READ FROM BINARY FILE
-	template<typename type>
+	template<typename type> //applies to fundamental types
 	std::enable_if_t<std::is_fundamental<type>::value,type>
 	read_template(std::istream& filestream, type){
 		type output;
@@ -106,7 +104,7 @@ void fileio::write(std::ostream& filestream, vector<vector<float>>value){
 		return output;
 	}
 
-	template<typename type>
+	template<typename type> //applies to vectors of fundamental types
 	std::vector<
 		std::enable_if_t<
 			std::is_fundamental< typename type::value_type >::value,
@@ -123,7 +121,8 @@ void fileio::write(std::ostream& filestream, vector<vector<float>>value){
 		return output;
 	}
 
-	template<typename type>
+	template<typename type> // applies to vectors of vectors
+	                        // !They are assumed to be vectors of vectors of fundamental types!
 	vector<vector<typename type::value_type::value_type>> read_template(std::istream& filestream, type placeholder){
 		using elementType = typename type::value_type::value_type;
 		int size = read_template<int>(filestream,(int)0);

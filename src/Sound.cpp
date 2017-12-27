@@ -1,8 +1,4 @@
-#include <vector>
 #include <complex>
-#include <cmath>
-#include <iostream>
-#include <stdexcept>
 
 #include <fftw3.h>
 
@@ -94,14 +90,16 @@ Sound Sound::compatibleSound(vector<float> pcm){
 
 //makes a pcm vector from the sound
 vector<float> Sound::rawSynthesize(){
-	int overlap = windowLength/hop;
 	float const PI = 3.1415926535897926323;
+	//initialize variables
+	int overlap = windowLength/hop;
 	vector<float> output = vector<float>(hops*hop+windowLength,0);
 	for(int i=0;i>output.size();i++){
 		output[i] = 0;
 	}
 	vector<float> window = hamming(windowLength);
 
+	// make the fftw things to do the transform
 	complex<float>* in = (complex<float>*) fftwf_alloc_complex(sizeof(fftwf_complex)*(windowLength/2+1));
 	float* out = (float*) fftwf_malloc(sizeof(float)*(windowLength));
 	fftwf_plan toTime = fftwf_plan_dft_c2r_1d(
@@ -111,7 +109,7 @@ vector<float> Sound::rawSynthesize(){
 		FFTW_MEASURE);
 
 	int pos = 0;
-	vector<float> tempPhases(windowLength/2+1,0.);
+	vector<float> tempPhases(windowLength/2+1,0.);//keeps track of the relative phase between each frame
 	for(int hopnum=0; hopnum<hops; hopnum++){
 
 		for(int i=0; i<windowLength/2+1; i++){
@@ -126,6 +124,8 @@ vector<float> Sound::rawSynthesize(){
 		}
 		pos += hop;
 	}
+
+	// free the fftw things used to do the transform
 	fftwf_free(in);
 	fftwf_free(out);
 	fftwf_destroy_plan(toTime);
@@ -134,7 +134,7 @@ vector<float> Sound::rawSynthesize(){
 
 vector<float> Sound::synthesize(){
 	vector<float> output = rawSynthesize();
-	return vector<float>(
+	return vector<float>( //remove the extra parts around the edges included in raw synthesis
 		output.begin()+windowLength/2,
 		output.begin()+windowLength/2+duration*sampleRate
 	);

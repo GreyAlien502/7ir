@@ -1,10 +1,5 @@
-#include <stdio.h>
-#include <vector>
-#include <string>
-#include <map>
 #include <fstream>
-#include <iostream>
-#include <algorithm>
+#include <algorithm> // find
 #include <experimental/filesystem>
 namespace filesystem=std::experimental::filesystem;
 
@@ -14,6 +9,7 @@ namespace filesystem=std::experimental::filesystem;
 
 using namespace std;
 
+// gets note number from something like "C#4" or "B3"
 int getNoteNum(string noteName){
 	map<char,int> letterMap = {
 		{'C', 0},
@@ -40,6 +36,7 @@ int getNoteNum(string noteName){
 	return output;
 }
 
+// returns a string that i
 string VoiceLibrary::getFormatString(){
 	uint16_t test = 0x0102;
 	char* byte = reinterpret_cast<char*>(&test);
@@ -56,7 +53,9 @@ string VoiceLibrary::getFormatString(){
 		VERSION;
 }
 
+//converts lyric from kana to RO-MAji and vice versa
 string convert(string inLyric){
+	// try going one way
 	vector< pair<string,string> >::iterator outPair = find_if(
 		begin(conversionTable),
 		end(conversionTable),
@@ -65,6 +64,7 @@ string convert(string inLyric){
 	if(outPair != end(conversionTable)){
 		return outPair->second;
 	}
+	// try going the other way
 	outPair = find_if(
 		conversionTable.begin(), 
 		conversionTable.end(),
@@ -73,7 +73,7 @@ string convert(string inLyric){
 	if(outPair != conversionTable.end()){
 		return outPair->first;
 	}
-	return inLyric;
+	return inLyric; // if all else fails, returrn original
 }
 
 string VoiceLibrary::affixedLyric(int noteNum, string lyric){
@@ -82,7 +82,8 @@ string VoiceLibrary::affixedLyric(int noteNum, string lyric){
 	}
 
 	string output;
-	if(noteNum < minNoteNum){
+	if(noteNum < this->minNoteNum){
+		//try - and then ↓ as low prefices
 		output = '-'+lyric;
 		if(hasPhone(output)){
 			return output;
@@ -92,7 +93,8 @@ string VoiceLibrary::affixedLyric(int noteNum, string lyric){
 			return output;
 		}
 	}
-	if(noteNum > maxNoteNum){
+	if(noteNum > this->maxNoteNum){
+		//try * and then ↑ as high prefices
 		output = '*'+lyric;
 		if(hasPhone(output)){
 			return output;
@@ -108,7 +110,7 @@ string VoiceLibrary::affixedLyric(int noteNum, string lyric){
 		 return affixes.first + lyric + affixes.second;
 	}
 
-	return lyric;
+	return lyric; // wort case, return original
 }
 
 VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, int windowSize, int rate){
@@ -158,8 +160,8 @@ VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, int windowSize, 
 		compile(path);
 	}
 	importDir(path);
+	//for each file
 	for(auto& currentFile : filesystem::directory_iterator(path)){
-		string pathName = currentFile.path().native();
 		if(filesystem::is_directory(currentFile.status())){
 			if(compiling){ compile(currentFile.path().native());}
 			importDir(currentFile.path().native());
@@ -169,6 +171,7 @@ VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, int windowSize, 
 	compiled_file << getFormatString();
 }
 
+//returns if searchee ends in suffix
 bool endsIn(string searchee, string suffix){
 	return searchee.size() >= suffix.size() &&
 		searchee.compare(searchee.size()-suffix.size(), suffix.size(), suffix)==0;
@@ -269,17 +272,20 @@ bool VoiceLibrary::hasPhone(string alias){
 Phone VoiceLibrary::getPhone(Note note){
 	tuple<string,float,float,float,float,float> phoneData;
 
+	// use the affixed lyric 
 	string lyric = affixedLyric(note.notenum,note.lyric);
 	if(hasPhone(lyric)){
 		phoneData = phones[aliases.at(lyric)];
 	}
 
+	// or the converted version of the lyric
 	lyric = affixedLyric(note.notenum,convert(note.lyric));
 	if(hasPhone(lyric)){
 		phoneData = phones[aliases.at(lyric)];
 	}
 
 
+	// then read in from the file
 	ifstream speechFile(get<0>(phoneData));
 	if(speechFile.is_open()){
 		Speech speechSample = Speech(speechFile);
@@ -300,7 +306,8 @@ Phone VoiceLibrary::getPhone(Note note){
 			consonant, preutter, overlap
 		);
 	}else{
-		cerr<<get<0>(phoneData)+" not found"<<endl;
+		// if all fails, use silence & complain
+		cerr<<get<0>(phoneData)+":NOT FOUND;";
 		return Phone(windowLength/hop,windowLength, sampleRate);
 	}
 }

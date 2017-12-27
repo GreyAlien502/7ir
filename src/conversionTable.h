@@ -1,7 +1,11 @@
 #include <string>
 #include <vector>
-#include <utility>
 
+/* This is the table used to convert RO-MAji to kana and vice versa.
+** It consists of pairs of strings consisting of:
+** 1. kana
+** 2. kanji
+*/
 std::vector< std::pair<std::string,std::string> >  conversionTable= {
 	{"ん", "n"},
 	{"つ", "tsu"},
