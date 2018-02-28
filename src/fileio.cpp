@@ -114,6 +114,7 @@ void fileio::write(std::ostream& filestream, vector<vector<float>>value){
 		using elementType = typename type::value_type;
 		int size = read_template<int>(filestream,(int)0);
 		vector<elementType> output = vector<elementType>(size);
+		if(size==0) { return output; }
 		filestream.read(
 			reinterpret_cast<char*>(&output[0]),
 			size*sizeof(output[0])
