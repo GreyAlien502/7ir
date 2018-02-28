@@ -113,7 +113,7 @@ string VoiceLibrary::affixedLyric(int noteNum, string lyric){
 	return lyric; // wort case, return original
 }
 
-VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, int windowSize, int rate){
+VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, int windowSize, float rate){
 	//initialize class variables
 	sampleRate = rate;
 	windowLength = windowSize;
@@ -307,7 +307,7 @@ Phone VoiceLibrary::getPhone(Note note){
 		);
 	}else{
 		// if all fails, use silence & complain
-		cerr<<get<0>(phoneData)+":NOT FOUND;";
+		cerr<<"ERROR:'"<<note.lyric<<"' NOT FOUND;";
 		return Phone(windowLength/hop,windowLength, sampleRate);
 	}
 }

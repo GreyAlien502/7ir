@@ -37,7 +37,7 @@ class VoiceLibrary{
 		// get string to check if sved .spch format matches this computer
 		std::string getFormatString();
 	public:
-		int sampleRate;
+		float sampleRate;
 		int hop;
 
 		/* reads a new VoiceLibrary in:
@@ -47,7 +47,7 @@ class VoiceLibrary{
 			std::string path,
 			int overlap=16,
 			int windowSize=2048,
-			int sampleRate=44100);
+			float sampleRate=44100);
 		//returns a phone for a given note
 		Phone getPhone(Note note);
 };
