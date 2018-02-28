@@ -194,22 +194,33 @@ void Speech::add(Speech addee, float overlap){
 
 	//add overlap to the old sound by fading
 	for(int hopnum=0;hopnum+1<overlapHops;hopnum++){
-		float fadeFactor = float(hopnum)/overlapHops;
 		int actualhop = hops-overlapHops+hopnum;
 
-		frequencies[actualhop] *= (1-fadeFactor);
-		frequencies[actualhop] += addee.frequencies[hopnum]*fadeFactor;
+		float nuvofreq = 0;
 
 		magnitudes[actualhop].resize(addee.magnitudes[hopnum].size());
 		freqDisplacements[actualhop].resize(addee.magnitudes[hopnum].size());
 		for(int i=0;i<addee.magnitudes[hopnum].size();i++){
-			magnitudes[actualhop][i] *= (1-fadeFactor);
-			magnitudes[actualhop][i] = addee.magnitudes[hopnum][i]*fadeFactor;
+			float oldMag = magnitudes[actualhop][i];
+			float addMag = addee.magnitudes[hopnum][i];
+			float fadeFactor;
+			if(oldMag + addMag == 0){
+				fadeFactor=0;
+			}else{
+				fadeFactor =(addMag)/(oldMag + addMag);
+			}
+
+			//magnitudes[actualhop][i] *= (1-fadeFactor);
+			magnitudes[actualhop][i] += addee.magnitudes[hopnum][i];//*fadeFactor;
+
+			//freqDisplacements[actualhop][i] *= (1-fadeFactor);
+			freqDisplacements[actualhop][i] = addee.freqDisplacements[hopnum][i]*fadeFactor;
+
+			nuvofreq += frequencies[hopnum]*(1-fadeFactor);
+			nuvofreq += addee.frequencies[hopnum]*fadeFactor;
 		}
-		for(int i=0;i<freqDisplacements[actualhop].size();i++){
-			freqDisplacements[actualhop][i] *= (1-fadeFactor);
-			freqDisplacements[actualhop][i] += addee.freqDisplacements[hopnum][i]*fadeFactor;
-		}
+
+		frequencies[hopnum] = nuvofreq/addee.magnitudes[hopnum].size();
 	}
 
 	//copy the new one in after the end of the old one
@@ -320,7 +331,7 @@ void Speech::transpose(function<float(float)>nuvofreq, float endTime){
 			nuvomagnitudes[newHarmonic] =
 				 magnitudes[hopnum][oldHarmonic]*(1-interpolationFactor)
 				+magnitudes[hopnum][oldHarmonic+1]*(interpolationFactor);
-			nuvofreqDisplacements[newHarmonic] =0;
+			nuvofreqDisplacements[newHarmonic] =
 				 freqDisplacements[hopnum][oldHarmonic]*(1-interpolationFactor)
 				+freqDisplacements[hopnum][oldHarmonic+1]*(interpolationFactor);
 		}
