@@ -28,6 +28,8 @@ class Speech{
 		//helper methods/data
 		std::vector<float> remainder; // the part of one synthesis that leaks into the next frames' times
 		Sound toSound(int endHop); // converts the first endHop frames into a Sound object.
+
+		void verify();
 	public:
 		//public knowledge
 		float sampleRate; // in Hz TODO:make all  sample rates floats

@@ -1,15 +1,29 @@
 #include <algorithm> // max_element
 #include <functional>// function<float (float)>
 #include <math.h> // floor
+#include <assert.h>
 
 #include "Speech.h"
 #include "fileio.h"
 
 using namespace std;
 
-
+void Speech::verify(){
+	assert( this->hops == int(this->duration*sampleRate)/hop + 1);
+	// magnitudes and frequencies should be <hops> long.
+	assert(this->magnitudes.size()==this->hops);
+	assert(this->frequencies.size()==this->hops);
+	for(int hopnum=0;hopnum<this->magnitudes.size();hopnum++){
+		assert(
+			this->magnitudes[hopnum].size()
+			==
+			this->freqDisplacements[hopnum].size()
+		);
+	}
+}
 //makes a Sound object from the Speech
 Sound Speech::toSound(int endHop){
+	assert(endHop<=this->hops);
 	Sound sample = Sound(
 		vector<float>((endHop-1)*hop+windowLength,0),
 		windowLength/hop,windowLength,sampleRate
@@ -31,7 +45,11 @@ Sound Speech::toSound(int endHop){
 	return sample;
 }
 Sound Speech::startToSound(float endTime){
-	return toSound(endTime/sampleRate/hop);
+	int endHop = endTime/sampleRate/hop;
+	if(endHop > this->hops){
+		endHop = this->hops - 1;
+	}
+	return toSound(endHop);
 }
 
 void Speech::crop(float startTime, float endTime){
@@ -169,8 +187,18 @@ Speech::Speech(Sound sample){
 			}
 		}
 	}
+	this->verify();
 }
 void Speech::add(Speech addee, float overlap){
+	if(overlap > addee.duration){ // stretch if your'e trying to overlap longer thtan the thing your addinge.
+		addee.stretch(0,addee.duration,overlap);
+	}
+	if(overlap > this->duration){ // stretch if your'e trying to overlap longer thtan the thing your addinge.
+		this->stretch(0,this->duration,overlap);
+	}
+	assert(overlap <= addee.duration);
+	assert(overlap <= this->duration);
+
 	float nuvoduration = duration + addee.duration - overlap;
 	int nuvohops = int(nuvoduration*sampleRate)/hop+1;
 	int overlapHops = (hops-1) + (addee.hops-1) - (nuvohops-1) +1;
@@ -241,9 +269,15 @@ void Speech::add(Speech addee, float overlap){
 	    );
 	duration = nuvoduration;
 	hops = nuvohops;
+	this->verify();
 }
 vector<float> Speech::pop(float requestedLength){
 	int poppedHops = int(requestedLength*sampleRate)/hop;//the number of hops that will be synthesized
+	assert(poppedHops < this->hops);
+//		//this->stretch(0,this->duration,requestedLength);
+//		cerr<< requestedLength << '	' << this->duration<<
+//		'	'<< poppedHops<< '	' << hops;
+//	}
 	int nuvohops = hops - poppedHops;
 	float nuvoduration = duration - poppedHops*hop/float(sampleRate);
 
@@ -265,6 +299,7 @@ vector<float> Speech::pop(float requestedLength){
 	remainder = vector<float>(pcm.end() - (windowLength+1)/2,pcm.end());
 
 	return vector<float>(pcm.begin()+windowLength/2,pcm.begin()+windowLength/2+poppedHops*hop);
+	this->verify();
 }
 vector<float> Speech::synthesize(){
 	return toSound(hops).synthesize(); // synthesize everything
@@ -297,11 +332,15 @@ vector<float> Speech::synthesize(){
 	*/
 void Speech::stretch(float start, float end, float nuvolength){
 	float length = end - start;
-	float nuvoduration = duration + nuvolength - length;
+	float nuvoduration = duration + (nuvolength - length);// these parenths minimize rounding errors (no error if nuvolength == length)
 	int nuvohops = nuvoduration*sampleRate/hop +1;
 	int startHop = start*sampleRate/hop;
-	int lengthHop = length*sampleRate/hop;
+	int lengthHop = (hops-1) - startHop;
 	int nuvolengthHop = (nuvohops-1) - (hops-1) + lengthHop;
+	if(nuvolengthHop < 0){
+		cerr<<start<<'	'<<end<<'	'<<nuvolength<<"	3:	"
+		<<nuvohops<<'	'<<hops<<'	'<<lengthHop;
+	}
 
 	lengthenVector(magnitudes,       startHop, lengthHop, nuvolengthHop);
 	lengthenVector(freqDisplacements,startHop, lengthHop, nuvolengthHop);
@@ -309,6 +348,7 @@ void Speech::stretch(float start, float end, float nuvolength){
 
 	hops = nuvohops;
 	duration = nuvoduration;
+	this->verify();
 }
 void Speech::transpose(function<float(float)>nuvofreq, float endTime){
 	int endHop = endTime*sampleRate/hop;
@@ -339,6 +379,7 @@ void Speech::transpose(function<float(float)>nuvofreq, float endTime){
 		freqDisplacements[hopnum] = nuvofreqDisplacements;
 		frequencies[hopnum] = targetFreq;
 	}
+	this->verify();
 }
 void Speech::amplify(function<float(float)>factors){
 	for(int hopnum=0; hopnum<hops; hopnum++){
@@ -347,6 +388,7 @@ void Speech::amplify(function<float(float)>factors){
 			magnitudes[hopnum][freq] *= factor;
 		}
 	}
+	this->verify();
 }
 
 
@@ -377,6 +419,8 @@ Speech::Speech(istream& filestream){
 
 	this->duration   = fileio::read(filestream,float(0));
 	this->sampleRate = fileio::read(filestream,float(0));
+
+	this->verify();
 }
 
 
