@@ -22,7 +22,9 @@ namespace fileio{
 	std::vector<float> wavRead(std::string path);
 	// writes raw wav data to filename
 	// appends if file exists
-	void append(std::vector<float>sound, std::string filename);
+	void writeWavHeader(int sampleRate, std::ofstream& file);
+	void updateWavHeader(std::ofstream& file);
+	void append(std::vector<float>sound, std::ofstream& file);
 
 	// write functions write type to ostream in binary form
 	// to be read in later with read functions

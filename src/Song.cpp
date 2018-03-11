@@ -126,8 +126,9 @@ Song::Song(string path){
 }
 
 
-void Song::synthesize(VoiceLibrary library, string filename){
+void Song::synthesize(VoiceLibrary library, ofstream& file){
 	int sampleRate = library.sampleRate;
+	fileio::writeWavHeader( sampleRate, file);
 
 	Phone phoneNow = library.getPhone(notes[0]);
 	Speech speech = Speech(phoneNow.sample.startToSound(0).compatibleSound(
@@ -197,8 +198,10 @@ void Song::synthesize(VoiceLibrary library, string filename){
 		};
 		speech.transpose(frequency,writeLength);
 		//pop&write
-		fileio::append(speech.pop(writeLength),filename);
+		fileio::append(speech.pop(writeLength),file);
 		//reassign
 		phoneNow = phoneNext;
 	}
+
+	fileio::updateWavHeader(file);
 }

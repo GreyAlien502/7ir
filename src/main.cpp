@@ -1,4 +1,5 @@
 #include <cmath>
+#include <fstream>
 
 #include "Song.h"
 #include "fileio.h"
@@ -11,6 +12,7 @@ int main(int args, char** argv){
 		exit(EXIT_FAILURE);
 	}
 
+
 	const int OVERLAP = 8; //<- these can be adjusted
 	const int WINDOW_LENGTH = pow(2,9); // <-/
 
@@ -21,6 +23,10 @@ int main(int args, char** argv){
 		sang.voiceDir = argv[2];
 		sang.outFile = argv[3];
 	}// TODO:check the song for default voicelibrary and output files if not given these parameters
+	std::ofstream outFile(sang.outFile, ios::out|ios::binary|ios::trunc);
+	if(!outFile.is_open()){
+		throw( fileio::fileOpenError() );
+	}
 
 	cerr <<endl<<"loading voice library...";
 	VoiceLibrary library = VoiceLibrary(
@@ -31,7 +37,7 @@ int main(int args, char** argv){
 
 
 	cerr <<endl<<"synthesizing...";
-	sang.synthesize(library, sang.outFile);
+	sang.synthesize(library, outFile);
 	cerr<<endl;
 
 }

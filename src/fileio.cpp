@@ -1,4 +1,5 @@
 #include <fstream>
+#include <assert.h>
 
 #include "fileio.h"
 
@@ -25,19 +26,58 @@ void fileio::wavWrite(vector<float>sound,string filename){
 	}
 }
 
-void fileio::append(vector<float>sound, string filename){
-	if(sound.size() == 0){return;}
-	std::ofstream file(filename, ios::out|ios::binary|ios::app);
-	if(file.is_open()){
-		vector<int16_t> temp(sound.size());
-		for(long int i=0;i<temp.size();i++){
-			temp[i]=int(sound[i]*32767);
+
+	void writeLittleEndian(int value, std::ofstream& file, int size){
+		assert(size<=sizeof(int));
+		for( int i=0; i<size; i++ ){
+			file.put(value >> 8*i);
 		}
-		file.write((char*)&temp[0],temp.size()*sizeof(int16_t));
-	}else{
-		fileio::fileOpenError errorz = fileio::fileOpenError();
-		throw(errorz);
 	}
+void fileio::writeWavHeader(int sampleRate, std::ofstream& file){
+	// RIFF chunk
+	file.write("RIFF",4); // ChunkID
+	file.write("1234",4); // ChunkSize placeholder
+	file.write("WAVE",4); // Format
+
+	// fmt  subchunk
+	const int subchunk1Size = 16;
+	const int audioFormat = 1;
+	const int numChannels = 1;
+	const int bitsPerSample = 16;
+	const int byteRate = sampleRate * numChannels * bitsPerSample /8;
+	const int blockAlign = numChannels * bitsPerSample/8;
+	file.write("fmt ",4); // Subchunk1ID
+	writeLittleEndian(subchunk1Size, file, 4);
+	writeLittleEndian(audioFormat,   file, 2);
+	writeLittleEndian(numChannels,   file, 2);
+	writeLittleEndian(sampleRate,    file, 4);
+	writeLittleEndian(byteRate,      file, 4);
+	writeLittleEndian(blockAlign,    file, 2);
+	writeLittleEndian(bitsPerSample, file, 2);
+
+	// data subchunk
+	file.write("data",4); // SubChunkID
+	file.write("1234",4); // Subchunk2Size placeholder
+}
+void fileio::updateWavHeader(std::ofstream& file){
+	file.seekp(0,ios_base::end);
+	int fileSize = file.tellp();
+
+	//write ChunkSize
+	file.seekp(4);
+	writeLittleEndian(fileSize-8, file, 4);
+
+	//write ChunkSize
+	file.seekp(40);
+	writeLittleEndian(fileSize-40, file, 4);
+}
+void fileio::append(vector<float>sound, std::ofstream& file){
+	if(sound.size()==0){return;}
+	vector<int16_t> temp(sound.size());
+	for(long int i=0;i<temp.size();i++){
+		temp[i]=int(sound[i]*32767);
+	}
+	file.write((char*)&temp[0],temp.size()*sizeof(int16_t));
 }
 
 vector<float> fileio::wavRead(string filename){

@@ -20,6 +20,6 @@ class Song{
 
 		Song(std::string path); // read Song in from UST at path
 		//std::vector<float> synthesize(voiceLibrary::VoiceLibrary library); TODO: Is this even useful?
-		void synthesize(VoiceLibrary, std::string path); // synthesize song using a voicelibrary 
+		void synthesize(VoiceLibrary, std::ofstream& file ); // synthesize song using a voicelibrary
 		                                                 // and write output to path
 };
