@@ -13,8 +13,8 @@ int main(int args, char** argv){
 	}
 
 
-	const int OVERLAP = 8; //<- these can be adjusted
-	const int WINDOW_LENGTH = pow(2,9); // <-/
+	const int OVERLAP = 4; //<- these can be adjusted
+	const int WINDOW_LENGTH = pow(2,10); // <-/
 
 	cerr << "loading song...";
 	Song sang = Song(argv[1]);

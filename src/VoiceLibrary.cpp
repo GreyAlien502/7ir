@@ -200,10 +200,10 @@ void VoiceLibrary::compile(string path){
 }
 
 void VoiceLibrary::importDir(string path){
-	cerr<<endl<<path;
 	vector<string> presets = vector<string> ();
 	ifstream oto_ini(path+"/oto.ini");
 	if(oto_ini.is_open()){
+		cerr<<endl<<path;
 		for(string line; getline(oto_ini, line);){
 			if(line[0] == '#'){continue;}
 			int start = 0;
@@ -248,7 +248,7 @@ void VoiceLibrary::importDir(string path){
 			float overlap = stod(line.substr(start,end-start))/1000.;
 
 			try{
-				cerr<<alias;
+				//cerr<<alias;
 				aliases.insert({alias,phones.size()});
 				phones.push_back(tuple<string,float,float,float,float,float>(
 					path+'/'+filename+".spch",
@@ -259,7 +259,7 @@ void VoiceLibrary::importDir(string path){
 					overlap
 				));
 			}catch(fileio::fileOpenError& exc){
-				cerr<<endl<<path+filename<<" not found."<<endl;
+				cerr<<endl<<"file '"<<path+filename<<"' not found."<<endl;
 			}
 		}
 	}
@@ -307,7 +307,7 @@ Phone VoiceLibrary::getPhone(Note note){
 		);
 	}else{
 		// if all fails, use silence & complain
-		cerr<<"ERROR:'"<<note.lyric<<"' NOT FOUND;";
+		cerr<<"Warning:'"<<note.lyric<<"' not found;";
 		return Phone(windowLength/hop,windowLength, sampleRate);
 	}
 }
