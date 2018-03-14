@@ -11,6 +11,20 @@ class Song{
 	** It stores all the information extracted from a UST file.
 	** It is roughly equivalent to sheet music.
 	*/
+	private:
+		/* Get new phone for the <noteIndex>th note.
+		** Make sure its preutter isn't too big.
+		** If there is no such note (out of range), return empty note.
+		*/
+		Phone getNewPhone(int noteIndex,VoiceLibrary& library);
+		/* Resize <stretchee> to the appropriate length
+		** for the <noteIndex>th note,
+		** given <nextPhone> as the next Phone.
+		** If there is space between <stretchee> and <nextPhone>,
+		** add the appropriate amount of silence.
+		*/
+		void resizePhone(Phone& stretchee, int noteIndex, Phone& nextPhone);//float space);
+
 	public:
 		float tempo; //in BPM
 		std::string projectName; // name of project

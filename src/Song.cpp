@@ -125,6 +125,48 @@ Song::Song(string path){
 	}
 }
 
+Phone Song::getNewPhone(int noteIndex,VoiceLibrary& library){
+	if(noteIndex>=notes.size()){
+		Phone output = Phone();
+		output.preutter=output.overlap=0;
+		return output;
+	}
+	Phone output = library.getPhone(notes[noteIndex]);
+	if(output.preutter>notes[noteIndex-1].length/tempo){
+		//stretch to fit preutten within previous note
+		float newPreutter = notes[noteIndex-1].length/tempo;
+		float newOverlap = output.overlap * newPreutter/output.preutter;
+		output.sample.stretch(0,output.preutter,newPreutter);
+		output.preutter = newPreutter;
+		output.overlap = newOverlap;
+	}
+	return output;
+}
+void Song::resizePhone(Phone& resizee, int noteIndex, Phone& phoneNext){
+	//stretch to proper length
+	float targetLength = notes[noteIndex].length/tempo
+		-phoneNext.preutter
+		+phoneNext.overlap;
+	float vowelLength = min(
+		notes[noteIndex].duration/tempo,
+		targetLength
+	);
+	resizee.sample.stretch(
+		resizee.preutter,
+		resizee.sample.duration,
+		vowelLength
+	);
+	//add silence after notes if needed
+	float restLength = targetLength - vowelLength;
+	if(restLength!=0){
+		resizee.sample.add(
+			Speech(resizee.sample.startToSound(0).compatibleSound(
+				vector<float>(restLength*sampleRate,0)
+			)),
+			0
+		);
+	}
+}
 
 void Song::synthesize(VoiceLibrary library, ofstream& file){
 	int sampleRate = library.sampleRate;
@@ -137,45 +179,10 @@ void Song::synthesize(VoiceLibrary library, ofstream& file){
 	for(int note=0;note<notes.size();note++){
 		cerr<<notes[note].lyric; //log each lyric
 		float leftoverLength = speech.duration -phoneNow.overlap;
-		Phone phoneNext;
 
-		if(note+1<notes.size()){
-			phoneNext = library.getPhone(notes[note+1]);
-		//stretch next note
-			if(phoneNext.preutter>notes[note].length/tempo){
-				float newPreutter = notes[note].length/tempo;
-				float newOverlap = phoneNext.overlap * newPreutter/phoneNext.preutter;
-				phoneNext.sample.stretch(0,phoneNext.preutter,newPreutter);
-				phoneNext.preutter = newPreutter;
-				phoneNext.overlap = newOverlap;
-			}
-		}else{
-			phoneNext = Phone();
-			phoneNext.preutter=phoneNext.overlap=0;
-		}
-		//stretch current note
-		float targetLength = notes[note].length/tempo
-			-phoneNext.preutter
-			+phoneNext.overlap;
-		float vowelLength = min(
-			notes[note].duration/tempo,
-			targetLength
-		);
-		phoneNow.sample.stretch(
-			phoneNow.preutter,
-			phoneNow.sample.duration,
-			vowelLength
-		);
-		//add silence between notes if needed
-		float restLength = targetLength - vowelLength;
-		if(restLength!=0){
-			phoneNow.sample.add(
-				Speech(phoneNow.sample.startToSound(0).compatibleSound(
-					vector<float>(restLength*sampleRate,0)
-				)),
-				0
-			);
-		}
+		Phone phoneNext = this->getNewPhone(note+1,library);
+
+		resizePhone(phoneNow, note, phoneNext);
 
 		//add modified note to previous speech sample
 		speech.add(phoneNow.sample, phoneNow.overlap);
