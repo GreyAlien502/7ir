@@ -36,7 +36,7 @@ class Speech{
 		float duration; //total length in seconds
 
 		//creation, addition, & destruction
-		Speech(Sound sample=Sound()); //creates a speech from a monotonous Sound object
+		Speech(Sound sample=Sound(),float frequency=20000.); //creates a speech from a monotonous Sound object
 		void add(Speech addee, float overlap);// adds addee to the end, with overlap seconds of overlap
 		Sound startToSound(float endTime);// returns the first endTime seconds as a Sound object
 		void crop(float starttime, float endtime);// crops down to times between starttime and endtime

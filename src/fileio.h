@@ -1,6 +1,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <stdexcept> //runtime_error
 
 namespace fileio{
 	/* This namespace just contains functions
@@ -10,8 +11,9 @@ namespace fileio{
 
 	//custom error for inability to read files
 	class fileOpenError: public std::runtime_error{
-		public:
-			fileOpenError();
+		public :
+			fileOpenError(std::string filename):
+				runtime_error("Couldn't open '"+filename+"'."){}
 	};
 
 	// writes raw wav data to filename
@@ -19,7 +21,7 @@ namespace fileio{
 	// TODO:is this even used?
 	void wavWrite(std::vector<float>sound,std::string filename);
 	// reads raw wav data from path
-	std::vector<float> wavRead(std::string path);
+	std::vector<float> wavRead(std::ifstream& file, int startSample=0, int endSample=-1);
 	// writes raw wav data to filename
 	// appends if file exists
 	void writeWavHeader(int sampleRate, std::ofstream& file);

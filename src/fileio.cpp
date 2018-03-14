@@ -5,9 +5,6 @@
 
 using namespace std;
 
-fileio::fileOpenError::fileOpenError():
-	runtime_error("Could not read file."){
-}
 
 
 
@@ -21,7 +18,7 @@ void fileio::wavWrite(vector<float>sound,string filename){
 		}
 		file.write((char*)&temp[0],temp.size()*sizeof(int16_t));
 	}else{
-		fileio::fileOpenError errorz = fileio::fileOpenError();
+		fileio::fileOpenError errorz = fileio::fileOpenError(filename);
 		throw(errorz);
 	}
 }
@@ -80,20 +77,28 @@ void fileio::append(vector<float>sound, std::ofstream& file){
 	file.write((char*)&temp[0],temp.size()*sizeof(int16_t));
 }
 
-vector<float> fileio::wavRead(string filename){
-	ifstream file(filename, ios::in|ios::binary|ios::ate );
-	if(file.is_open()){
-		ifstream::pos_type length = file.tellg();
-		file.seekg(0, ios::beg);
-		vector<float> output(length/sizeof(int16_t));
-		vector<int16_t> temp(length/sizeof(int16_t));
-		file.read((char*)&temp[0], length);
-		for(int i=0; i<temp.size(); i++){ output[i]=temp[i]/32767.; }
-		return output;
+vector<float> fileio::wavRead(std::ifstream& file, int start, int end){
+	const std::streampos HEADER_SIZE = 44;
+	file.seekg(0, std::ios::end);
+	int dataLength = file.tellg() - HEADER_SIZE;
+	file.seekg(HEADER_SIZE+start*sizeof(int16_t), std::ios::beg);
+
+	int length;
+	if(end>=0){
+		length = (end -start)*sizeof(int16_t);
 	}else{
-		fileio::fileOpenError errorz = fileio::fileOpenError();
-		throw(errorz);
+		length = dataLength + (end +1 -start)*sizeof(int16_t);
 	}
+	if(length>dataLength){
+		cerr<<endl<<"Warning: you're asking for too much."<<length<<endl;
+		length = dataLength;
+	}
+
+	vector<float> output(length/sizeof(int16_t));
+	vector<int16_t> temp(length/sizeof(int16_t));
+	file.read((char*)&temp[0], length);
+	for(int i=0; i<temp.size(); i++){ output[i]=temp[i]/32767.; }
+	return output;
 }
 
 /* The read and write functions are used to write objects to disk and then read them back out.

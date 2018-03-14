@@ -64,67 +64,12 @@ void Speech::crop(float startTime, float endTime){
 
 	duration = nuvoduration;
 	hops = nuvohops;
+	this->verify();
 }
 
-//experimental frequency detection that hasn't been very accurate
-/*float Speech::detectFrequency(vector<float> amplitudes,vector<float> frequencies){
-	float minFreq = 82.407;//minimum frequency humans can sing
-	int maxAmplitude = distance(
-			amplitudes.begin(),
-			max_element(amplitudes.begin()+minFreq*windowLength/sampleRate,amplitudes.end())
-		);
-	float maxFreq = frequencies[maxAmplitude];
-	if(maxFreq<0){maxFreq=0;}
-	int maxFreqNum =  maxFreq/minFreq;
-	vector<float> correlations(maxFreqNum,1);
-	for(int freqNum = 1; freqNum < maxFreqNum; freqNum +=1){
-		float currentFreq = maxFreq/freqNum;
-		for(int harmonic=0;harmonic<amplitudes.size()/maxFreq*sampleRate/windowLength;harmonic++){
-			int currentIndex = currentFreq*harmonic/sampleRate*windowLength;
-			correlations[freqNum-1] += amplitudes[currentIndex];
-		}
-	}
-	float ferq = distance(
-		correlations.begin(),
-		max_element(correlations.begin(),correlations.end())
-	)+1;
-	if(maxFreq/ferq<250|maxFreq/ferq>350){
-	}
-	//cout<<maxFreq<<','<<ferq<<','<<maxFreqNum<<','<<maxFreq/ferq<<endl;
-	return maxFreq/ferq;
-}*/ //It's not very effective
-
-// detects the fundamental frequency in an audio signal
-float detectFrequency(vector<float> pcm,float sampleRate){
-	int length = pcm.size();
-	int minPeriod = floor(sampleRate/1046.5);//maximum frequency humans can sing
-	int maxPeriod = floor(sampleRate/82.407);//minimum frequency humans can sing
-	vector<float> errors(maxPeriod-minPeriod,0);
-	for(int period=minPeriod; period<maxPeriod; period++){
-		int periods = length/period;//number of periods that fit in the sample
-		for(int periodsIn=0; periodsIn<periods-1; periodsIn++){
-			for(int t=0;t<period;t++){
-				errors[period-minPeriod] += pow( pcm[period*(periodsIn) + t] * pcm[period*(periodsIn+1) + t],2);
-			}
-		}
-		errors[period-minPeriod] /= (periods-1)*period;
-	}
-	int maximum = distance( errors.begin(), max_element(errors.begin(),errors.end()) );
-
-	//try to catch octave errors TODO:make (more?) effective
-	int fundamentalIndex = maximum;
-	/*
-	for(int index=maximum/2; index*0>minPeriod; index--){
-		if( errors[index] > errors[maximum]*.75 ){
-			fundamentalIndex = (2*index+1)/(2*maximum);
-		}
-	}
-	*/
-	return float(sampleRate)/(minPeriod+fundamentalIndex);
-}
 
 //make speech based on input Sound sample
-Speech::Speech(Sound sample){
+Speech::Speech(Sound sample,float freq){
 	const float MAXFREQ = 20000;
 	//set class variables
 	this->sampleRate = sample.sampleRate;
@@ -137,8 +82,6 @@ Speech::Speech(Sound sample){
 	this->frequencies = vector<float>(hops);
 	this->magnitudes = vector<vector<float>>(hops);
 	this->freqDisplacements = vector<vector<float>>(hops);
-
-	float freq = detectFrequency(sample.synthesize(),this->sampleRate);
 
 	//detect frequencies
 	for(int hopnum=0; hopnum<hops; hopnum++){
@@ -273,11 +216,11 @@ void Speech::add(Speech addee, float overlap){
 }
 vector<float> Speech::pop(float requestedLength){
 	int poppedHops = int(requestedLength*sampleRate)/hop;//the number of hops that will be synthesized
+	if(poppedHops >= this->hops){
+		cerr<<"This shouldn't happen too often";
+		this->stretch(0,this->duration,requestedLength);
+	}
 	assert(poppedHops < this->hops);
-//		//this->stretch(0,this->duration,requestedLength);
-//		cerr<< requestedLength << '	' << this->duration<<
-//		'	'<< poppedHops<< '	' << hops;
-//	}
 	int nuvohops = hops - poppedHops;
 	float nuvoduration = duration - poppedHops*hop/float(sampleRate);
 
@@ -298,8 +241,8 @@ vector<float> Speech::pop(float requestedLength){
 	duration = nuvoduration;
 	remainder = vector<float>(pcm.end() - (windowLength+1)/2,pcm.end());
 
-	return vector<float>(pcm.begin()+windowLength/2,pcm.begin()+windowLength/2+poppedHops*hop);
 	this->verify();
+	return vector<float>(pcm.begin()+windowLength/2,pcm.begin()+windowLength/2+poppedHops*hop);
 }
 vector<float> Speech::synthesize(){
 	return toSound(hops).synthesize(); // synthesize everything
