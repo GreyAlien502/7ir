@@ -8,4 +8,4 @@ target_link_libraries(re8 fftw3f stdc++fs)
 set(CMAKE_CXX_FLAGS_DEBUG  "-g -D_GLIBCXX_DEBUG") 
 
 enable_testing()
-add_test(worldIsMine re8 ../ust.ust ../voicelibraries/teto output.wav)
+add_test(worldIsMine re8 ../ust/wim.ust ../voicelibraries/teto output.wav)
