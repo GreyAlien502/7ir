@@ -53,7 +53,6 @@ float freqFromNum(int notenum){
 	return 440.*pow(2.,(notenum-69.)/12.) ;
 }
 
-
 Song::Song(string path){
 	ifstream ust(path);
 	string line;
@@ -78,30 +77,63 @@ Song::Song(string path){
 			// get note parameters for each note
 			map<string,string> parameterList = parameters(ust);
 			
-			string lyric = parameterList["Lyric"];
-			float length = stod(parameterList["Length"])/480.;// convert weird units to beats
-			float notenum;
+			// required entries
+				// TODO:techincially some of these should default to the next note's length...
+				// but it should always be there(and valid)
+			float length;
+			try{
+				length = stod(parameterList["Length"])/480.;// convert weird units (ticks) to beats
+				if(length<0){ throw std::invalid_argument(""); }
+			}catch(std::invalid_argument&){
+				length = 0;
+			}
+
+			string lyric;
+			lyric = parameterList["Lyric"];
+	
+			float noteNum;
+			try{
+				noteNum = stoi(parameterList["NoteNum"]);
+				if(noteNum < 24){ throw std::invalid_argument(""); }
+			}catch(std::invalid_argument&){
+				noteNum = 24;
+			}
+
+			// TODO: support float preUtterance;
+
+			// optional entries
 			float velocity;
+			try{
+				velocity = stod(parameterList["Velocity"])/200.; //normalized to (0,1)
+				if(velocity < 0 || velocity > 1){ throw std::invalid_argument(""); }
+			}catch(std::invalid_argument&){
+				velocity = .5;
+			}
+		
+
+
+
+
+
+
 			float duration;
+			if(version == 1){
+				duration = length;
+			}else{
+				delta = stod(parameterList["Delta"])/480.;// convert to s
+				duration = stod(parameterList["Duration"])/480.;// convert to s
+				//TODO:change 480 to constant so i can change it.
+			}
+
 			if((version == 1) && (lyric == "R")){ // "R" means rest in v1.
 				delta += length;
 			}else{
-				notenum = stoi(parameterList["NoteNum"]);
 
-				if(version == 1){
-					duration = length;
-					velocity = 1;
-				}else{
-					velocity = stod(parameterList["Velocity"])/100.; //normalized to (0,1)
-					delta = stod(parameterList["Delta"])/480.;// convert to s
-					duration = stod(parameterList["Duration"])/480.;// convert to s
-					//TODO:change 480 to constant so i can change it.
-				}
 
 				cerr<<lyric;//log each lyric in the song
 				notes.push_back(Note(
 					lyric,
-					notenum,
+					noteNum,
 					velocity,
 					delta,
 					duration,
@@ -142,7 +174,7 @@ Phone Song::getNewPhone(int noteIndex,VoiceLibrary& library){
 	}
 	return output;
 }
-void Song::resizePhone(Phone& resizee, int noteIndex, Phone& phoneNext){
+void Song::resizePhone(Phone& resizee, int noteIndex, Phone& phoneNext, float sampleRate){
 	//stretch to proper length
 	float targetLength = notes[noteIndex].length/tempo
 		-phoneNext.preutter
@@ -182,7 +214,7 @@ void Song::synthesize(VoiceLibrary library, ofstream& file){
 
 		Phone phoneNext = this->getNewPhone(note+1,library);
 
-		resizePhone(phoneNow, note, phoneNext);
+		resizePhone(phoneNow, note, phoneNext, sampleRate);
 
 		//add modified note to previous speech sample
 		speech.add(phoneNow.sample, phoneNow.overlap);

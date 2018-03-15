@@ -23,7 +23,7 @@ class Song{
 		** If there is space between <stretchee> and <nextPhone>,
 		** add the appropriate amount of silence.
 		*/
-		void resizePhone(Phone& stretchee, int noteIndex, Phone& nextPhone);//float space);
+		void resizePhone(Phone& stretchee, int noteIndex, Phone& nextPhone, float sampleRate);//float space);
 
 	public:
 		float tempo; //in BPM

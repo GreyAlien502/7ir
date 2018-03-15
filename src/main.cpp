@@ -14,7 +14,7 @@ int main(int args, char** argv){
 
 
 	const int OVERLAP = 4; //<- these can be adjusted
-	const int WINDOW_LENGTH = pow(2,10); // <-/
+	const int WINDOW_LENGTH = pow(2,9); // <-/
 
 	cerr << "loading song...";
 	Song sang = Song(argv[1]);
@@ -25,7 +25,7 @@ int main(int args, char** argv){
 	}// TODO:check the song for default voicelibrary and output files if not given these parameters
 	std::ofstream outFile(sang.outFile, ios::out|ios::binary|ios::trunc);
 	if(!outFile.is_open()){
-		throw( fileio::fileOpenError() );
+		throw( fileio::fileOpenError(sang.outFile) );
 	}
 
 	cerr <<endl<<"loading voice library...";
