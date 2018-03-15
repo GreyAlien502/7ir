@@ -17,7 +17,8 @@ FEATURES
 	Y	VCV Voice Libraries
 	Y	Multipitch Voice Libraries
 	N	Envelope
-	N	Pitch Shift
+	N	Pitch Shift Mode 2
+	N	Pitch Shift Mode 1
 	N	Boundary Smoothing
 	N	Vibrato
 	N	VCV <-> VC autoconversion
