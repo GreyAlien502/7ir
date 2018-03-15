@@ -15,6 +15,8 @@ class Sound{
 		**	nuvolength: the new length of the section after stretching
 		*/
 		void lengthenVector(std::vector<std::vector<float> >& input, int start, int end, int nuvolength);
+		
+		bool verify();
 	public:
 		int windowLength; // size of fourier transform window
 		int hop; //samples between the start of consecutive frames

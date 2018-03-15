@@ -1,4 +1,5 @@
 #include <complex>
+#include <assert.h>
 
 #include <fftw3.h>
 
@@ -15,6 +16,14 @@ vector<float> hamming(int windowLength) {
 	return output;
 }
 
+bool Sound::verify(){
+	assert(this->hops > 0);
+	assert(this->duration >= 0);
+	assert(this->hops == int(this->duration*sampleRate)/hop + 1);
+	assert(this->magnitudes.size() == this->hops);
+	assert(this->frequencies.size() == this->hops);
+	return true;
+}
 
 //make sound based off of input pcm data
 Sound::Sound(vector<float> pcm, int overlap, int sizeOfWindow, int rate){
@@ -31,7 +40,8 @@ Sound::Sound(vector<float> pcm, int overlap, int sizeOfWindow, int rate){
 	hop = windowLength/overlap;
 	hops = pcm.size()/hop+1;
 
-	duration = float(pcm.size())/rate;
+	duration = ((hops-1)*hop+.5)/rate;
+
 	pcm.insert(pcm.begin(),	windowLength/2, 0);
 	pcm.resize((windowLength+hops-1)*hop);
 
@@ -82,6 +92,8 @@ Sound::Sound(vector<float> pcm, int overlap, int sizeOfWindow, int rate){
 	fftwf_destroy_plan(toFreck);
 	fftwf_free(in);
 	fftwf_free(out);
+	
+	assert(this->verify());
 }
 //make a compatible sample
 Sound Sound::compatibleSound(vector<float> pcm){
@@ -90,6 +102,8 @@ Sound Sound::compatibleSound(vector<float> pcm){
 
 //makes a pcm vector from the sound
 vector<float> Sound::rawSynthesize(){
+	assert(this->verify());
+
 	float const PI = 3.1415926535897926323;
 	//initialize variables
 	int overlap = windowLength/hop;
@@ -133,6 +147,8 @@ vector<float> Sound::rawSynthesize(){
 }
 
 vector<float> Sound::synthesize(){
+	assert(this->verify());
+
 	vector<float> output = rawSynthesize();
 	return vector<float>( //remove the extra parts around the edges included in raw synthesis
 		output.begin()+windowLength/2,
