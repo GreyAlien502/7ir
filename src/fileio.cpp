@@ -57,7 +57,7 @@ void fileio::writeWavHeader(int sampleRate, std::ofstream& file){
 	file.write("1234",4); // Subchunk2Size placeholder
 }
 void fileio::updateWavHeader(std::ofstream& file){
-	file.seekp(0,ios_base::end);
+	file.seekp(0,ios::end);
 	int fileSize = file.tellp();
 
 	//write ChunkSize
@@ -77,23 +77,32 @@ void fileio::append(vector<float>sound, std::ofstream& file){
 	file.write((char*)&temp[0],temp.size()*sizeof(int16_t));
 }
 
-vector<float> fileio::wavRead(std::ifstream& file, int start, int end){
+vector<float> fileio::wavRead(std::ifstream& file, int start, int end,std::ios_base::seekdir direction){
+	assert(start>=0);
+	assert(end>=0);
 	const std::streampos HEADER_SIZE = 44;
+	
+	//get file size
 	file.seekg(0, std::ios::end);
 	int dataLength = file.tellg() - HEADER_SIZE;
-	file.seekg(HEADER_SIZE+start*sizeof(int16_t), std::ios::beg);
+
+	//cerr<<dataLength<<'	'<<start<<'	'<<end<<endl;
 
 	int length;
-	if(end>=0){
+	if(direction == std::ios::beg){
 		length = (end -start)*sizeof(int16_t);
+	}else if(direction == std::ios::end){
+		length = dataLength + (-end -start)*sizeof(int16_t);
 	}else{
-		length = dataLength + (end +1 -start)*sizeof(int16_t);
+		throw std::invalid_argument("Invalid direction");
 	}
+
 	if(length>dataLength){
-		cerr<<endl<<"Warning: you're asking for too much."<<length<<endl;
+		cerr<<endl<<dataLength<<"Warning: you're asking for too much."<<length<<endl;
 		length = dataLength;
 	}
 
+	file.seekg(HEADER_SIZE+start*sizeof(int16_t), std::ios::beg);
 	vector<float> output(length/sizeof(int16_t));
 	vector<int16_t> temp(length/sizeof(int16_t));
 	file.read((char*)&temp[0], length);

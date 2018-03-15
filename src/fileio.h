@@ -21,7 +21,7 @@ namespace fileio{
 	// TODO:is this even used?
 	void wavWrite(std::vector<float>sound,std::string filename);
 	// reads raw wav data from path
-	std::vector<float> wavRead(std::ifstream& file, int startSample=0, int endSample=-1);
+	std::vector<float> wavRead(std::ifstream& file, int startSample=0, int endSample=0,std::ios::seekdir direction=std::ios::end);
 	// writes raw wav data to filename
 	// appends if file exists
 	void writeWavHeader(int sampleRate, std::ofstream& file);

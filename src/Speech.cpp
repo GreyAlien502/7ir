@@ -8,7 +8,9 @@
 
 using namespace std;
 
-void Speech::verify(){
+bool Speech::verify(){
+	assert( this->hops > 0);
+	assert( this->duration >= 0);
 	assert( this->hops == int(this->duration*sampleRate)/hop + 1);
 	// magnitudes and frequencies should be <hops> long.
 	assert(this->magnitudes.size()==this->hops);
@@ -20,6 +22,7 @@ void Speech::verify(){
 			this->freqDisplacements[hopnum].size()
 		);
 	}
+	return true;
 }
 //makes a Sound object from the Speech
 Sound Speech::toSound(int endHop){

@@ -346,14 +346,13 @@ Phone VoiceLibrary::getPhone(Note note){
 		return Phone(windowLength/hop,windowLength, sampleRate);
 	}
 	int end;
+	std::ios::seekdir direction;
 	if(cutoff >= 0){
-		end = -cutoff*sampleRate;
+		direction = std::ios::end;
+		end = cutoff*sampleRate;
 		//sample.crop(offset,sample.duration-cutoff);
-//		sample = std::vector<float>(
-//			sample.begin()+offset/sampleRate,
-//			sample.end()-ceil(cutoff/sampleRate)
-//		);
 	}else{
+		direction = std::ios::beg;
 		end = (offset-cutoff)*sampleRate;
 		//sample.crop(offset,offset-cutoff);
 //		sample = std::vector<float>(
@@ -368,7 +367,8 @@ Phone VoiceLibrary::getPhone(Note note){
 		Sound(fileio::wavRead(
 			audioFile,
 			offset*sampleRate,
-			end
+			end,
+			direction
 		), this->windowLength/hop, this->windowLength, this->sampleRate)
 		,frequency
 	);
