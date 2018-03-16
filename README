@@ -50,23 +50,26 @@ COMPILING
 
 RUNNING
 	usage: re8 <ust-filename> <voicelibrary-filename> <output-filename>
-	Linux:
-		You must have the correct format!
-		It is often necessary to convert UST, oto.ini, and prefix.map.
-		- To extract an archive (rar/zip/tar), use:
+		<ust-filename> is the .ust file.
+		<voicelibrary-filename> is the name of the directory containing the oto.ini.
+		<output-filename> is the wav file to write the audo to.
 
-		   $ utils/unzip-jis.sh <filename>
+	utils:
+		If you get an archive (rar/zip/tar) from a Windows computer,
+		you should probably use utils/unzip-jis.sh to unzip it,
+		which will expand the archive to to <filename>.dir.
 
-		   The archive will be expanded to <filename>.dir.
+		If you get an error like "Parsing filters is unsupported.",
+		you need to use a different tool to extract,
+		and then run utils/format.sh on the extracted directory.
 
-		- To convert a file to utf-8 and unix endlines, use:
+		Then you should be able to run the re8 command on the files inside.
 
-		   $ utils/format <filename>
 
-		   Make sure to run this on
-		   any UST and all the "oto.ini" files and "prefix.map" files inside voice libraries.
-		
-		Then you should be able to run the re8 command.
+		The reason to do this is because you must have the correct format.
+		Most relevant files are made on Windows with a JIS encoding.
+		If you have a single file you need converted (oto.ini/ust/prefix.map),
+		you can also use utils/format.sh to convert it.
 
 HELP
 	You can email <my username> at gmail.com
