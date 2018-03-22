@@ -301,17 +301,17 @@ void Speech::stretch(float start, float end, float nuvolength){
 ** larger scaleFactor means more samples in the new vector compared to the old one.
 */
 vector<float> resample(const vector<float>& input,float scaleFactor){
-		vector<float> output = vector<float>(input.size()*scaleFactor);
-		//assert(output.size()!=0);
-		for(int outIndex=1; outIndex+1 < output.size(); outIndex++){
-			int inIndex = outIndex * scaleFactor;//the index to draw from
-			if(inIndex+1>=input.size()){continue;}//if you are past the end, leave it at zero.
-			float interpolationFactor = outIndex*scaleFactor - inIndex;
-			output[outIndex] =
-				 input[inIndex]*(1-interpolationFactor)
-				+input[inIndex+1]*(interpolationFactor);
-		}
-		return output;
+	vector<float> output = vector<float>(input.size()*scaleFactor);
+	//assert(output.size()!=0);
+	for(int outIndex=1; outIndex+1 < output.size(); outIndex++){
+		int inIndex = outIndex * scaleFactor;//the index to draw from
+		if(inIndex+1>=input.size()){continue;}//if you are past the end, leave it at zero.
+		float interpolationFactor = outIndex*scaleFactor - inIndex;
+		output[outIndex] =
+			 input[inIndex]*(1-interpolationFactor)
+			+input[inIndex+1]*(interpolationFactor);
+	}
+	return output;
 }
 void Speech::transpose(function<float(float)>nuvofreq, float endTime){
 	int endHop = endTime*sampleRate/hop;
@@ -372,19 +372,3 @@ Speech::Speech(istream& filestream){
 
 	this->verify();
 }
-
-
-
-
-
-
-/*returns the value of vec at index
-**returns 0 if that element doesn't exist
-float tryAt(vector<float>& vec, int index){
-	if(index < vec.size()){
-		return vec[index];
-	}else{
-		return 0;
-	}
-}
-*/
