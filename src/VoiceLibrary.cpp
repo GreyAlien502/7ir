@@ -274,36 +274,28 @@ void VoiceLibrary::importDir(string path){
 			}
 			presets.push_back(settings);
 
-			start = end + 1;
-			end = line.find(',', start);
-			float offset = stod(line.substr(start,end-start))/1000.;
-
-			start = end + 1;
-			end = line.find(',', start);
-			float consonant = stod(line.substr(start,end-start))/1000.;
-
-			start = end + 1;
-			end = line.find(',', start);
-			float cutoff = stod(line.substr(start,end-start))/1000.;
-
-			start = end + 1;
-			end = line.find(',', start);
-			float preutter = stod(line.substr(start,end-start))/1000.;
-
-			start = end + 1;
-			end = line.length();
-			float overlap = stod(line.substr(start,end-start))/1000.;
+			std::vector<float> timings(5);
+			for( int timingNum=0; timingNum<timings.size(); timingNum++){
+				start = end + 1;
+				end = line.find(',', start);
+				try{
+					timings[timingNum] = stod(line.substr(start,end-start))/1000.;
+				}catch(std::invalid_argument){
+					cerr<<"OHNO";
+					timings[timingNum] = 0;
+				}
+			}
 
 			try{
-				//cerr<<alias;
+				cerr<<alias;
 				aliases.insert({alias,phones.size()});
 				phones.push_back(tuple<string,float,float,float,float,float>(
 					path+'/'+filename,
-					offset,
-					consonant,
-					cutoff,
-					preutter,
-					overlap
+					timings[0],
+					timings[1],
+					timings[2],
+					timings[3],
+					timings[4]
 				));
 			}catch(fileio::fileOpenError& exc){
 				cerr<<endl<<"file '"<<path+'/'+filename<<"' not found."<<endl;
