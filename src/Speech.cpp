@@ -296,6 +296,23 @@ void Speech::stretch(float start, float end, float nuvolength){
 	duration = nuvoduration;
 	this->verify();
 }
+/*
+** resamplet thte input vector by a factor specified by the scaleFactor
+** larger scaleFactor means more samples in the new vector compared to the old one.
+*/
+vector<float> resample(const vector<float>& input,float scaleFactor){
+		vector<float> output = vector<float>(input.size()*scaleFactor);
+		//assert(output.size()!=0);
+		for(int outIndex=1; outIndex+1 < output.size(); outIndex++){
+			int inIndex = outIndex * scaleFactor;//the index to draw from
+			if(inIndex+1>=input.size()){continue;}//if you are past the end, leave it at zero.
+			float interpolationFactor = outIndex*scaleFactor - inIndex;
+			output[outIndex] =
+				 input[inIndex]*(1-interpolationFactor)
+				+input[inIndex+1]*(interpolationFactor);
+		}
+		return output;
+}
 void Speech::transpose(function<float(float)>nuvofreq, float endTime){
 	int endHop = endTime*sampleRate/hop;
 	if(frequencies.size()<endHop){
@@ -306,24 +323,11 @@ void Speech::transpose(function<float(float)>nuvofreq, float endTime){
 	for(int hopnum=0; hopnum<endHop; hopnum++){
 		//interpolate the new magnitudes
 		//TODO:do this on synthesis
-		float initFreq = frequencies[hopnum];
-		float targetFreq = nuvofreq(hopnum*hop/sampleRate);
-		vector<float> nuvomagnitudes = vector<float>(magnitudes[hopnum].size(),0);
-		vector<float> nuvofreqDisplacements = vector<float>(magnitudes[hopnum].size(),0);
-		for(int newHarmonic=1; newHarmonic+1 < magnitudes[hopnum].size(); newHarmonic++){
-			int oldHarmonic = newHarmonic * targetFreq/initFreq;
-			if(oldHarmonic+1>=magnitudes[hopnum].size()){continue;}
-			float interpolationFactor = newHarmonic/initFreq - oldHarmonic/targetFreq;
-			nuvomagnitudes[newHarmonic] =
-				 magnitudes[hopnum][oldHarmonic]*(1-interpolationFactor)
-				+magnitudes[hopnum][oldHarmonic+1]*(interpolationFactor);
-			nuvofreqDisplacements[newHarmonic] =
-				 freqDisplacements[hopnum][oldHarmonic]*(1-interpolationFactor)
-				+freqDisplacements[hopnum][oldHarmonic+1]*(interpolationFactor);
-		}
-		magnitudes[hopnum] = nuvomagnitudes;
-		freqDisplacements[hopnum] = nuvofreqDisplacements;
-		frequencies[hopnum] = targetFreq;
+		float nuvofrequency = nuvofreq(hopnum*hop/sampleRate);
+		float rescaleFactor = nuvofrequency / frequencies[hopnum];
+		magnitudes[hopnum] = resample(magnitudes[hopnum],rescaleFactor);
+		freqDisplacements[hopnum] = resample(freqDisplacements[hopnum],rescaleFactor);
+		frequencies[hopnum] = nuvofrequency;
 	}
 	this->verify();
 }
