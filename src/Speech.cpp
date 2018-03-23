@@ -7,6 +7,24 @@
 #include "fileio.h"
 
 using namespace std;
+/*
+** resamplet thte input vector by a factor specified by the scaleFactor
+** larger scaleFactor means more samples in the new vector compared to the old one.
+*/
+vector<float> resample(const vector<float>& input,float scaleFactor){
+	vector<float> output = vector<float>(input.size()*scaleFactor);
+	//assert(output.size()!=0);
+	for(int outIndex=1; outIndex+1 < output.size(); outIndex++){
+		int inIndex = outIndex * scaleFactor;//the index to draw from
+		if(inIndex+1>=input.size()){continue;}//if you are past the end, leave it at zero.
+		float interpolationFactor = outIndex*scaleFactor - inIndex;
+		output[outIndex] =
+			 input[inIndex]*(1-interpolationFactor)
+			+input[inIndex+1]*(interpolationFactor);
+	}
+	return output;
+}
+
 
 bool Speech::verify(){
 	assert( this->hops > 0);
@@ -14,6 +32,7 @@ bool Speech::verify(){
 	assert( this->hops == int(this->duration*sampleRate)/hop + 1);
 	// magnitudes and frequencies should be <hops> long.
 	assert(this->magnitudes.size()==this->hops);
+	assert(this->baseFrequencies.size()==this->hops);
 	assert(this->frequencies.size()==this->hops);
 	for(int hopnum=0;hopnum<this->magnitudes.size();hopnum++){
 		assert(
@@ -32,10 +51,13 @@ Sound Speech::toSound(int endHop){
 		windowLength/hop,windowLength,sampleRate
 	);//start with emtpy sound of proper length
 	for(int hopnum=0; hopnum<endHop; hopnum++){
+		float rescaleFactor = frequencies[hopnum] / baseFrequencies[hopnum];
+		vector<float> outputMagnitudes = resample(magnitudes[hopnum],rescaleFactor);
+		vector<float> outputFreqDisplacements = resample(freqDisplacements[hopnum],rescaleFactor);
 		//add new frequencies
-		for(int nuvoharmonic=1; nuvoharmonic<magnitudes[hopnum].size(); nuvoharmonic++){
-			float mag = magnitudes[hopnum][nuvoharmonic];
-			float freq = (1+freqDisplacements[hopnum][nuvoharmonic])
+		for(int nuvoharmonic=1; nuvoharmonic<outputMagnitudes.size(); nuvoharmonic++){
+			float mag = outputMagnitudes[nuvoharmonic];
+			float freq = (1+outputFreqDisplacements[nuvoharmonic])
 				*nuvoharmonic *frequencies[hopnum];
 
 			int i = freq/sampleRate*windowLength+.5;
@@ -61,6 +83,7 @@ void Speech::crop(float startTime, float endTime){
 	int startHop = startTime*sampleRate/hop;
 	int endHop = startHop + nuvohops;
 
+	baseFrequencies = vector<float>(baseFrequencies.begin()+startHop,baseFrequencies.begin()+endHop);
 	frequencies = vector<float>(frequencies.begin()+startHop,frequencies.begin()+endHop);
 	magnitudes = vector<vector<float>>(magnitudes.begin()+startHop,magnitudes.begin()+endHop);
 	freqDisplacements = vector<vector<float>>(freqDisplacements.begin()+startHop,freqDisplacements.begin()+endHop);
@@ -82,12 +105,14 @@ Speech::Speech(Sound sample,float freq){
 	this->duration = sample.duration;
 	this->remainder = vector<float>(windowLength-hop);
 
+	this->baseFrequencies = vector<float>(hops);
 	this->frequencies = vector<float>(hops);
 	this->magnitudes = vector<vector<float>>(hops);
 	this->freqDisplacements = vector<vector<float>>(hops);
 
 	//detect frequencies
 	for(int hopnum=0; hopnum<hops; hopnum++){
+		baseFrequencies[hopnum] = freq;//TODO:remove this block; it's already in the other one
 		frequencies[hopnum] = freq;
 	}
 	for(int hopnum=0; hopnum<hops; hopnum++){
@@ -96,7 +121,6 @@ Speech::Speech(Sound sample,float freq){
 	}
 	//detect peaks
 	for(int hopnum=0; hopnum<hops; hopnum++){
-		frequencies[hopnum] = freq;
 		vector<float> harmonicIndices = vector<float>(sampleRate/freq+1);
 		//find the index of the largest signal in each harmonic range.
 		for(int scannedIndex=0; scannedIndex<windowLength/2+1; scannedIndex++){
@@ -162,57 +186,90 @@ void Speech::add(Speech addee, float overlap){
 	if(overlapHops<0){cerr<<"UMM\n";} // this should also not happen: for debugging only
 
 	//extend the old ones to fit new ones
+	baseFrequencies  .resize(nuvohops);
 	frequencies      .resize(nuvohops);
 	magnitudes       .resize(nuvohops);
 	freqDisplacements.resize(nuvohops);
 
 	//add overlap to the old sound by fading
 	for(int hopnum=0;hopnum+1<overlapHops;hopnum++){
-		int actualhop = hops-overlapHops+hopnum;
+		int actualhop = hops-overlapHops+hopnum;//in frame of this
 
-		float nuvofreq = 0;
+		float fadeFactor = float(hopnum)/overlapHops;
+		float nuvobaseFreq =
+			this->baseFrequencies[actualhop]*(1-fadeFactor) +
+			addee.baseFrequencies[hopnum]*fadeFactor;
+		float nuvofreq =
+			this->frequencies[actualhop]*(1-fadeFactor) +
+			addee.frequencies[hopnum]*fadeFactor;
 
-		magnitudes[actualhop].resize(addee.magnitudes[hopnum].size());
-		freqDisplacements[actualhop].resize(addee.magnitudes[hopnum].size());
-		for(int i=0;i<addee.magnitudes[hopnum].size();i++){
-			float oldMag = magnitudes[actualhop][i];
-			float addMag = addee.magnitudes[hopnum][i];
-			float fadeFactor;
-			if(oldMag + addMag == 0){
-				fadeFactor=0;
-			}else{
-				fadeFactor =(addMag)/(oldMag + addMag);
-			}
 
-			//magnitudes[actualhop][i] *= (1-fadeFactor);
-			magnitudes[actualhop][i] += addee.magnitudes[hopnum][i];//*fadeFactor;
+		float sound1rescaleFactor = nuvobaseFreq / baseFrequencies[actualhop];
+		vector<float> sound1magnitudes = resample( magnitudes[actualhop],sound1rescaleFactor );
+		vector<float> sound1freqDisplacements = resample( freqDisplacements[actualhop],sound1rescaleFactor );
 
-			//freqDisplacements[actualhop][i] *= (1-fadeFactor);
-			freqDisplacements[actualhop][i] = addee.freqDisplacements[hopnum][i]*fadeFactor;
+		float sound2rescaleFactor = nuvobaseFreq / addee.baseFrequencies[hopnum];
+		vector<float> sound2magnitudes = resample( addee.magnitudes[hopnum], sound2rescaleFactor );
+		vector<float> sound2freqDisplacements = resample( addee.freqDisplacements[hopnum], sound2rescaleFactor );
+
+		sound1magnitudes.resize(sound2magnitudes.size());
+		sound2magnitudes.resize(sound1magnitudes.size());
+		sound1freqDisplacements.resize(sound2freqDisplacements.size());
+		sound2freqDisplacements.resize(sound1freqDisplacements.size());
+
+		this->magnitudes[actualhop]        = vector<float>(sound1magnitudes.size());
+		this->freqDisplacements[actualhop] = vector<float>(sound1magnitudes.size());
+		for(int i=0;i<sound1magnitudes.size();i++){
+			float oldMag = sound1magnitudes[i];
+			float addMag = sound2magnitudes[i];
+			//float fadeFactor;
+			//if(oldMag + addMag == 0){
+			//	fadeFactor=0;
+			//}else{
+			//	fadeFactor =(addMag)/(oldMag + addMag);
+			//}
+
+			this->magnitudes[actualhop][i] =
+				sound1magnitudes[i]*(1-fadeFactor) +
+				sound2magnitudes[i]*fadeFactor;
+
+			this->freqDisplacements[actualhop][i] =
+				sound1freqDisplacements[i]*(1-fadeFactor) +
+				sound2freqDisplacements[i]*fadeFactor;
+
 
 			nuvofreq += frequencies[hopnum]*(1-fadeFactor);
 			nuvofreq += addee.frequencies[hopnum]*fadeFactor;
 		}
-
-		frequencies[hopnum] = nuvofreq/addee.magnitudes[hopnum].size();
+		this->baseFrequencies[actualhop] =
+			this->baseFrequencies[actualhop]*(1-fadeFactor) +
+			addee.baseFrequencies[hopnum]*fadeFactor;
+		this->frequencies[actualhop] =
+			this->frequencies[actualhop]*(1-fadeFactor) +
+			addee.frequencies[hopnum]*fadeFactor;
 	}
 
 	//copy the new one in after the end of the old one
 	copy(
-			addee.frequencies.begin()+overlapHops,
-			addee.frequencies.end(),
-			frequencies.begin()+hops
-	    );
+		addee.baseFrequencies.begin()+overlapHops,
+		addee.baseFrequencies.end(),
+		baseFrequencies.begin()+hops
+	);
 	copy(
-			addee.magnitudes.begin()+overlapHops,
-			addee.magnitudes.end(),
-			magnitudes.begin()+hops
-	    );
+		addee.frequencies.begin()+overlapHops,
+		addee.frequencies.end(),
+		frequencies.begin()+hops
+	);
 	copy(
-			addee.freqDisplacements.begin()+overlapHops,
-			addee.freqDisplacements.end(),
-			freqDisplacements.begin()+hops
-	    );
+		addee.magnitudes.begin()+overlapHops,
+		addee.magnitudes.end(),
+		magnitudes.begin()+hops
+	);
+	copy(
+		addee.freqDisplacements.begin()+overlapHops,
+		addee.freqDisplacements.end(),
+		freqDisplacements.begin()+hops
+	);
 	duration = nuvoduration;
 	hops = nuvohops;
 	this->verify();
@@ -235,6 +292,7 @@ vector<float> Speech::pop(float requestedLength){
 	}
 
 	//remove synthesized parts
+	baseFrequencies.erase(baseFrequencies.begin(),baseFrequencies.begin()+poppedHops);
 	frequencies.erase(frequencies.begin(),frequencies.begin()+poppedHops);
 	magnitudes.erase(magnitudes.begin(),magnitudes.begin()+poppedHops);
 	freqDisplacements.erase(freqDisplacements.begin(),freqDisplacements.begin()+poppedHops);
@@ -290,28 +348,12 @@ void Speech::stretch(float start, float end, float nuvolength){
 
 	lengthenVector(magnitudes,       startHop, lengthHop, nuvolengthHop);
 	lengthenVector(freqDisplacements,startHop, lengthHop, nuvolengthHop);
+	lengthenVector(baseFrequencies,  startHop, lengthHop, nuvolengthHop);
 	lengthenVector(frequencies,      startHop, lengthHop, nuvolengthHop);
 
 	hops = nuvohops;
 	duration = nuvoduration;
 	this->verify();
-}
-/*
-** resamplet thte input vector by a factor specified by the scaleFactor
-** larger scaleFactor means more samples in the new vector compared to the old one.
-*/
-vector<float> resample(const vector<float>& input,float scaleFactor){
-	vector<float> output = vector<float>(input.size()*scaleFactor);
-	//assert(output.size()!=0);
-	for(int outIndex=1; outIndex+1 < output.size(); outIndex++){
-		int inIndex = outIndex * scaleFactor;//the index to draw from
-		if(inIndex+1>=input.size()){continue;}//if you are past the end, leave it at zero.
-		float interpolationFactor = outIndex*scaleFactor - inIndex;
-		output[outIndex] =
-			 input[inIndex]*(1-interpolationFactor)
-			+input[inIndex+1]*(interpolationFactor);
-	}
-	return output;
 }
 void Speech::transpose(function<float(float)>nuvofreq, float endTime){
 	int endHop = endTime*sampleRate/hop;
@@ -323,11 +365,11 @@ void Speech::transpose(function<float(float)>nuvofreq, float endTime){
 	for(int hopnum=0; hopnum<endHop; hopnum++){
 		//interpolate the new magnitudes
 		//TODO:do this on synthesis
-		float nuvofrequency = nuvofreq(hopnum*hop/sampleRate);
-		float rescaleFactor = nuvofrequency / frequencies[hopnum];
-		magnitudes[hopnum] = resample(magnitudes[hopnum],rescaleFactor);
-		freqDisplacements[hopnum] = resample(freqDisplacements[hopnum],rescaleFactor);
-		frequencies[hopnum] = nuvofrequency;
+		//float nuvofrequency = nuvofreq(hopnum*hop/sampleRate);
+		//float rescaleFactor = nuvofrequency / frequencies[hopnum];
+		//magnitudes[hopnum] = resample(magnitudes[hopnum],rescaleFactor);
+		//freqDisplacements[hopnum] = resample(freqDisplacements[hopnum],rescaleFactor);
+		frequencies[hopnum] = nuvofreq(hopnum*hop/sampleRate);
 	}
 	this->verify();
 }
@@ -349,6 +391,7 @@ void Speech::write(ostream& filestream){
 
 	fileio::write(filestream,this->magnitudes);
 	fileio::write(filestream,this->freqDisplacements);
+	fileio::write(filestream,this->baseFrequencies);
 	fileio::write(filestream,this->frequencies);
 
 	fileio::write(filestream,this->remainder);
@@ -363,6 +406,7 @@ Speech::Speech(istream& filestream){
 
 	this->magnitudes        = fileio::read(filestream,vector<vector<float>>());
 	this->freqDisplacements = fileio::read(filestream,vector<vector<float>>());
+	this->baseFrequencies       = fileio::read(filestream,vector<float>());
 	this->frequencies       = fileio::read(filestream,vector<float>());
 
 	this->remainder = fileio::read(filestream,vector<float>());

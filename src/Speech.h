@@ -23,6 +23,7 @@ class Speech{
 		// percent difference from the actual frequency
 		// It's questionable if this is really useful.
 		std::vector< std::vector<float> > freqDisplacements;
+		std::vector<float> baseFrequencies; // the fundamental frequency of the formant curves
 		std::vector<float> frequencies; // the fundamental frequency of each frame
 
 		//helper methods/data
