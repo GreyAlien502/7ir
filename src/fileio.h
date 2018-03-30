@@ -16,10 +16,6 @@ namespace fileio{
 				runtime_error("Couldn't open '"+filename+"'."){}
 	};
 
-	// writes raw wav data to filename
-	// truncates if file exists
-	// TODO:is this even used?
-	void wavWrite(std::vector<float>sound,std::string filename);
 	// reads raw wav data from path
 	std::vector<float> wavRead(std::ifstream& file, int startSample=0, int endSample=0,std::ios::seekdir direction=std::ios::end);
 	// writes raw wav data to filename

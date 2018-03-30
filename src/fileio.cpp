@@ -5,25 +5,6 @@
 
 using namespace std;
 
-
-
-
-
-void fileio::wavWrite(vector<float>sound,string filename){
-	std::ofstream file(filename, ios::out|ios::binary|ios::trunc );
-	if(file.is_open()){
-		vector<int16_t> temp(sound.size());
-		for(long int i=0;i<temp.size();i++){
-			temp[i]=int(sound[i]*32767);
-		}
-		file.write((char*)&temp[0],temp.size()*sizeof(int16_t));
-	}else{
-		fileio::fileOpenError errorz = fileio::fileOpenError(filename);
-		throw(errorz);
-	}
-}
-
-
 	void writeLittleEndian(int value, std::ofstream& file, int size){
 		assert(size<=sizeof(int));
 		for( int i=0; i<size; i++ ){
