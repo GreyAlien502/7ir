@@ -11,7 +11,7 @@
 
 using namespace std;
 
-map<string,string> parameters(ifstream& fileobject){
+static map<string,string> parameters(ifstream& fileobject){
 	/* reads through ifstream formatted as:
 	**	[header 1]
 	**	key=value
@@ -49,7 +49,7 @@ map<string,string> parameters(ifstream& fileobject){
 }
 
 // turns MIDI note number to the associated frequency in Hz.
-float freqFromNum(int notenum){
+static float freqFromNum(int notenum){
 	return 440.*pow(2.,(notenum-69.)/12.) ;
 }
 

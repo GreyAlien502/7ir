@@ -315,7 +315,7 @@ vector<float> Speech::synthesize(){
 	** to make the distance between them nuvolength.
 	*/
 	template<typename contents>
-	void lengthenVector(vector<contents> & input, int start, int length, int nuvolength){
+	static void lengthenVector(vector<contents> & input, int start, int length, int nuvolength){
 		if(nuvolength<length){
 			// If it's being shortened, just delete the end.
 			input.erase(input.begin()+start+nuvolength, input.begin()+start+length);

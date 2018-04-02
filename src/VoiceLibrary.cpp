@@ -12,7 +12,7 @@ namespace filesystem=std::experimental::filesystem;
 using namespace std;
 
 // gets note number from something like "C#4" or "B3"
-int getNoteNum(string noteName){
+static int getNoteNum(string noteName){
 	map<char,int> letterMap = {
 		{'C', 0},
 		{'D', 2},
@@ -49,7 +49,7 @@ string VoiceLibrary::getFormatString(){
 }
 
 //converts lyric from kana to RO-MAji and vice versa
-string convert(string inLyric){
+static string convert(string inLyric){
 	// try going one way
 	vector< pair<string,string> >::iterator outPair = find_if(
 		begin(conversionTable),
@@ -194,7 +194,7 @@ VoiceLibrary::VoiceLibrary(std::string path, int windowOverlap, int windowSize, 
 	return maxFreq/ferq;
 }*/ //It's not very effective
 // detects the fundamental frequency in an audio signal
-float detectFrequency(vector<float> pcm,float sampleRate){
+static float detectFrequency(vector<float> pcm,float sampleRate){
 	int length = pcm.size();
 	int minPeriod = floor(sampleRate/1046.5);//maximum frequency humans can sing
 	int maxPeriod = floor(sampleRate/82.407);//minimum frequency humans can sing
@@ -222,7 +222,7 @@ float detectFrequency(vector<float> pcm,float sampleRate){
 	return float(sampleRate)/(minPeriod+fundamentalIndex);
 }
 //returns if searchee ends in suffix
-bool endsIn(string searchee, string suffix){
+static bool endsIn(string searchee, string suffix){
 	return searchee.size() >= suffix.size() &&
 		searchee.compare(searchee.size()-suffix.size(), suffix.size(), suffix)==0;
 }

@@ -61,7 +61,7 @@ bool Note::validate(){
 }
 
 template <typename T>
-T getParam(std::map<std::string,std::string>& noteParams, const std::string& paramName, T& defaultValue, std::function<T (std::string)> processString ){ //TODO: pass as const string& ?
+static T getParam(std::map<std::string,std::string>& noteParams, const std::string& paramName, T& defaultValue, std::function<T (std::string)> processString ){ //TODO: pass as const string& ?
 	T value;
 	try{
 		value = processString(noteParams[paramName]);

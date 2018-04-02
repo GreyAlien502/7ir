@@ -5,7 +5,7 @@
 
 using namespace std;
 
-	void writeLittleEndian(int value, std::ofstream& file, int size){
+	static void writeLittleEndian(int value, std::ofstream& file, int size){
 		assert(size<=sizeof(int));
 		for( int i=0; i<size; i++ ){
 			file.put(value >> 8*i);
