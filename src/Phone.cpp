@@ -52,6 +52,8 @@ float Phone::getConsonant(){ return consonant; }
 float Phone::getPreutter (){ return preutter; }
 float Phone::getOverlap  (){ return overlap; }
 
+float Phone::getPreeffectLength(){ return preutter; }
+
 
 Phone::Phone(istream& filestream){
 	this->consonant = fileio::read(filestream,float(0));

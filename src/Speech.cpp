@@ -363,12 +363,7 @@ void Speech::transpose(function<float(float)>nuvofreq, float endTime){
 		cerr<<endl<<endTime<<endl<<duration<<endl;
 	}
 	for(int hopnum=0; hopnum<endHop; hopnum++){
-		//interpolate the new magnitudes
-		//TODO:do this on synthesis
-		//float nuvofrequency = nuvofreq(hopnum*hop/sampleRate);
-		//float rescaleFactor = nuvofrequency / frequencies[hopnum];
-		//magnitudes[hopnum] = resample(magnitudes[hopnum],rescaleFactor);
-		//freqDisplacements[hopnum] = resample(freqDisplacements[hopnum],rescaleFactor);
+		// update frequency
 		frequencies[hopnum] = nuvofreq(hopnum*hop/sampleRate);
 	}
 	this->verify();

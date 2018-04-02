@@ -45,6 +45,11 @@ class Phone{
 		float getConsonant();
 		float getPreutter();
 		float getOverlap();
+		
+		/* get the amount of time before the note begins
+		** that this phone will begin to effect the sound of the previous phone.
+		*/
+		float getPreeffectLength();
 
 		// read from & write to filestream
 		Phone(std::istream& filestream);

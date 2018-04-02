@@ -72,83 +72,29 @@ Song::Song(string path){
 
 		float delta = 0;
 		int i = 0;
-		getline(ust,line);
-		while(line != "[#TRACKEND]"){
+		for( getline(ust,line); line != "[#TRACKEND]"; getline(ust,line) ){
 			// get note parameters for each note
-			map<string,string> parameterList = parameters(ust);
+			Note currentNote = Note(parameters(ust));
 			
-			// required entries
-				// TODO:techincially some of these should default to the next note's length...
-				// but it should always be there(and valid)
-			float length;
-			try{
-				length = stod(parameterList["Length"])/480.;// convert weird units (ticks) to beats
-				if(length<0){ throw std::invalid_argument(""); }
-			}catch(std::invalid_argument&){
-				length = 0;
-			}
-
-			string lyric;
-			lyric = parameterList["Lyric"];
-	
-			float noteNum;
-			try{
-				noteNum = stoi(parameterList["NoteNum"]);
-				if(noteNum < 24){ throw std::invalid_argument(""); }
-			}catch(std::invalid_argument&){
-				noteNum = 24;
-			}
-
-			// TODO: support float preUtterance;
-
-			// optional entries
-			float velocity;
-			try{
-				velocity = stod(parameterList["Velocity"])/200.; //normalized to (0,1)
-				if(velocity < 0 || velocity > 1){ throw std::invalid_argument(""); }
-			}catch(std::invalid_argument&){
-				velocity = .5;
-			}
-		
-
-
-
-
-
-
-			float duration;
 			if(version == 1){
-				duration = length;
-			}else{
-				delta = stod(parameterList["Delta"])/480.;// convert to s
-				duration = stod(parameterList["Duration"])/480.;// convert to s
-				//TODO:change 480 to constant so i can change it.
-			}
-
-			if((version == 1) && (lyric == "R")){ // "R" means rest in v1.
-				delta += length;
-			}else{
-
-
-				cerr<<lyric;//log each lyric in the song
-				notes.push_back(Note(
-					lyric,
-					noteNum,
-					velocity,
-					delta,
-					duration,
-					length
-				));
-
-				if(version == 1){
-					if((i != 0)){
-						notes[i-1].length = delta;
-					}
-					delta = length;
-					i++;
+				cerr<<currentNote.lyric<<"ceurrenta\n";
+				// duration is implied in v1
+				currentNote.duration = currentNote.length;
+				if(currentNote.lyric == "R"){
+					// "R" means rest in v1.
+					delta += currentNote.length;
+					continue;
 				}
+				if(i != 0){
+					notes[i-1].length = delta;
+				}
+				delta = currentNote.length;
+				i++;
 			}
-			getline(ust,line);
+
+			notes.push_back(currentNote);
+			cerr<<currentNote.lyric;//log each lyric in the song
+
 		}
 		notes[notes.size()-1].length = notes[notes.size()-1].duration;
 	}else{
@@ -218,9 +164,10 @@ void Song::synthesize(VoiceLibrary library, ofstream& file){
 
 		//add modified note to previous speech sample
 		speech.add(phoneNow.sample, phoneNow.overlap);
+
 		//transpose
-		float noteBoundary = leftoverLength +phoneNow.preutter;
-		float writeLength = noteBoundary +notes[note].length/tempo -phoneNext.preutter;
+		float noteBoundary = leftoverLength +phoneNow.getPreeffectLength();
+		float writeLength = noteBoundary +notes[note].length/tempo -phoneNext.getPreeffectLength();
 		float freq1,freq2;
 		freq2 = freqFromNum(notes[note].notenum);
 		if(note!=0){
@@ -228,14 +175,16 @@ void Song::synthesize(VoiceLibrary library, ofstream& file){
 		}else{
 			freq1 = freq2;
 		}
-		function<float (float)> frequency = [noteBoundary,freq1,freq2](float time){
-			if(time<noteBoundary){
-				return freq1;
-			}else{
-				return freq2;
-			}
-		};
-		speech.transpose(frequency,writeLength);
+		speech.transpose(
+			[noteBoundary,freq1,freq2](float time){
+				if(time<noteBoundary){
+					return freq1;
+				}else{
+					return freq2;
+				}
+			},
+			writeLength
+		);
 		//pop&write
 		fileio::append(speech.pop(writeLength),file);
 		//reassign
