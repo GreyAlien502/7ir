@@ -77,7 +77,6 @@ Song::Song(string path){
 			Note currentNote = Note(parameters(ust));
 			
 			if(version == 1){
-				cerr<<currentNote.lyric<<"ceurrenta\n";
 				// duration is implied in v1
 				currentNote.duration = currentNote.length;
 				if(currentNote.lyric == "R"){
@@ -175,13 +174,10 @@ void Song::synthesize(VoiceLibrary library, ofstream& file){
 		}else{
 			freq1 = freq2;
 		}
+		function<float(float)> newFrequency = notes[note].frequency(freq1);
 		speech.transpose(
-			[noteBoundary,freq1,freq2](float time){
-				if(time<noteBoundary){
-					return freq1;
-				}else{
-					return freq2;
-				}
+			[noteBoundary,newFrequency](float time){
+				return newFrequency(time-noteBoundary);
 			},
 			writeLength
 		);
