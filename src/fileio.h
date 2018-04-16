@@ -6,7 +6,6 @@
 namespace fileio{
 	/* This namespace just contains functions
 	** commonly used to read from and write to files and filestreams.
-	** TODO:change all to use iostreams, not filenames.
 	*/
 
 	//custom error for inability to read files
@@ -23,21 +22,4 @@ namespace fileio{
 	void writeWavHeader(int sampleRate, std::ofstream& file);
 	void updateWavHeader(std::ofstream& file);
 	void append(std::vector<float>sound, std::ofstream& file);
-
-	// write functions write type to ostream in binary form
-	// to be read in later with read functions
-	void write(std::ostream& outFile, int);
-	void write(std::ostream& outFile, float);
-	void write(std::ostream& outFile, std::vector<int>);
-	void write(std::ostream& outFile, std::vector<float>);
-	void write(std::ostream& outFile, std::vector<std::vector<float>>);
-
-	// read functions read binary data in from istreams
-	// and interpret it at a certain type,
-	// which is given as a dummy second argument
-	int                              read(std::istream& inFile, int);
-	float                           read(std::istream& inFile, float);
-	std::vector<int>              read(std::istream& inFile, std::vector<int>);
-	std::vector<float>              read(std::istream& inFile, std::vector<float>);
-	std::vector<std::vector<float>> read(std::istream& inFile, std::vector<std::vector<float>>);
 }

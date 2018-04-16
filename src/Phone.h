@@ -40,7 +40,7 @@ class Phone{
 
 		// initialize empty phone with 0 duration using:
 		//	windowOverlap, windowSize, sampleRate: as above
-		Phone( int windowOverlap=16, int windowSize=2048, int sampleRate=44100);
+		Phone( int windowOverlap, int windowSize, int sampleRate);
 
 		float getConsonant();
 		float getPreutter();
@@ -50,8 +50,4 @@ class Phone{
 		** that this phone will begin to effect the sound of the previous phone.
 		*/
 		float getPreeffectLength();
-
-		// read from & write to filestream
-		Phone(std::istream& filestream);
-		void write(std::ostream& filestream);
 };

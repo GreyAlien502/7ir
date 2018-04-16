@@ -104,8 +104,7 @@ Song::Song(string path){
 
 Phone Song::getNewPhone(int noteIndex,VoiceLibrary& library){
 	if(noteIndex>=notes.size()){
-		Phone output = Phone();
-		output.preutter=output.overlap=0;
+		Phone output = library.getPhone(Note(map<string,string>()));
 		return output;
 	}
 	Phone output = library.getPhone(notes[noteIndex]);

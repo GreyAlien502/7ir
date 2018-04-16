@@ -53,17 +53,3 @@ float Phone::getPreutter (){ return preutter; }
 float Phone::getOverlap  (){ return overlap; }
 
 float Phone::getPreeffectLength(){ return preutter; }
-
-
-Phone::Phone(istream& filestream){
-	this->consonant = fileio::read(filestream,float(0));
-	this->preutter  = fileio::read(filestream,float(0));
-	this->overlap   = fileio::read(filestream,float(0));
-	this->sample = Speech(filestream);
-}
-void Phone::write(ostream& filestream){
-	fileio::write(filestream,this->consonant);
-	fileio::write(filestream,this->preutter);
-	fileio::write(filestream,this->overlap);
-	sample.write(filestream);
-}

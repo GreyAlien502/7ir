@@ -377,37 +377,3 @@ void Speech::amplify(function<float(float)>factors){
 	}
 	this->verify();
 }
-
-
-void Speech::write(ostream& filestream){
-	fileio::write(filestream,this->windowLength);
-	fileio::write(filestream,this->hop);
-	fileio::write(filestream,this->hops);
-
-	fileio::write(filestream,this->magnitudes);
-	fileio::write(filestream,this->freqDisplacements);
-	fileio::write(filestream,this->baseFrequencies);
-	fileio::write(filestream,this->frequencies);
-
-	fileio::write(filestream,this->remainder);
-
-	fileio::write(filestream,this->duration);
-	fileio::write(filestream,this->sampleRate);
-}
-Speech::Speech(istream& filestream){
-	this->windowLength = fileio::read(filestream,int(0));
-	this->hop          = fileio::read(filestream,int(0));
-	this->hops         = fileio::read(filestream,int(0));
-
-	this->magnitudes        = fileio::read(filestream,vector<vector<float>>());
-	this->freqDisplacements = fileio::read(filestream,vector<vector<float>>());
-	this->baseFrequencies       = fileio::read(filestream,vector<float>());
-	this->frequencies       = fileio::read(filestream,vector<float>());
-
-	this->remainder = fileio::read(filestream,vector<float>());
-
-	this->duration   = fileio::read(filestream,float(0));
-	this->sampleRate = fileio::read(filestream,float(0));
-
-	this->verify();
-}

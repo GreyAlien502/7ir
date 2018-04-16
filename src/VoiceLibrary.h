@@ -47,7 +47,8 @@ class VoiceLibrary{
 			std::string path,
 			int overlap=16,
 			int windowSize=2048,
-			float sampleRate=44100);
+			float sampleRate=44100
+		);
 		//returns a phone for a given note
 		Phone getPhone(Note note);
 };

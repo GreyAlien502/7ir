@@ -55,8 +55,4 @@ class Speech{
 		// changes the fundamental frequency at time t to frequency(t)
 		// It stops after endTime seconds.
 		void transpose(std::function<float (float)> frequency, float endTime);
-
-		//for reading & writing to disc
-		Speech(std::istream& filestream);
-		void write(std::ostream& filestream);
 };
